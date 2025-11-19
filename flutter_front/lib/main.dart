@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_front/layouts/main_layout.dart';
+import 'package:flutter_front/modules/login/binding/login_binding.dart';
+import 'package:flutter_front/modules/login/screen/login_screen.dart';
+import 'package:get/get.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +15,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MainLayout(),
+    // return MaterialApp(
+    //   title: 'Flutter Demo',
+    //   theme: ThemeData(
+    //     colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+    //   ),
+    //   home: const MainLayout(),
+    // );
+    return GetMaterialApp(
+      getPages: [
+        GetPage(
+          name: '/login',
+          binding: LoginBinding(),
+          page: () => LoginScreen(),
+        ),
+      ],
     );
   }
 }
