@@ -19,12 +19,14 @@ class _MainLayoutState extends State<MainLayout> {
 
   // 각 탭에 연결할 스크린(페이지) 리스트
   final List<Widget> _screens = [
+    const SearchScreen(),
     const HomeScreen(),
     //const Center(child: Text('검색 화면')), // 임시 화면
     const SearchScreen(),
     const Center(child: Text('알림 화면')), // 임시 화면
     const Center(child: Text('마이 페이지')), // 임시 화면
   ];
+
 
   // 탭 클릭 시 인덱스를 업데이트하는 함수
   void _onItemTapped(int index) {

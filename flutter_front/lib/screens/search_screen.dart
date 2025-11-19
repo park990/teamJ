@@ -7,7 +7,7 @@ class SearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        '검색입니다!',
+        '검색화면이에요오오오어!',
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
