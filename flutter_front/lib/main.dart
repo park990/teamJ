@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/sjs.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page Test'),
     );
   }
 }
@@ -117,6 +118,8 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
+      // 하단에 5개 버튼 배치
+      bottomNavigationBar: const Sjs(),
     );
   }
 }
