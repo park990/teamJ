@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'widgets/sjs.dart';
 import 'package:flutter_front/layouts/main_layout.dart';
 
 void main() {
@@ -14,9 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: const MyHomePage(title: 'Flutter Demo Home Page Test'),
     );
   }
@@ -105,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ),
       // 하단에 5개 버튼 배치
-      bottomNavigationBar: const Sjs(),
+      // bottomNavigationBar: const Sjs(),
+      bottomNavigationBar: const MainLayout(),
     );
   }
 }
