@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_front/modules/login/conteoller/login_controller.dart';
+import 'package:flutter_front/modules/login/controller/login_controller.dart';
 import 'package:get/state_manager.dart';
 
 class LoginScreen extends GetView<LoginController> {
