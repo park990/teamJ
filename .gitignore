@@ -1,3 +1,4 @@
 # Utility 폴더 전체를 무시  UTIL안에 플러터 SDK 라서 무시해야함
 /util/
 .idea/
+.vscode/
