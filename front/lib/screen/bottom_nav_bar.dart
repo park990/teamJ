@@ -27,6 +27,7 @@ class _BottomNavBarState extends State<BottomNavBar> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green, // 추후에 삭제
 
       // 센터 화면
       body: _Center(tabController: tabController),
@@ -40,6 +41,7 @@ class _BottomNavBarState extends State<BottomNavBar> with TickerProviderStateMix
   void _onTabChanger(){
     if(!tabController.indexIsChanging){
       // 여기서 !를 넣어준 이유는 indexchanging 이 끝났을(false) 때 탭이 바뀌는 비동기적 처리임
+      // 안넣어주면 탭이 먼저 바뀌고 비동기가 처리가 된다.
       setState(() {});
     }
   }
@@ -56,9 +58,7 @@ class _Center extends StatelessWidget {
       controller: tabController,
       children: TABS
           .map((e) => Center(
-            child: Text(
-              '${e.label}화면',
-              ),
+            child: e.screen
             ),
           )
           .toList(),
