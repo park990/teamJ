@@ -1,4 +1,4 @@
-import 'package:flutter_front/modules/login/conteoller/login_controller.dart';
+import 'package:flutter_front/modules/login/controller/login_controller.dart';
 import 'package:flutter_front/modules/login/service/login_service.dart';
 import 'package:get/get.dart';
 
