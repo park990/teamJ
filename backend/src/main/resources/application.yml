@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver # MySQL 드라이버
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 8       # 서버 처리 직원 숫자
+      minimum-idle: 8             # 기다리는 사람 숫자
+      max-lifetime: 1800000 
+      connection-timeout: 30000  # 꽉찼을때 사람들 기다리는 시간
+
+  jpa:
+    show-sql: true # sql 로그 확인
+    hibernate:
+      ddl-auto: none # 업데이트나 생성 방지  
+    properties:
+      hibernate:
+        format_sql: true #sql 들여쓰기 트루해 놓는게 정신건강에 좋음

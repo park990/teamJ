@@ -53,3 +53,14 @@ HELP.md
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+
+/.env
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
