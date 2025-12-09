@@ -1,0 +1,39 @@
+package com.teamj.entity.bbs_entity;
+
+import com.teamj.entity.doubleKey_entity.BbsReactionId;
+import com.teamj.entity.user_entity.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@NoArgsConstructor
+@Getter
+@Table(name = "Bbs_reaction")
+public class Bbs_reaction {
+    
+    @EmbeddedId
+    private BbsReactionId id = new BbsReactionId();
+
+    @MapsId("userIdx")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="user_idx")
+    private User user;
+
+    @MapsId("bbsIdx")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bbs_idx")
+    private Bbs bbs;
+
+    @Column
+    private int reactionType;
+    
+}
