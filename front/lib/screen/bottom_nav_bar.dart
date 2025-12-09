@@ -27,7 +27,6 @@ class _BottomNavBarState extends State<BottomNavBar> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green, // 추후에 삭제
 
       // 센터 화면
       body: _Center(tabController: tabController),
@@ -56,6 +55,7 @@ class _Center extends StatelessWidget {
   Widget build(BuildContext context) {
     return TabBarView(
       controller: tabController,
+      physics: NeverScrollableScrollPhysics(),
       children: TABS
           .map((e) => Center(
             child: e.screen
@@ -81,10 +81,11 @@ class _BottomNavItems extends StatelessWidget {
       showUnselectedLabels: true,
       selectedItemColor: Colors.black,
       type: BottomNavigationBarType.fixed,
+      
 
       // 탭 컨트롤러의 index를 currentIndex로 적용
       currentIndex: tabController.index,
-
+      
       // 탭을 눌렀을 때 tabcontroller에게 클릭한 index 부여
       onTap: (index) {
         tabController.animateTo(index);
