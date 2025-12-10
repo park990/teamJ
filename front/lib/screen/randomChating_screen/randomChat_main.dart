@@ -28,6 +28,24 @@ class _RandomchatMainState extends State<RandomchatMain> {
     }
   }
 
+  void _sendMessage() {
+    setState(() {
+      CHATS.add(
+        Chat(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: 'Jane Doe',
+          message: textController.text,
+          time:
+              DateTime.now().hour.toString() +
+              ':' +
+              DateTime.now().minute.toString(),
+          profileImage: 'https://via.placeholder.com/150',
+        ),
+      );
+      textController.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,135 +55,165 @@ class _RandomchatMainState extends State<RandomchatMain> {
       body: Column(
         children: [
 
-          _chatList(),
-          
-          Container(
-            height: 50,
-            color: Colors.grey,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: textController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: '메시지를 입력하세요',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    setState(() {
-                      CHATS.add(Chat(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        name: 'Jane Doe',
-                        message: textController.text,
-                        time: DateTime.now().hour.toString() + ':' + DateTime.now().minute.toString(),
-                        profileImage: 'https://via.placeholder.com/150',
-                      ));
-                      textController.clear();
-                    });
-                    // setState 후 마지막으로 스크롤
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollToBottom();
-                    });
-                  },
-                ),
-                Text('메시지 보내기'),
-              ]
-            ),
+          chatComponent(scrollController: scrollController, chats: CHATS),
+
+          chatInputComponent(
+            textController: textController, 
+            sendMessage: _sendMessage, 
+            scrollToBottom: _scrollToBottom,
           ),
+          
         ],
       ),
-      appBar: AppBar(
-        
+      appBar: AppBar(),
+    );
+  }
+}
+
+class chatInputComponent extends StatelessWidget {
+  final TextEditingController textController;
+  final Function() sendMessage;
+  final Function() scrollToBottom;
+
+  const chatInputComponent({
+    super.key,
+    required this.textController,
+    required this.sendMessage,
+    required this.scrollToBottom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      color: Colors.grey,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: textController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '메시지를 입력하세요',
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.send),
+            onPressed: () {
+              sendMessage();
+              // setState 후 마지막으로 스크롤
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                scrollToBottom();
+              });
+            },
+          ),
+          // Text('메시지 보내기'),
+        ],
       ),
     );
   }
+}
 
-  Widget _chatList() {
+class chatComponent extends StatelessWidget {
+  final ScrollController scrollController;
+  final List<Chat> chats;
+  const chatComponent({
+    super.key,
+    required this.scrollController,
+    required this.chats,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: ListView.builder(
         controller: scrollController,
-        itemBuilder: 
-        (context, index) {
-          return Align(
-            alignment: 
-            CHATS[index].isOpponent
-            ? Alignment.centerLeft
-            : Alignment.centerRight,
-            child: Container(
-              width: MediaQuery.of(context).size.width /2.5,
-              padding: EdgeInsets.all(10),
-              margin: EdgeInsets.symmetric(vertical: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: 
-                CHATS[index].isOpponent
-                ? Colors.yellow
-                : Colors.green,
-              ),
-              alignment: 
-              CHATS[index].isOpponent
-              ? Alignment.centerLeft
-              : Alignment.centerRight,
-              child: 
-              CHATS[index].isOpponent
-              ? Align(alignment: Alignment.centerLeft,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${CHATS[index].name} : '
-                          ),
-                        ),
-                        Text(
-                          '${CHATS[index].time}'
-                        ),
-                      ],
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${CHATS[index].message}'
-                      ),
-                    ),
-                  ],
-                ),
-              )
-
-              : Align(alignment: Alignment.centerRight,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${CHATS[index].time}'
-                          ),
-                        ),
-                        Text(
-                          '${CHATS[index].name} :'
-                        ),
-                      ],
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '${CHATS[index].message}'
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+        itemBuilder: (context, index) {
+          return CHATS[index].isOpponent
+              ? chatByOpponent(chat: CHATS[index])
+              : chatByMe(chat: CHATS[index]);
         },
         itemCount: CHATS.length,
         padding: EdgeInsets.symmetric(horizontal: 5),
+      ),
+    );
+  }
+}
+
+class chatByOpponent extends StatelessWidget {
+  final Chat chat;
+  const chatByOpponent({super.key, required this.chat});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        width: MediaQuery.of(context).size.width / 2.5,
+        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Colors.yellow,
+        ),
+        alignment: Alignment.centerLeft,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('${chat.name} : ')),
+                  Text('${chat.time}'),
+                ],
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('${chat.message}'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class chatByMe extends StatelessWidget {
+  final Chat chat;
+  const chatByMe({super.key, required this.chat});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        width: MediaQuery.of(context).size.width / 2.5,
+        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Colors.green,
+        ),
+        alignment: Alignment.centerRight,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('${chat.time}')),
+                  Text('${chat.name} :'),
+                ],
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text('${chat.message}'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
