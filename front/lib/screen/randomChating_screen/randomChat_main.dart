@@ -54,15 +54,13 @@ class _RandomchatMainState extends State<RandomchatMain> {
       // ),
       body: Column(
         children: [
-
           chatComponent(scrollController: scrollController, chats: CHATS),
 
           chatInputComponent(
-            textController: textController, 
-            sendMessage: _sendMessage, 
+            textController: textController,
+            sendMessage: _sendMessage,
             scrollToBottom: _scrollToBottom,
           ),
-          
         ],
       ),
       appBar: AppBar(),
@@ -155,7 +153,7 @@ class chatByOpponent extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Colors.yellow,
+          color: Color(0xFFE6C7F0), // 약간 더 진한 라벤더
         ),
         alignment: Alignment.centerLeft,
         child: Align(
@@ -194,7 +192,7 @@ class chatByMe extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Colors.green,
+          color: Color.fromARGB(255, 224, 212, 158),
         ),
         alignment: Alignment.centerRight,
         child: Align(
