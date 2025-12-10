@@ -74,6 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
+      // 하단에 5개 버튼 배치
+      // bottomNavigationBar: const Sjs(),
+      bottomNavigationBar: const MainLayout(),
     );
   }
 }
