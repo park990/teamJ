@@ -30,7 +30,7 @@ class _MypageMainState extends State<MypageMain> {
         Text('로그인이 필요합니다'),
         ElevatedButton(
           onPressed: () {
-            _showLoginBottomSheet(context);
+          _showLoginBottomSheet(context);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Color(0xFFeedaf2),
