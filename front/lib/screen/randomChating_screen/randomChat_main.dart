@@ -110,16 +110,15 @@ class chatInputComponent extends StatelessWidget {
             icon: Icon(Icons.add_photo_alternate_outlined),
             onPressed: () {
               showModalBottomSheet(
-                
                 context: context,
                 builder: (context) => Column(
-                  mainAxisSize: MainAxisSize.min,  // 내용만큼만 높이
+                  mainAxisSize: MainAxisSize.min, // 내용만큼만 높이
                   children: [
                     ListTile(
                       leading: Icon(Icons.photo_library),
                       title: Text('갤러리에서 선택'),
                       onTap: () {
-                        Navigator.pop(context);  // 시트 닫기
+                        Navigator.pop(context); // 시트 닫기
                         // 갤러리에서 이미지 선택하는 코드
                         pickImage();
                       },
@@ -128,7 +127,7 @@ class chatInputComponent extends StatelessWidget {
                       leading: Icon(Icons.camera_alt),
                       title: Text('카메라로 촬영'),
                       onTap: () {
-                        Navigator.pop(context);  // 시트 닫기
+                        Navigator.pop(context); // 시트 닫기
                         // 카메라로 촬영하는 코드
                       },
                     ),
@@ -175,8 +174,18 @@ class chatComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: ListView.builder(
+      child: ListView.separated(
         controller: scrollController,
+
+        //-----------------------시간 표시 부분 -------------------------------------------
+        separatorBuilder: (context, index) =>
+          chats[index].time == chats[index + 1].time
+          ? SizedBox.shrink()
+          : Align(
+              alignment: Alignment.center,
+              child: Text(chats[index].time),
+            ), // 시간 표시
+        //-----------------------채팅 내용 부분 -------------------------------------------
         itemBuilder: (context, index) {
           return CHATS[index].isOpponent
               ? chatByOpponent(chat: CHATS[index])
