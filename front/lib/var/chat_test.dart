@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Chat {
   final String room_id;
@@ -6,7 +6,7 @@ class Chat {
   final String message;
   final String time;
   final String profileImage;
-  final Image? Img;
+  final XFile? Img;
   bool isOpponent;
 
   Chat({

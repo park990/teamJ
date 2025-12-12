@@ -15,6 +15,7 @@ class _RandomChatMainState extends State<RandomChatMain> {
     return Scaffold(
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('랜덤채팅 메인 화면'),
             ElevatedButton(
@@ -50,6 +51,7 @@ class _RandomChatMainState extends State<RandomChatMain> {
                         },
                         child: Text('남성과 채팅'),
                         ),
+                        SizedBox(height: 10),
                         OutlinedButton(
                           onPressed: () {
                           Navigator.push(

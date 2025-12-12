@@ -84,7 +84,6 @@ class _RandomChatScreenState extends State<RandomChatScreen> {
       textController.clear();
     });
   }
-  
 }
 
 class chatInputComponent extends StatelessWidget {
@@ -175,24 +174,27 @@ class chatComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: ListView.separated(
+      child: ListView.builder(
         controller: scrollController,
 
-        //-----------------------시간 표시 부분 -------------------------------------------
-        separatorBuilder: (context, index) =>
-          chats[index].time == chats[index + 1].time
-          ? SizedBox.shrink()
-          : Align(
-              alignment: Alignment.center,
-              child: Text(chats[index].time),
-            ), // 시간 표시
-        //-----------------------채팅 내용 부분 -------------------------------------------
         itemBuilder: (context, index) {
-          return CHATS[index].isOpponent
-              ? chatByOpponent(chat: CHATS[index])
-              : chatByMe(chat: CHATS[index]);
+          return Column(
+            children: [
+              //-----------------------시간 표시 부분 -------------------------------------------
+              index > 0 && chats[index].time == chats[index - 1].time
+                  ? SizedBox.shrink()
+                  : Align(
+                      alignment: Alignment.center,
+                      child: Text(chats[index].time),
+                    ),
+              //-----------------------채팅 내용 부분 ------------------------------------------- // 시간 표시
+              chats[index].isOpponent
+                  ? chatByOpponent(chat: chats[index])
+                  : chatByMe(chat: chats[index]),
+            ],
+          );
         },
-        itemCount: CHATS.length,
+        itemCount: chats.length,
         padding: EdgeInsets.symmetric(horizontal: 5),
       ),
     );
@@ -208,6 +210,7 @@ class chatByOpponent extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             backgroundImage: NetworkImage(
@@ -216,31 +219,16 @@ class chatByOpponent extends StatelessWidget {
           ),
           SizedBox(width: 10),
           Container(
-            width: MediaQuery.of(context).size.width / 2.5,
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7, // 최대 너비 제한
+            ),
             padding: EdgeInsets.all(10),
             margin: EdgeInsets.symmetric(vertical: 5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               color: Color(0xFFeedaf2),
             ),
-            alignment: Alignment.centerLeft,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(child: Text('${chat.name} : ')),
-                      Text('${chat.time}'),
-                    ],
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('${chat.message}'),
-                  ),
-                ],
-              ),
-            ),
+            child: Text('${chat.message}'),
           ),
         ],
       ),
@@ -260,31 +248,16 @@ class chatByMe extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: MediaQuery.of(context).size.width / 2.5,
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7, // 최대 너비 제한
+            ),
             padding: EdgeInsets.all(10),
             margin: EdgeInsets.symmetric(vertical: 5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               color: Color.fromARGB(206, 255, 247, 177),
             ),
-            alignment: Alignment.centerRight,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(child: Text('${chat.time}')),
-                      Text('${chat.name} :'),
-                    ],
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text('${chat.message}'),
-                  ),
-                ],
-              ),
-            ),
+            child: Text('${chat.message}'),
           ),
           SizedBox(width: 10),
           CircleAvatar(
