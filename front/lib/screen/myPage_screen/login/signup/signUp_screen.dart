@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front/screen/controller/signUp_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
@@ -13,6 +14,8 @@ class _SignupScreenState extends State<SignupScreen> {
   // 입력을 안했을때 유효성 검사를 위한 폼키
   final _formKey = GlobalKey<FormState>();
 
+  String? _asyncErrorText;
+
   int _currentStep = 0;
   late List<StepItem> _steps;
 
@@ -20,6 +23,14 @@ class _SignupScreenState extends State<SignupScreen> {
   void initState() {
     super.initState();
     _steps=getSignupSteps();
+
+    // 화면이 전부 바뀐뒤에 텍스트 필드에 포커스 해주는 액션
+    // 아래 버튼 누를때도 써주는데 처음 화면 렌더링때 이름레이블에 포커싱이 안돼서 init때 해줌.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(
+        context,
+      ).requestFocus(_steps[_currentStep].focusNode);
+    });
     
   }
 
@@ -76,36 +87,73 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+
   Widget _buildStepField(StepItem e) {
     return Padding(
       padding: const EdgeInsets.only(top: 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          // 레이블 
+          // 레이블
           Text(
             e.title,
-            style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.grey[500]),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.grey[500],
+            ),
           ),
           SizedBox(height: 3),
 
-          if(e.type==StepType.gender)
+          if (e.type == StepType.gender)
             _buildGenderSlector(e)
           else
-          
-          // 텍스트 상자
-          TextFormField(
-            style: TextStyle(fontSize: 20),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '${e.title}을 입력해주세요';
-              }
-              return null;
-            },
-            focusNode: e.focusNode,
-            decoration: _textFieldDesign(e)
-          ),
+            // 텍스트 상자
+            TextFormField(
+              style: TextStyle(fontSize: 20),
+              focusNode: e.focusNode,
+              controller: e.controller,
+
+              
+              readOnly: (e.type==StepType.nickName&&_currentStep>e.stepIndex),
+
+              decoration: _textFieldDesign(e).copyWith(
+                suffixIcon: (e.type==StepType.nickName && _currentStep>e.stepIndex)
+                ?IconButton(
+                  onPressed: (){
+                    setState(() {
+                      _currentStep=e.stepIndex;
+                    });
+                  },
+                  icon:  Icon(Icons.edit),color: Colors.grey[500],)
+                :null
+              ),
+
+              // 사용자가 공백을 남겨뒀을시 재입력하면 에러 삭제
+              autovalidateMode:AutovalidateMode.onUserInteraction,
+
+              // 닉네임 재입력시 오류메시지 사라짐
+              onChanged: (value) {
+                if (_asyncErrorText != null) {
+                  setState(() {
+                    _asyncErrorText = null;
+                  });
+                  _formKey.currentState!.validate();
+                }
+              },
+
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '${e.title}을 입력해주세요';
+                }
+                // 닉네임 중복 오류
+                if (e.stepIndex == 1 &&
+                    _asyncErrorText != null) {
+                  return _asyncErrorText;
+                }
+                return null;
+              },
+            ),
         ],
       ),
     );
@@ -140,14 +188,19 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_currentStep == 1) {
       print("닉네임 중복 확인 중...");
       String nickName = _steps[1].controller.text;
-      // bool isDup = await _checkNickNameDuplicate(nickName);
+       bool isDup = await requestNickname(nickName);
 
-      // if (isDup) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text('이미 사용 중인 닉네임입니다')),
-      //   );
-      //   return;
-      // }
+      if (isDup) {
+        setState(() {
+          _asyncErrorText="이미 사용중인 닉네임 입니다";
+        });
+        _formKey.currentState!.validate();
+        return;
+      }else{
+        setState(() {
+          _asyncErrorText=null;
+        });
+      }
     }
     setState(() {
       if (_currentStep < _steps.length - 1) {

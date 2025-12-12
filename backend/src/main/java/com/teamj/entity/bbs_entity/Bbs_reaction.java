@@ -1,7 +1,7 @@
 package com.teamj.entity.bbs_entity;
 
 import com.teamj.entity.doubleKey_entity.BbsReactionId;
-import com.teamj.entity.user_entity.User;
+import com.teamj.entity.users_entity.Users;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -26,7 +26,7 @@ public class Bbs_reaction {
     @MapsId("userIdx")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_idx")
-    private User user;
+    private Users user;
 
     @MapsId("bbsIdx")
     @ManyToOne(fetch = FetchType.LAZY)

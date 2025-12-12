@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum StepType{
-  text,gender
+  text,gender,nickName
 }
 class StepItem {
   StepItem({
@@ -39,6 +39,7 @@ List<StepItem> getSignupSteps() {
       stepIndex: 1,
       focusNode: FocusNode(),
       controller: TextEditingController(),
+      type: StepType.nickName
 
     ),
     StepItem(

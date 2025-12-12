@@ -1,0 +1,30 @@
+package com.teamj.controller.myPage_control.signUp_control;
+
+import java.util.Map;
+
+import org.apache.catalina.connector.Response;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.teamj.service.myPage_service.signUp_service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor
+@RequestMapping("/api/signUp")
+public class SignUpController {
+    private final UserService userService;
+    
+    @PostMapping("/check_nickName")
+        public ResponseEntity<Boolean> checkNickname(@RequestBody Map<String,String> request){
+            String nickName = request.get("nickName");
+            System.out.println(nickName+"요청성공햇다 닉네임ㅇ들어옴");
+            boolean isDup = userService.existsByNickName(nickName);
+            return ResponseEntity.ok(isDup);
+        }
+    
+}
