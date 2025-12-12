@@ -11,8 +11,11 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  
   // 입력을 안했을때 유효성 검사를 위한 폼키
   final _formKey = GlobalKey<FormState>();
+
+  bool _showGenderError = false;
 
   String? _asyncErrorText;
 
@@ -56,13 +59,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
-
-                        SizedBox(height: 30),
-                        Text('본인인증',style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.red[200])),
-                        SizedBox(height: 10),
-                        Text('본인인증 및 회원가입을 위해 정보를 입력해주세요.',style: TextStyle(fontSize: 15, color: Colors.grey[500])),
-
+                        // 상단 본인인증 해주세요 레이블
+                        _Header(),
+                        // 하단 본인인증 항목 리스트들
                         Column(
                           children: 
                             _steps.map(
@@ -97,14 +96,10 @@ class _SignupScreenState extends State<SignupScreen> {
           // 레이블
           Text(
             e.title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.grey[500],
-            ),
-          ),
+            style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.grey[500])),
           SizedBox(height: 3),
 
+            // 성별 선택
           if (e.type == StepType.gender)
             _buildGenderSlector(e)
           else
@@ -113,10 +108,8 @@ class _SignupScreenState extends State<SignupScreen> {
               style: TextStyle(fontSize: 20),
               focusNode: e.focusNode,
               controller: e.controller,
-
-              
               readOnly: (e.type==StepType.nickName&&_currentStep>e.stepIndex),
-
+              
               decoration: _textFieldDesign(e).copyWith(
                 suffixIcon: (e.type==StepType.nickName && _currentStep>e.stepIndex)
                 ?IconButton(
@@ -125,14 +118,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       _currentStep=e.stepIndex;
                     });
                   },
-                  icon:  Icon(Icons.edit),color: Colors.grey[500],)
-                :null
+                  icon:  Icon(Icons.edit),color: Colors.grey[500])
+                :null,
               ),
 
               // 사용자가 공백을 남겨뒀을시 재입력하면 에러 삭제
               autovalidateMode:AutovalidateMode.onUserInteraction,
 
-              // 닉네임 재입력시 오류메시지 사라짐
+              // 닉네임 재입력시 오류메시지 사라지게
               onChanged: (value) {
                 if (_asyncErrorText != null) {
                   setState(() {
@@ -142,12 +135,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 }
               },
 
+                // 공백 유효성 검사
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '${e.title}을 입력해주세요';
                 }
+
                 // 닉네임 중복 오류
-                if (e.stepIndex == 1 &&
+                if (e.type==StepType.nickName &&
                     _asyncErrorText != null) {
                   return _asyncErrorText;
                 }
@@ -169,6 +164,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: wazzupButton, 
+              shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10))
             ),
             onPressed: _nextStep,
             child: _currentStep==_steps.length-1?Text('본인인증'):Text('다음')
@@ -180,19 +176,37 @@ class _SignupScreenState extends State<SignupScreen> {
 
   // 다음 버튼을 누르면 다음 스텝이 나오도록 그리고 그 다음 스텝 아이템에 FOCUS
   void _nextStep() async {
+       final currentItem=_steps[_currentStep];
 
     // 유효성 검사
+    // validation 이 false면 다음 스텝 안나오도록
     if (!_formKey.currentState!.validate()) return;
 
+    // 성별 체크 유효성 검사
+    if(currentItem.type == StepType.gender){
+      // 체크 안했다면
+      if(currentItem.controller.text.isEmpty){
+        setState(() {
+          _showGenderError=true;
+        });
+        return;
+        // 체크 했다면
+      }else{
+        setState(() {
+          _showGenderError=false;
+        });
+      }
+    }
 
-    if (_currentStep == 1) {
+    // 닉네임 중복체크 비동기 통신
+    if (currentItem.type == StepType.nickName) {
       print("닉네임 중복 확인 중...");
-      String nickName = _steps[1].controller.text;
+      String nickName = currentItem.controller.text;
        bool isDup = await requestNickname(nickName);
 
       if (isDup) {
         setState(() {
-          _asyncErrorText="이미 사용중인 닉네임 입니다";
+          _asyncErrorText = "이미 사용중인 닉네임 입니다";
         });
         _formKey.currentState!.validate();
         return;
@@ -210,6 +224,7 @@ class _SignupScreenState extends State<SignupScreen> {
         // 여기서 본인인증 로직 실행
       }
     });
+
     // 화면이 전부 바뀐뒤에 텍스트 필드에 포커스 해주는 액션
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(
@@ -220,22 +235,41 @@ class _SignupScreenState extends State<SignupScreen> {
 
   // 성별 선택 위젯
   Widget _buildGenderSlector(StepItem item) {
-    return Container(
-      child: RadioGroup<String>(
-        groupValue: item.controller.text, 
-        onChanged: (String? value) {
-          setState(() {
-            item.controller.text = value!;
-          });
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildRadioOption(item, title: '여성', value: '0'),
-            _buildRadioOption(item, title: '남성', value: '1'),
-          ],
+    return Column(
+      children: [
+        Container(
+          child: RadioGroup<String>(
+            groupValue: item.controller.text, 
+            onChanged: (String? value) {
+              setState(() {
+                item.controller.text = value!;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildRadioOption(item, title: '여성', value: '0'),
+                _buildRadioOption(item, title: '남성', value: '1'),
+              ],
+            ),
+          ),
         ),
-      ),
+        if(_showGenderError && item.controller.text.isEmpty)
+        Text("성별을 선택해 주세요",style: TextStyle(color: Colors.red,fontSize: 12)),
+        if (item.controller.text.isNotEmpty)
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              "거짓 성별 선택 시 wazzup이용이 제한됩니다.\n 추후 변경 불가능.", 
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[500], // 글자색도 붉은 계열로
+                fontSize: 13,
+                fontWeight: FontWeight.bold, // 중요하니까 굵게
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -303,6 +337,31 @@ class _SignupScreenState extends State<SignupScreen> {
         borderRadius: BorderRadius.circular(10), 
       ),
       ),
+    );
+  }
+
+  Widget _Header() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 30),
+        Text(
+          '본인인증',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Colors.red[200],
+          ),
+        ),
+        SizedBox(height: 10),
+        Text(
+          '본인인증 및 회원가입을 위해 정보를 입력해주세요.',
+          style: TextStyle(
+            fontSize: 15,
+            color: Colors.grey[500],
+          ),
+        ),
+      ],
     );
   }
 

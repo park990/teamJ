@@ -3,8 +3,8 @@ import "dart:convert";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:http/http.dart" as http;
 
+// 낙네임 체크
 Future<bool> requestNickname(String nickName) async {
-  
 
   String baseUrl = "${dotenv.env["API_URL"]}/api/signUp/check_nickName";
 
