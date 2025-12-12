@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
-import 'package:front/screen/myPage_screen/login/buildsocial_login_buttons.dart';
+import 'package:front/screen/myPage_screen/login/build_social_login_buttons.dart';
 
 class LoginBottomSheet extends StatelessWidget {
   const LoginBottomSheet({super.key});
@@ -33,7 +33,7 @@ class LoginBottomSheet extends StatelessWidget {
             SizedBox(height: 8),
 
             // 로그인 버튼들
-            _SocialLoginButtons(),
+            _SocialLoginButtons(context),
           ],
         ),
       ),
@@ -73,21 +73,28 @@ class LoginBottomSheet extends StatelessWidget {
   }
 
   // 바텀 sheet 로그인 buttons
-  Widget _SocialLoginButtons() {
+  Widget _SocialLoginButtons(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BuildsocialLoginButtons(
+        BuildSocialLoginButtons(
           onPressed: () async{
             print('카카오클릭');
             String? token = await WithKakao().login();
             print('토토토토크크큰${token}');
+            if(token!=null){
+              if(context.mounted){
+                Navigator.of(context).pop(
+                  token
+                );
+              }
+            }
           },
           text: '카카오 로그인',
           backColor: Color(0xFFFEE500),
           textColor: Colors.black,
         ),
-        BuildsocialLoginButtons(
+        BuildSocialLoginButtons(
           onPressed: () {
             print('네이버 클릭');
           },
@@ -95,7 +102,7 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Color(0xFF03C75A),
           textColor: Colors.white,
         ),
-        BuildsocialLoginButtons(
+        BuildSocialLoginButtons(
           onPressed: () {
             print('애플 클릭');
           },
@@ -103,7 +110,7 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Colors.black,
           textColor: Colors.white,
         ),
-        BuildsocialLoginButtons(
+        BuildSocialLoginButtons(
           onPressed: () {
             print('구글 클릭');
           },
