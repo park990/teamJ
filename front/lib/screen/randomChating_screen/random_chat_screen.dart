@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:front/var/chat_test.dart';
 import 'package:image_picker/image_picker.dart';
 
-class RandomchatMain extends StatefulWidget {
-  const RandomchatMain({super.key});
+class RandomChatScreen extends StatefulWidget {
+  const RandomChatScreen({super.key});
 
   @override
-  State<RandomchatMain> createState() => _RandomchatMainState();
+  State<RandomChatScreen> createState() => _RandomChatScreenState();
 }
 
-class _RandomchatMainState extends State<RandomchatMain> {
+class _RandomChatScreenState extends State<RandomChatScreen> {
   XFile? file;
   final TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -22,6 +22,34 @@ class _RandomchatMainState extends State<RandomchatMain> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Chat opponent = CHATS.where((element) => element.isOpponent).first;
+    Chat me = CHATS.where((element) => !element.isOpponent).first;
+
+    return Scaffold(
+      // body: Center(
+      //   child: Text('이곳은 랜덤채팅을 위한 공간임 잘꾸며봐라 여기서 제일 중요한 것은 나중에 채팅LLM이 상대방과의 채팅을 Assist를 해주는거 그 기능이 완벽하게 구현이 될 수있어야함'),
+      // ),
+      body: Column(
+        children: [
+          chatComponent(scrollController: scrollController, chats: CHATS),
+
+          chatInputComponent(
+            textController: textController,
+            sendMessage: _sendMessage,
+            scrollToBottom: _scrollToBottom,
+            pickImage: _pickImage,
+          ),
+        ],
+      ),
+      appBar: AppBar(
+        title: Text(opponent.name),
+        actions: [OutlinedButton(onPressed: () {}, child: Text('새로운 채팅'))],
+      ),
+    );
   }
 
   void _pickImage() async {
@@ -56,34 +84,7 @@ class _RandomchatMainState extends State<RandomchatMain> {
       textController.clear();
     });
   }
-
-  @override
-  Widget build(BuildContext context) {
-    Chat opponent = CHATS.where((element) => element.isOpponent).first;
-    Chat me = CHATS.where((element) => !element.isOpponent).first;
-
-    return Scaffold(
-      // body: Center(
-      //   child: Text('이곳은 랜덤채팅을 위한 공간임 잘꾸며봐라 여기서 제일 중요한 것은 나중에 채팅LLM이 상대방과의 채팅을 Assist를 해주는거 그 기능이 완벽하게 구현이 될 수있어야함'),
-      // ),
-      body: Column(
-        children: [
-          chatComponent(scrollController: scrollController, chats: CHATS),
-
-          chatInputComponent(
-            textController: textController,
-            sendMessage: _sendMessage,
-            scrollToBottom: _scrollToBottom,
-            pickImage: _pickImage,
-          ),
-        ],
-      ),
-      appBar: AppBar(
-        title: Text(opponent.name),
-        actions: [OutlinedButton(onPressed: () {}, child: Text('새로운 채팅'))],
-      ),
-    );
-  }
+  
 }
 
 class chatInputComponent extends StatelessWidget {

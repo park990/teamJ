@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:front/screen/friend_screen/friend_main.dart';
 import 'package:front/screen/gathering_screen/gathering_main.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
-import 'package:front/screen/randomChating_screen/randomChat_main.dart';
+import 'package:front/screen/randomChating_screen/random_chat_main.dart';
 import 'package:front/screen/wazzup_screen/wazzup_main.dart';
 
 class TabInfo{
@@ -26,7 +26,7 @@ const TABS =[
   TabInfo(
     icon: Icons.question_answer_outlined,
     label: '랜덤채팅',
-    screen: RandomchatMain(),
+    screen: RandomChatMain(),
   ),
   TabInfo(
     icon: Icons.home_max_outlined,
