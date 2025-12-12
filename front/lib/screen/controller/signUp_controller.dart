@@ -1,20 +1,12 @@
 import "dart:convert";
-import "dart:io";
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:http/http.dart" as http;
 
 Future<bool> requestNickname(String nickName) async {
-  String server;
-
-  if(Platform.isAndroid){
-    server="http://10.0.2.2:8080";
-  }else{
-    server = dotenv.env["API_URL"] ?? "http://127.0.0.1:8080";
-  }
   
 
-  String baseUrl = "${server}/api/signUp/check_nickName";
+  String baseUrl = "${dotenv.env["API_URL"]}/api/signUp/check_nickName";
 
   try {
     final response = await http.post(

@@ -22,7 +22,7 @@ public class SignUpController {
     @PostMapping("/check_nickName")
         public ResponseEntity<Boolean> checkNickname(@RequestBody Map<String,String> request){
             String nickName = request.get("nickName");
-            System.out.println(nickName+"요청성공햇다 닉네임ㅇ들어옴");
+            System.out.println("닉네임 중복을 위한 "+ nickName);
             boolean isDup = userService.existsByNickName(nickName);
             return ResponseEntity.ok(isDup);
         }
