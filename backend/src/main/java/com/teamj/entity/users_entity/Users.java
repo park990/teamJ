@@ -1,4 +1,4 @@
-package com.teamj.entity.user_entity;
+package com.teamj.entity.users_entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name="User")
-public class User {
+@Table(name="users")
+public class Users {
     // Gender Enum 값 정의 해준거임.
     public enum Gender{
         MALE, FEMALE
@@ -23,35 +23,35 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userIdx;
+    private Long usersIdx;
     
     @Column(nullable = false)
     private String grade;
     
     @Column
-    private String userEmail;
+    private String usersEmail;
     
     @Column
-    private String userPwd;
+    private String usersPwd;
     
     @Column
-    private String userName;
+    private String usersName;
     
     @Column
-    private String userNickName;
+    private String usersNickName;
     
     @Column
     @Enumerated(EnumType.STRING)
-    private Gender userGender;
+    private Gender usersGender;
     
     @Column
-    private String userAddress;
+    private String usersAddress;
     
     @Column
-    private String userPhone;
+    private String usersPhone;
     
     @Column
-    private int userExit;
+    private int usersExit;
     
     @Column
     private int isBanned;

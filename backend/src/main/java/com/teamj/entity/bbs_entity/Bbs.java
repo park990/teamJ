@@ -2,7 +2,7 @@ package com.teamj.entity.bbs_entity;
 
 import java.time.LocalDateTime;
 
-import com.teamj.entity.user_entity.User;
+import com.teamj.entity.users_entity.Users;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,7 +31,7 @@ public class Bbs {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_idx")
-    private User user;
+    private Users user;
 
     @Column(nullable = false)
     private String title;
