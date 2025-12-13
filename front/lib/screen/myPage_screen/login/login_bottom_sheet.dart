@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
 import 'package:front/screen/myPage_screen/login/build_social_login_buttons.dart';
+import 'package:front/screen/myPage_screen/login/services/with_naver.dart';
 
 class LoginBottomSheet extends StatelessWidget {
   const LoginBottomSheet({super.key});
@@ -95,8 +96,9 @@ class LoginBottomSheet extends StatelessWidget {
         ),
 
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async {
             print('네이버 클릭');
+            // String? token = await WithNaver().login();
           },
           text: '네이버 로그인',
           backColor: Color(0xFF03C75A),
@@ -104,8 +106,10 @@ class LoginBottomSheet extends StatelessWidget {
         ),
 
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async{
             print('애플 클릭');
+            // String? token = await WithApple().login();
+
           },
           text: '애플 로그인',
           backColor: Colors.black,
@@ -113,8 +117,9 @@ class LoginBottomSheet extends StatelessWidget {
         ),
         
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async{
             print('구글 클릭');
+            // String? token = await WithGoogle().login();
           },
           text: '구글 로그인',
           backColor: Colors.grey[300]!,
