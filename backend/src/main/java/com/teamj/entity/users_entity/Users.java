@@ -36,7 +36,7 @@ public class Users {
     @Column(nullable = false)
     private String grade;
     
-    @Column(nullable = false)
+    @Column
     private String usersSnsId;
     
     @Column
