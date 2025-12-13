@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 enum StepType{
-  text,gender,nickName
+  name,      // 이름
+  nickName,  // 닉네임
+  birth,     // 생년월일
+  phone,     // 휴대폰
+  gender,     // 성별
+  text
 }
 class StepItem {
   StepItem({
@@ -32,6 +37,7 @@ List<StepItem> getSignupSteps() {
       stepIndex: 0,
       focusNode: FocusNode(),
       controller: TextEditingController(),
+      type: StepType.name
     ),
     StepItem(
       title: "닉네임",
@@ -48,6 +54,7 @@ List<StepItem> getSignupSteps() {
       stepIndex: 2,
       focusNode: FocusNode(),
       controller: TextEditingController(),
+      type: StepType.birth
     ),
     StepItem(
       title: "휴대폰 번호",
@@ -55,6 +62,7 @@ List<StepItem> getSignupSteps() {
       stepIndex: 3,
       focusNode: FocusNode(),
       controller: TextEditingController(),
+      type: StepType.phone
     ),
     StepItem(
       title: "성별",

@@ -8,13 +8,21 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
-@Table(name="users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(
+        name = "sns_oauth_unique", // 제약조건 이름 (아무거나)
+        columnNames = {"platform", "usersSnsId"}
+    )
+})
 public class Users {
     // Gender Enum 값 정의 해준거임.
     public enum Gender{
@@ -28,8 +36,8 @@ public class Users {
     @Column(nullable = false)
     private String grade;
     
-    @Column
-    private String usersEmail;
+    @Column(nullable = false)
+    private String usersSnsId;
     
     @Column
     private String usersPwd;
@@ -37,7 +45,7 @@ public class Users {
     @Column
     private String usersName;
     
-    @Column
+    @Column(unique = true, nullable = false)
     private String usersNickName;
     
     @Column

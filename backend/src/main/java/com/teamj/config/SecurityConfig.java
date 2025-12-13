@@ -3,9 +3,11 @@ package com.teamj.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -15,7 +17,10 @@ public class SecurityConfig {
             
             // 2. 주소별 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/signUp/**").permitAll() 
+                .requestMatchers(
+                    "/api/signUp/**",
+                    "/api/oauth/**"
+                ).permitAll() 
                 
                 // 나머지는 다 로그인해야 들어올 수 있다
                 .anyRequest().authenticated()

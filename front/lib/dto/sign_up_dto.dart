@@ -4,7 +4,7 @@ class SignUpDTO {
   final String? phoneNumber;
   final String? birthDate;
   final String? gender;
-  final String platform; // 기본값 "APP"
+  final String? platform; 
   final String? ci;
 
   SignUpDTO({
@@ -13,7 +13,7 @@ class SignUpDTO {
     this.phoneNumber,
     this.birthDate,
     this.gender,
-    this.platform = "APP", // 기본값 설정
+    this.platform, // 기본값 설정
     this.ci,
   });
 
