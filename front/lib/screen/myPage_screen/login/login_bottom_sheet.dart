@@ -81,11 +81,10 @@ class LoginBottomSheet extends StatelessWidget {
           onPressed: () async{
             print('카카오클릭');
             String? token = await WithKakao().login();
-            print('토토토토크크큰${token}');
             if(token!=null){
               if(context.mounted){
                 Navigator.of(context).pop(
-                  token
+                  {'token': token, 'platform': 'KAKAO'}
                 );
               }
             }
@@ -94,6 +93,7 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Color(0xFFFEE500),
           textColor: Colors.black,
         ),
+
         BuildSocialLoginButtons(
           onPressed: () {
             print('네이버 클릭');
@@ -102,6 +102,7 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Color(0xFF03C75A),
           textColor: Colors.white,
         ),
+
         BuildSocialLoginButtons(
           onPressed: () {
             print('애플 클릭');
@@ -110,6 +111,7 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Colors.black,
           textColor: Colors.white,
         ),
+        
         BuildSocialLoginButtons(
           onPressed: () {
             print('구글 클릭');
