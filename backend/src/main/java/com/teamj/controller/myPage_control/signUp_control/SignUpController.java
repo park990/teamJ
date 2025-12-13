@@ -2,7 +2,6 @@ package com.teamj.controller.myPage_control.signUp_control;
 
 import java.util.Map;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;

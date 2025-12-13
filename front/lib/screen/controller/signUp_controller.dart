@@ -3,14 +3,21 @@ import "dart:convert";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:http/http.dart" as http;
 
-// 낙네임 체크
+
+
+
+
+
+
+
+// 낙네임 중복 체크
 Future<bool> requestNickname(String nickName) async {
 
   String baseUrl = "${dotenv.env["API_URL"]}/api/signUp/check_nickName";
-
+        String andUrl = "http://10.0.2.2:8080/api/signUp/check_nickName";
   try {
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(andUrl),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
