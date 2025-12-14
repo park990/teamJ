@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:front/dto/token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
 import 'package:front/screen/myPage_screen/login/build_social_login_buttons.dart';
-import 'package:front/screen/myPage_screen/login/services/with_naver.dart';
 
 class LoginBottomSheet extends StatelessWidget {
   const LoginBottomSheet({super.key});
@@ -81,11 +81,11 @@ class LoginBottomSheet extends StatelessWidget {
         BuildSocialLoginButtons(
           onPressed: () async{
             print('카카오클릭');
-            String? token = await WithKakao().login();
-            if(token!=null){
+            String? socialToken = await WithKakao().login();
+            if(socialToken!=null){
               if(context.mounted){
                 Navigator.of(context).pop(
-                  {'token': token, 'platform': 'KAKAO'}
+                  TokenAndProviderDto(provider: "KAKAO", socialToken: socialToken)
                 );
               }
             }

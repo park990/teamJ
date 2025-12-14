@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:front/dto/sign_up_dto.dart';
+import 'package:front/dto/social_user_dto.dart';
 import 'package:front/controller/signUp_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
@@ -391,12 +391,12 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     }
 
-    SignUpDTO newMember = SignUpDTO(
-      name: inputName,
-      nickname: inputNickName,
-      phoneNumber: inputPhone,
+    SocialUserDto newMember = SocialUserDto(
+      usersName: inputName,
+      usersNickName: inputNickName,
+      usersPhone: inputPhone,
       birthDate: inputBirth,
-      gender: inputGender,
+      usersGender: inputGender,
     );
 
     bool isSuccess = await _signupController.requestSignUp(newMember);

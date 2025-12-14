@@ -12,5 +12,5 @@ public interface UserRepository extends JpaRepository<Users,Long>{
     boolean existsByUsersNickName(String nickName);
 
     // 현 플랫폼으로 가입을 한 기록이 있는지
-    Users findByPlatformAndUsersSnsId(String platform, String SnsId);
+    Users findByProviderAndUsersSnsId(String provider, String SnsId);
 }

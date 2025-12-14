@@ -1,7 +1,7 @@
 import "dart:convert";
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
-import "package:front/dto/sign_up_dto.dart";
+import "package:front/dto/social_user_dto.dart";
 import "package:http/http.dart" as http;
 
 class SignupController {
@@ -23,9 +23,7 @@ class SignupController {
       if (response.statusCode == 200) {
         
         // 한글 깨짐 방지를 위해 utf8.decode 사용
-        final jsonResponse = jsonDecode(
-          utf8.decode(response.bodyBytes),
-        );
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
 
         bool isDup = jsonResponse['data'];
         String message = jsonResponse['message'];
@@ -50,27 +48,21 @@ class SignupController {
   }
 
   // 회원가입 요청
-  Future<bool> requestSignUp(SignUpDTO signUpDto) async {
+  Future<bool> requestSignUp(SocialUserDto signUpDto) async {
     try {
       final response = await http.post(
         Uri.parse('${andUrl}/api/signUp/submit'),
         headers: _headers,
         body: jsonEncode(signUpDto.toJson()),
       );
-      if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
-
-        if(jsonResponse['result']=='success'){
-        print('회원가입 성공: ${jsonResponse['message']}');
+      if (response.statusCode == 200) {
+        print('회원가입 성공: ${jsonResponse['message']}'); 
         return true;
-      } else {
-        print('회원가입 실패: ${jsonResponse['message']}');
-        return false;
-      }
+      
       // 이 아래는 정확히 왜 해야하는지 모르겟음 일단 적어두지만 나중에 다시 체크 필요
       }else if (response.statusCode == 409) {
         // 중복 등으로 인한 에러 (409 Conflict)
-        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         print('회원가입 실패(중복): ${jsonResponse['message']}');
         return false;
       } else {
@@ -78,7 +70,7 @@ class SignupController {
         return false;
       }
     } catch (e) {
-      print('회원가입 연결 실패: ${e}');
+      print('회원가입 연결 실패: ${e} nullable false에 값은 넣었는지??');
       return false;
     }
   }

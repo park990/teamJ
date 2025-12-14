@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class OAuthDTO {
     
-    private String token;
+    private String socialToken;
+    private String provider;
 }

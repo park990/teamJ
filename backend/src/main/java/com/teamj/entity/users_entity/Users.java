@@ -1,5 +1,7 @@
 package com.teamj.entity.users_entity;
 
+import java.sql.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,7 +22,7 @@ import lombok.Setter;
 @Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(
         name = "sns_oauth_unique", // 제약조건 이름 (아무거나)
-        columnNames = {"platform", "usersSnsId"}
+        columnNames = {"provider", "usersSnsId"}
     )
 })
 public class Users {
@@ -41,6 +43,9 @@ public class Users {
     
     @Column
     private String usersPwd;
+    
+    @Column
+    private Date birthDate;
     
     @Column
     private String usersName;
@@ -65,6 +70,9 @@ public class Users {
     private int isBanned;
     
     @Column
-    private String platform;
+    private String provider;
+
+    @Column
+    private String usersEmail;
     
 }

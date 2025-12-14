@@ -3,14 +3,14 @@ package com.teamj.controller.myPage_control.signUp_control;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.teamj.dto.SignUpDTO;
+import com.teamj.dto.SocialUserDTO;
 import com.teamj.response.ApiResponse;
 import com.teamj.service.myPage_service.signUp_service.UserService;
 
@@ -39,9 +39,9 @@ public class SignUpController {
 
     // 회원 가입 DB 등록
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<Boolean>> submitSignUp(@RequestBody SignUpDTO signUpDTO) {
-        System.out.println("받은 데이터" + signUpDTO);
-        boolean isSuccess = userService.registerUser(signUpDTO);
+    public ResponseEntity<ApiResponse<Boolean>> submitSignUp(@RequestBody SocialUserDTO SocialUserDTO) {
+        System.out.println("받은 데이터" + SocialUserDTO);
+        boolean isSuccess = userService.registerUser(SocialUserDTO);
         if (isSuccess) {
             // 성공
             return ResponseEntity.ok(ApiResponse.success(true, "회원가입이 완료."));
@@ -49,7 +49,7 @@ public class SignUpController {
             // 실패
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("이미 가입된 닉네임 존재."));
+                    .body(ApiResponse.error("이미 가입된 닉네임 존재"));
         }
     }
 
