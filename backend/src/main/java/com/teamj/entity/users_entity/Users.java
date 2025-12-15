@@ -22,7 +22,7 @@ import lombok.Setter;
 @Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(
         name = "sns_oauth_unique", // 제약조건 이름 (아무거나)
-        columnNames = {"provider", "usersSnsId"}
+        columnNames = {"provider", "usersEmail"}
     )
 })
 public class Users {

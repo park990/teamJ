@@ -39,18 +39,10 @@ public class SignUpController {
 
     // 회원 가입 DB 등록
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<Boolean>> submitSignUp(@RequestBody SocialUserDTO SocialUserDTO) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> submitSignUp(@RequestBody SocialUserDTO SocialUserDTO) {
         System.out.println("받은 데이터" + SocialUserDTO);
-        boolean isSuccess = userService.registerUser(SocialUserDTO);
-        if (isSuccess) {
-            // 성공
-            return ResponseEntity.ok(ApiResponse.success(true, "회원가입이 완료."));
-        } else {
-            // 실패
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("이미 가입된 닉네임 존재"));
-        }
+
+         return userService.registerUser(SocialUserDTO);
     }
 
 }
