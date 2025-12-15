@@ -70,7 +70,7 @@ class SignupController {
         return false;
       }
     } catch (e) {
-      print('회원가입 연결 실패: ${e} nullable false에 값은 넣었는지??');
+      print('회원가입 연결 실패: ${e} nullable false에 값을 넣었는지??');
       return false;
     }
   }

@@ -40,6 +40,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   kakao_flutter_sdk_user: ^1.10.0
   flutter_dotenv: ^6.0.0
+  google_fonts: ^6.3.3
 
 dev_dependencies:
   flutter_test:

@@ -12,9 +12,8 @@ public class SocialUserDTO {
     private Long usersIdx;
     private String grade;
     private String usersSnsId;
-    private String usersPwd;
     private String usersName;
-    private String usersNickName;
+    private String usersNickname;
     private String usersGender;
     private String usersAddress;
     private String usersPhone;

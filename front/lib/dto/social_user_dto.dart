@@ -1,6 +1,6 @@
 class SocialUserDto {
   final String? usersName;
-  final String? usersNickName;
+  final String? usersNickname;
   final String? usersPhone;
   final String? birthDate;
   final String? usersGender;
@@ -13,7 +13,7 @@ class SocialUserDto {
 
   SocialUserDto({
     this.usersName,
-    this.usersNickName,
+    this.usersNickname,
     this.usersPhone,
     this.birthDate,
     this.usersGender,
@@ -28,7 +28,7 @@ class SocialUserDto {
   Map<String, dynamic> toJson() {
     return {
       'usersName': usersName,
-      'usersNickName': usersNickName,
+      'usersNickname': usersNickname,
       'phoneNumber': usersPhone,
       'birthDate': birthDate,
       'usersGender': usersGender,
@@ -44,7 +44,7 @@ class SocialUserDto {
   factory SocialUserDto.fromJson(Map<String, dynamic> json) {
     return SocialUserDto(
       usersName: json['usersName'],
-      usersNickName: json['usersNickName'],
+      usersNickname: json['usersNickname'],
       usersPhone: json['usersPhone'],
       birthDate: json['birthDate'],
       usersGender: json['usersGender'],
