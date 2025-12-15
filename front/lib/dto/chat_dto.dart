@@ -3,30 +3,39 @@ import 'package:image_picker/image_picker.dart';
 /////////////////////////
 
 class ChatDto {
-  final String chat_idx;
-  final String room_idx;
-  final String users_idx;
+  final String chatIdx;
+  final String roomIdx;
+  final String usersIdx;
+  final String nickname;
   final String content;
+  final String imageUrl;
+  final String type;
   final DateTime createdAt;
   final String profileImageUrl;
 
   ChatDto({
-    required this.chat_idx,
-    required this.room_idx,
-    required this.users_idx,
+    required this.chatIdx,
+    required this.roomIdx,
+    required this.usersIdx,
+    required this.nickname,
     required this.content,
+    required this.imageUrl,
+    required this.type,
     required this.createdAt,
     required this.profileImageUrl,
   });
 
   factory ChatDto.fromJson(Map<String, dynamic> json) {
     return ChatDto(
-      chat_idx: json['chat_idx'],
-      room_idx: json['room_idx'],
-      users_idx: json['users_idx'],
-      content: json['content']['text'],
+      chatIdx: json['chat_idx'],
+      roomIdx: json['room_idx'],
+      usersIdx: json['users_idx'],
+      nickname: json['nickname'],
+      content: json['content'],
+      type: json['type'],
+      imageUrl: json['image_url'],
       createdAt: DateTime.parse(json['created_at']),
-      profileImageUrl: json['users']['profile_image_url'],
+      profileImageUrl: json['profile_image_url'],
     );
   }
 }

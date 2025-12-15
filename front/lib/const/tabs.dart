@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:front/screen/friend_screen/friend_main.dart';
 import 'package:front/screen/gathering_screen/gathering_main.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
-import 'package:front/screen/randomChating_screen/random_chat_main.dart';
+import 'package:front/screen/random_chat_screen/random_chat_main.dart';
 import 'package:front/screen/wazzup_screen/wazzup_main.dart';
 
 class TabInfo{
