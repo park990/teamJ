@@ -4,6 +4,7 @@ import 'package:front/dto/token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/services/OAuth_service.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
+import 'package:front/service/wazzup_token_storage.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class MypageMain extends StatefulWidget {
@@ -16,6 +17,25 @@ class MypageMain extends StatefulWidget {
 class _MypageMainState extends State<MypageMain> {
   bool _isLoggeIn = false;
   String? wazzupToken;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 자동 로그인
+    _checkAutoLogin();
+  }
+  void _checkAutoLogin() async {
+    final storage = new WazzupTokenStorage();
+    String? storedToken = await storage.getToken();
+    if(storedToken!=null){
+      print('자동로그인 됐음');
+      setState(() {
+        wazzupToken = storedToken;
+        _isLoggeIn = true;
+      });
+    }
+  }
   
 
   @override
@@ -74,15 +94,22 @@ class _MypageMainState extends State<MypageMain> {
         ElevatedButton(
           onPressed: () async {
             try {
-              // 이 함수가 앱에 저장된 토큰을 싹 지워줍니다.
+
+              // 소셜 로그아웃
               await UserApi.instance.logout();
               print('로그아웃 성공! 기존 토큰 삭제됨.');
+              
               setState(() {
                 _isLoggeIn=false;
               });
             } catch (error) {
               print('로그아웃 실패: $error');
             }
+
+            // 스토리지에 저장된 토큰도 삭제해 줘야함
+            final storage = WazzupTokenStorage();
+            await storage.deleteToken();
+            print('내부에 저장된 토큰 삭제 완료');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red[300],
@@ -137,9 +164,11 @@ class _MypageMainState extends State<MypageMain> {
 
           if (resultFromSignUp != null) {
             String newToken = resultFromSignUp['wazzupToken'];
-            // // 1. 토큰 저장을 위한 스토리지
-            // final storage = new FlutterSecureStorage();
-            // await storage.write(key: 'wazzupToken', value: newToken);
+
+            // 토큰 저장을 위한 스토리지
+            final storage = new WazzupTokenStorage();
+            await storage.saveToken(newToken);
+
             print('마이페이지까지 토큰 잘 받아옴 ${newToken}');
             setState(() {
               wazzupToken = newToken;
@@ -148,9 +177,10 @@ class _MypageMainState extends State<MypageMain> {
           }
         } else if (serverResult == 'success') {
           String newToken = responseData['data']['wazzupToken'];
-          // // 1. 토큰 저장을 위한 스토리지
-            // final storage = new FlutterSecureStorage();
-            // await storage.write(key: 'wazzupToken', value: newToken);
+
+            // 토큰 저장을 위한 스토리지
+            final storage = new WazzupTokenStorage();
+            await storage.saveToken(newToken);
           print(
             '기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${newToken} 이 토큰은 스토리지에 저장해두고 관리해야함.',
           );
