@@ -393,7 +393,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     SocialUserDto newMember = SocialUserDto(
       usersName: inputName,
-      usersNickName: inputNickName,
+      usersNickname: inputNickName,
       usersPhone: inputPhone,
       birthDate: inputBirth,
       usersGender: inputGender,
