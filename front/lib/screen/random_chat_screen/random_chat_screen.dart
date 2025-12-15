@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:front/var/chat_test.dart';
+import 'package:front/dto/chat_dto.dart';
 import 'package:image_picker/image_picker.dart';
 
 class RandomChatScreen extends StatefulWidget {
