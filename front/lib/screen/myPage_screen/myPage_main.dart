@@ -34,7 +34,7 @@ class _MypageMainState extends State<MypageMain> {
     return Column(
       children: [
         Text('로그인이 필요합니다'),
-
+        
         // 로그인 하기 버튼
         ElevatedButton(
           onPressed: () {
@@ -45,21 +45,8 @@ class _MypageMainState extends State<MypageMain> {
           ),
           child: Text('로그인하기'),
         ),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              // 이 함수가 앱에 저장된 토큰을 싹 지워줍니다.
-              await UserApi.instance.logout();
-              print('로그아웃 성공! 기존 토큰 삭제됨.');
-            } catch (error) {
-              print('로그아웃 실패: $error');
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[300],
-          ),
-          child: Text('로그아웃하기'),
-        ),
+
+        
 
         // 회원가입 하는 곳 버튼
         // ElevatedButton(
@@ -80,7 +67,30 @@ class _MypageMainState extends State<MypageMain> {
   // 로그인이 되어있을 때
   Widget _buildMyInfoScreen() {
     
-    return Container(child: Text('로그인 되어있슴'));
+    return Column(
+      children: [
+        Container(child: Text('로그인 되어있슴')),
+        if(_isLoggeIn)
+        ElevatedButton(
+          onPressed: () async {
+            try {
+              // 이 함수가 앱에 저장된 토큰을 싹 지워줍니다.
+              await UserApi.instance.logout();
+              print('로그아웃 성공! 기존 토큰 삭제됨.');
+              setState(() {
+                _isLoggeIn=false;
+              });
+            } catch (error) {
+              print('로그아웃 실패: $error');
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[300],
+          ),
+          child: Text('로그아웃하기'),
+        ),
+      ],
+    );
   }
 
   // sns 로그인을 위한 바텀 컨테이너들 sheet 보여주기
