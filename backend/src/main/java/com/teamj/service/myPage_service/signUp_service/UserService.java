@@ -1,6 +1,5 @@
 package com.teamj.service.myPage_service.signUp_service;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,19 +17,19 @@ public class UserService {
 
     // 회원가입 닉네임 중복 체크
     public Boolean existsByNickName(String nickName) {
-        return userRepository.existsByUsersNickName(nickName);
+        return userRepository.existsByUsersNickname(nickName);
     }
 
     // 회원가입 db 저장
     @Transactional
     public boolean registerUser(SocialUserDTO dto) {
 
-        if (userRepository.existsByUsersNickName(dto.getUsersNickName())) {
+        if (userRepository.existsByUsersNickname(dto.getUsersNickname())) {
             return false; // "응, 중복
         }
         Users user = new Users();
         user.setUsersName(dto.getUsersName());
-        user.setUsersNickName(dto.getUsersNickName());
+        user.setUsersNickname(dto.getUsersNickname());
         user.setUsersPhone(dto.getUsersPhone());
         // user.setUserbirth(dto.getBirthDate());
         if ("0".equals(dto.getUsersGender())) {

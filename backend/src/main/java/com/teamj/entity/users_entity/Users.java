@@ -42,16 +42,14 @@ public class Users {
     private String usersSnsId;
     
     @Column
-    private String usersPwd;
-    
-    @Column
     private Date birthDate;
     
     @Column
     private String usersName;
     
     @Column(unique = true, nullable = false)
-    private String usersNickName;
+    private String usersNickname;
+
     
     @Column
     @Enumerated(EnumType.STRING)
