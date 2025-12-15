@@ -1,15 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:front/screen/nav_bar_screen/upper_app_bar.dart';
 
-class GatheringMain extends StatelessWidget {
+class GatheringMain extends StatefulWidget {
   const GatheringMain({super.key});
 
   @override
+  State<GatheringMain> createState() => _GatheringMainState();
+}
+
+class _GatheringMainState extends State<GatheringMain> 
+  with TickerProviderStateMixin {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text(
-          '여기는 모임공간임 모임이 어디서 열리는지 혹은 그 모임의 인원수나 좋아요 갯수 등등 들어가야 함'
-        ),
+      body: Column(
+        children: [
+          TabBar(
+            controller: TabController(
+              length: 4,
+              vsync: this,
+            ),
+            tabs: [
+              Tab(text: '홈'),
+              Tab(text: '🔥추천'),
+              Tab(text: '🔍탐색'),
+              Tab(text: '👥내 모임'),
+              Tab(text: '공지/이벤트',)
+            ],
+          ),
+        ],
       ),
     );
   }
