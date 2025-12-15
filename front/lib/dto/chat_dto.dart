@@ -1,37 +1,19 @@
 import 'package:image_picker/image_picker.dart';
 
-class ChatUiModel {
-  final String message;
-  final String timeText;   // 이미 포맷된 시간
-  final bool isMe;
-  final String? avatarUrl;
-  final XFile? image;
-
-  ChatUiModel({
-    required this.message,
-    required this.timeText,
-    required this.isMe,
-    this.avatarUrl,
-    this.image,
-  });
-}
-
 /////////////////////////
 
 class ChatDto {
-  final String id;
-  final String roomId;
-  final String senderId;
-  final String senderName;
+  final String chat_idx;
+  final String room_idx;
+  final String users_idx;
   final String content;
   final DateTime createdAt;
   final String profileImageUrl;
 
   ChatDto({
-    required this.id,
-    required this.roomId,
-    required this.senderId,
-    required this.senderName,
+    required this.chat_idx,
+    required this.room_idx,
+    required this.users_idx,
     required this.content,
     required this.createdAt,
     required this.profileImageUrl,
@@ -39,13 +21,12 @@ class ChatDto {
 
   factory ChatDto.fromJson(Map<String, dynamic> json) {
     return ChatDto(
-      id: json['id'],
-      roomId: json['room_id'],
-      senderId: json['sender']['id'],
-      senderName: json['sender']['name'],
+      chat_idx: json['chat_idx'],
+      room_idx: json['room_idx'],
+      users_idx: json['users_idx'],
       content: json['content']['text'],
       createdAt: DateTime.parse(json['created_at']),
-      profileImageUrl: json['sender']['profile_image'],
+      profileImageUrl: json['users']['profile_image_url'],
     );
   }
 }

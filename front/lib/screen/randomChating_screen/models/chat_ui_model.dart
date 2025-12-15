@@ -1,7 +1,7 @@
 enum ChatMessageType { text, image }
 
 class ChatUiModel {
-  final int userIdx; // 유저 고유 번호
+  final String userIdx; // 유저 고유 번호
   final String nickname;
 
   final bool isMe; // 나인지 상대방인지
