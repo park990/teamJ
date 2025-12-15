@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front/theme/app_colors.dart';
 
 class UpperAppBar extends StatelessWidget {
   const UpperAppBar({super.key});
@@ -7,7 +8,7 @@ class UpperAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text('WAZZUP')),
+        Expanded(child: Text('WAZZUP',style: wazzupFont)),
         Icon(Icons.search),
         SizedBox(width: 5),
         Icon(Icons.more_vert),
