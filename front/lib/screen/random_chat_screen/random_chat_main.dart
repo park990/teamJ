@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:front/screen/randomChating_screen/random_chat_screen.dart';
+import 'package:front/screen/random_chat_screen/random_chat_screen.dart';
 
 class RandomChatMain extends StatefulWidget {
   const RandomChatMain({super.key});
