@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front/dto/token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
 import 'package:front/screen/myPage_screen/login/build_social_login_buttons.dart';
 
@@ -80,12 +81,11 @@ class LoginBottomSheet extends StatelessWidget {
         BuildSocialLoginButtons(
           onPressed: () async{
             print('카카오클릭');
-            String? token = await WithKakao().login();
-            print('토토토토크크큰${token}');
-            if(token!=null){
+            String? socialToken = await WithKakao().login();
+            if(socialToken!=null){
               if(context.mounted){
                 Navigator.of(context).pop(
-                  token
+                  TokenAndProviderDto(provider: "KAKAO", socialToken: socialToken)
                 );
               }
             }
@@ -94,25 +94,32 @@ class LoginBottomSheet extends StatelessWidget {
           backColor: Color(0xFFFEE500),
           textColor: Colors.black,
         ),
+
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async {
             print('네이버 클릭');
+            // String? token = await WithNaver().login();
           },
           text: '네이버 로그인',
           backColor: Color(0xFF03C75A),
           textColor: Colors.white,
         ),
+
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async{
             print('애플 클릭');
+            // String? token = await WithApple().login();
+
           },
           text: '애플 로그인',
           backColor: Colors.black,
           textColor: Colors.white,
         ),
+        
         BuildSocialLoginButtons(
-          onPressed: () {
+          onPressed: () async{
             print('구글 클릭');
+            // String? token = await WithGoogle().login();
           },
           text: '구글 로그인',
           backColor: Colors.grey[300]!,

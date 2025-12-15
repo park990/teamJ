@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:front/dto/social_user_dto.dart';
+import 'package:front/dto/token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/login_bottom_sheet.dart';
+import 'package:front/screen/myPage_screen/login/services/OAuth_service.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class MypageMain extends StatefulWidget {
   const MypageMain({super.key});
@@ -28,6 +32,8 @@ class _MypageMainState extends State<MypageMain> {
     return Column(
       children: [
         Text('로그인이 필요합니다'),
+
+        // 로그인 하기 버튼
         ElevatedButton(
           onPressed: () {
           _showLoginBottomSheet(context);
@@ -37,6 +43,23 @@ class _MypageMainState extends State<MypageMain> {
           ),
           child: Text('로그인하기'),
         ),
+        ElevatedButton(
+          onPressed: () async {
+            try {
+              // 이 함수가 앱에 저장된 토큰을 싹 지워줍니다.
+              await UserApi.instance.logout();
+              print('로그아웃 성공! 기존 토큰 삭제됨.');
+            } catch (error) {
+              print('로그아웃 실패: $error');
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[300],
+          ),
+          child: Text('로그아웃하기'),
+        ),
+
+        // 회원가입 하는 곳 버튼
         ElevatedButton(
           onPressed: () {
             Navigator.of(context).push(
@@ -57,27 +80,46 @@ class _MypageMainState extends State<MypageMain> {
     return Container(child: Text('로그인 되어있슴'));
   }
 
-  // 바텀sheet 보여주기
+  // sns 로그인을 위한 바텀 컨테이너들 sheet 보여주기
   void _showLoginBottomSheet(BuildContext context) async {
-    final String? resultToken= await showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      context: context,
+    final TokenAndProviderDto? result = await showModalBottomSheet(
       builder: (BuildContext context) {
         return LoginBottomSheet();
       },
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      context: context,
     );
-    // 여기 지우면 안댐 //
 
-    // if(resultToken != null){
-    // print("바텀쉿에서 열었던 토큰을 마이페이지 홈에서 받았다${resultToken}");
-    //   if(!mounted) return;
-    //   Navigator.of(context).push(
-    //     MaterialPageRoute(builder: (context)=>
-    //       SignupScreen(),
-    //     ),
-    //   );
-    // }
+    // 위에서 로그인을 실행해서 소셜 토큰을 받아 왔다면
+    if(result != null){
+    print("소셜 토큰을 마이페이지 홈에서 pop 받은 상태: ${result.socialToken}");
+      if(!mounted) return;
+
+      OauthService oAuthService = OauthService();
+      
+      // 로그인 했을 때 register이면 신규유저 success면 기존유저
+      final responseData = await oAuthService.sendSocialLogin(result);
+      print("데이터의 형태는 이런식으로 되어있음 ${responseData}");
+      
+      if(responseData != null ){
+        String serverResult = responseData['result'];
+
+          if(serverResult == 'register'){
+            SocialUserDto user = SocialUserDto.fromJson(responseData['data']['user']);
+            print('user메일 정보는  : ${user.usersEmail}');
+            if(!mounted) return;
+            print("로그인에 성공하여 서버에서 받은 것 최초 로그인 이라 회원가입 창으로 안내해줘야함 그리고 현재 여기서 받은 snsId와 platform과 ㅣ닉네임을 갖고 회원가입할때 닉네임까지 받기."+serverResult);
+            // 이다음은 그 아이디와 플랫폼들고 회원가입 하고 그 안에서 닉네임 챙기고 본인인증후 성별, 이름, 생일 받기. 
+          }else if(serverResult =='success'){
+            String jwtToken = responseData['data']['token'];
+            print('기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${jwtToken} 이 토큰은 스토리지에 저장해두고 관리해야함.' );
+            setState(() {
+              // _isLoggeIn = true;
+            });
+          }
+      }
+    }
   }
 
 

@@ -1,5 +1,7 @@
 package com.teamj.entity.users_entity;
 
+import java.sql.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,13 +10,21 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
-@Table(name="users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(
+        name = "sns_oauth_unique", // 제약조건 이름 (아무거나)
+        columnNames = {"provider", "usersSnsId"}
+    )
+})
 public class Users {
     // Gender Enum 값 정의 해준거임.
     public enum Gender{
@@ -29,15 +39,18 @@ public class Users {
     private String grade;
     
     @Column
-    private String usersEmail;
+    private String usersSnsId;
     
     @Column
     private String usersPwd;
     
     @Column
-    private String usersName;
+    private Date birthDate;
     
     @Column
+    private String usersName;
+    
+    @Column(unique = true, nullable = false)
     private String usersNickName;
     
     @Column
@@ -57,6 +70,9 @@ public class Users {
     private int isBanned;
     
     @Column
-    private String platform;
+    private String provider;
+
+    @Column
+    private String usersEmail;
     
 }

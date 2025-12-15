@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:front/screen/controller/signUp_controller.dart';
+import 'package:front/dto/social_user_dto.dart';
+import 'package:front/controller/signUp_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
@@ -11,6 +12,8 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  // 컨트롤러 불러오기
+  final SignupController _signupController = SignupController();
   
   // 입력을 안했을때 유효성 검사를 위한 폼키
   final _formKey = GlobalKey<FormState>();
@@ -202,7 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (currentItem.type == StepType.nickName) {
       print("닉네임 중복 확인 중...");
       String nickName = currentItem.controller.text;
-       bool isDup = await requestNickname(nickName);
+       bool isDup = await _signupController.requestNickname(nickName);
 
       if (isDup) {
         setState(() {
@@ -221,7 +224,7 @@ class _SignupScreenState extends State<SignupScreen> {
         _currentStep++;
       } else {
         print('완료 (본인인증 시작)');
-        // 여기서 본인인증 로직 실행
+        _submitSignUp();
       }
     });
 
@@ -319,7 +322,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // 상단 단계표시 바 
+  // 최상단 스텝 표시상태 바 
   Widget _stateBar(){
     return Padding(
       padding: EdgeInsets.symmetric(horizontal:30,vertical: 10),
@@ -340,6 +343,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  // 상단 본인인증 및 회원가입을 위해 머시기 레이블
   Widget _Header() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,6 +367,59 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ],
     );
+  }
+
+  // 회원가입 DB 등록 
+  void _submitSignUp() async {
+    String inputName = "";
+    String inputNickName = "";
+    String inputPhone = ""; 
+    String inputBirth = ""; 
+    String inputGender = "";
+
+    for(var step in _steps){
+      if(step.type==StepType.name){
+        inputName=step.controller.text;
+      }else if(step.type==StepType.nickName){
+        inputNickName=step.controller.text;
+      }else if (step.type == StepType.phone) {
+        inputPhone = step.controller.text;
+      } else if (step.type == StepType.birth) {
+        inputBirth = step.controller.text;
+      }else if (step.type == StepType.gender) {
+        inputGender = step.controller.text;
+      }
+    }
+
+    SocialUserDto newMember = SocialUserDto(
+      usersName: inputName,
+      usersNickName: inputNickName,
+      usersPhone: inputPhone,
+      birthDate: inputBirth,
+      usersGender: inputGender,
+    );
+
+    bool isSuccess = await _signupController.requestSignUp(newMember);
+    if(!mounted) return;
+
+    if(isSuccess){
+      print("성공");
+    }else{
+      int targetIndex = _steps.indexWhere((item)=>item.type==StepType.nickName);
+
+      if(targetIndex !=-1){
+        setState(() {
+          _currentStep = targetIndex;
+          _asyncErrorText= "앗..! 방금 누군가가 동일한 닉네임으로 가입했습니다.";
+        });
+          // 화면이 닉네임 창으로 넘어 간 후에 오류 메시지 띄우기
+        WidgetsBinding.instance.addPostFrameCallback((_){
+          _formKey.currentState!.validate();
+          FocusScope.of(context).requestFocus(_steps[targetIndex].focusNode);
+        });
+      }
+    }
+
   }
 
 
