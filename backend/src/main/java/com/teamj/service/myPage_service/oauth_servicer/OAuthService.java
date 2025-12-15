@@ -45,7 +45,7 @@ public class OAuthService {
         Map<String,Object> data = new HashMap<>();
 
         Users isUserExist = new Users();
-        isUserExist = userRepository.findByProviderAndUsersSnsId(oAuthDTO.getProvider(), socialUser.getUsersSnsId());
+        isUserExist = userRepository.findByProviderAndUsersEmail(oAuthDTO.getProvider(), socialUser.getUsersEmail());
         
         // User가 null이 아니면 기존 유저임
         if(isUserExist!=null){
