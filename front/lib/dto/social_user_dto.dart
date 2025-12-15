@@ -29,12 +29,12 @@ class SocialUserDto {
     return {
       'usersName': usersName,
       'usersNickname': usersNickname,
-      'phoneNumber': usersPhone,
+      'usersPhone': usersPhone,
       'birthDate': birthDate,
       'usersGender': usersGender,
-      'platform': provider,
+      'provider': provider,
       'ci': ci,
-      'userSnsId':usersSnsId,
+      'usersSnsId':usersSnsId,
       'usersEmail':usersEmail,
       'grade':grade,
     };

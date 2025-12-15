@@ -5,7 +5,8 @@
         android:label="front"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true"> 
+        android:usesCleartextTraffic="true"
+        android:allowBackup="false">
         
         <activity 
             android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
@@ -49,5 +50,6 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <package android:name="com.kakao.talk" />
     </queries>
 </manifest>

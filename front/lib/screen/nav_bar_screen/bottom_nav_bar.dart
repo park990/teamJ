@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:front/const/tabs.dart';
+import 'package:front/theme/app_colors.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -80,6 +81,8 @@ class _BottomNavItems extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
       selectedItemColor: Colors.black,
+      unselectedLabelStyle: wazzupFont,
+      selectedLabelStyle: wazzupFont.copyWith(fontWeight: FontWeight.bold),
       type: BottomNavigationBarType.fixed,
       
 
@@ -95,6 +98,7 @@ class _BottomNavItems extends StatelessWidget {
             (e) => BottomNavigationBarItem(
               icon: Icon(e.icon),
               label: e.label,
+
             ),
           )
           .toList(),
