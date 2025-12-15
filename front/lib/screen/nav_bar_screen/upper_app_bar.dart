@@ -8,7 +8,7 @@ class UpperAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text('WAZZUP',style: wazzupFont)),
+        Expanded(child: Text('WAZZUP',style: wazzupBarFont)),
         Icon(Icons.search),
         SizedBox(width: 5),
         Icon(Icons.more_vert),

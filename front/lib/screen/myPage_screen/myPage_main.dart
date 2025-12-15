@@ -7,7 +7,7 @@ import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class MypageMain extends StatefulWidget {
-  const MypageMain({super.key});
+  const MypageMain({super.key,});
 
   @override
   State<MypageMain> createState() => _MypageMainState();
@@ -15,6 +15,8 @@ class MypageMain extends StatefulWidget {
 
 class _MypageMainState extends State<MypageMain> {
   bool _isLoggeIn = false;
+  String? wazzupToken;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -60,23 +62,24 @@ class _MypageMainState extends State<MypageMain> {
         ),
 
         // 회원가입 하는 곳 버튼
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_)=>SignupScreen())
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFeedaf2),
-          ),
-          child: Text('회원가입이지만 로그인 했을때 처음 로그인이면 signupscreen나와야하고 아니면 스킵하는 창'),
-        ),
+        // ElevatedButton(
+        //   onPressed: () {
+        //     Navigator.of(context).push(
+        //       MaterialPageRoute(builder: (_)=>SignupScreen())
+        //     );
+        //   },
+        //   style: ElevatedButton.styleFrom(
+        //     backgroundColor: Color(0xFFeedaf2),
+        //   ),
+        //   child: Text('회원가입이지만 로그인 했을때 처음 로그인이면 signupscreen나와야하고 아니면 스킵하는 창'),
+        // ),
       ],
     );
   }
   
   // 로그인이 되어있을 때
   Widget _buildMyInfoScreen() {
+    
     return Container(child: Text('로그인 되어있슴'));
   }
 
@@ -92,32 +95,60 @@ class _MypageMainState extends State<MypageMain> {
     );
 
     // 위에서 로그인을 실행해서 소셜 토큰을 받아 왔다면
-    if(result != null){
-    print("소셜 토큰을 마이페이지 홈에서 pop 받은 상태: ${result.socialToken}");
-      if(!mounted) return;
+    if (result != null) {
+      print("소셜 토큰을 마이페이지 홈에서 pop 받은 상태: ${result.socialToken}");
+      if (!mounted) return;
 
       OauthService oAuthService = OauthService();
-      
+
       // 로그인 했을 때 register이면 신규유저 success면 기존유저
-      final responseData = await oAuthService.sendSocialLogin(result);
+      final responseData = await oAuthService.sendSocialLogin(
+        result,
+      );
       print("데이터의 형태는 이런식으로 되어있음 ${responseData}");
-      
-      if(responseData != null ){
+
+      if (responseData != null) {
         String serverResult = responseData['result'];
 
-          if(serverResult == 'register'){
-            SocialUserDto user = SocialUserDto.fromJson(responseData['data']['user']);
-            print('user메일 정보는  : ${user.usersEmail}');
-            if(!mounted) return;
-            print("로그인에 성공하여 서버에서 받은 것 최초 로그인 이라 회원가입 창으로 안내해줘야함 그리고 현재 여기서 받은 snsId와 platform과 ㅣ닉네임을 갖고 회원가입할때 닉네임까지 받기."+serverResult);
-            // 이다음은 그 아이디와 플랫폼들고 회원가입 하고 그 안에서 닉네임 챙기고 본인인증후 성별, 이름, 생일 받기. 
-          }else if(serverResult =='success'){
-            String jwtToken = responseData['data']['token'];
-            print('기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${jwtToken} 이 토큰은 스토리지에 저장해두고 관리해야함.' );
+        if (serverResult == 'register') {
+          SocialUserDto user = SocialUserDto.fromJson(
+            responseData['data']['user'],
+          );
+
+          if (!mounted) return;
+
+          // 회원가입 창으로
+          final resultFromSignUp = await Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (_) => SignupScreen(user: user),
+                ),
+              );
+
+          if (resultFromSignUp != null) {
+            String newToken = resultFromSignUp['wazzupToken'];
+            // // 1. 토큰 저장을 위한 스토리지
+            // final storage = new FlutterSecureStorage();
+            // await storage.write(key: 'wazzupToken', value: newToken);
+            print('마이페이지까지 토큰 잘 받아옴 ${newToken}');
             setState(() {
-              // _isLoggeIn = true;
+              wazzupToken = newToken;
+              _isLoggeIn = true;
             });
           }
+        } else if (serverResult == 'success') {
+          String newToken = responseData['data']['wazzupToken'];
+          // // 1. 토큰 저장을 위한 스토리지
+            // final storage = new FlutterSecureStorage();
+            // await storage.write(key: 'wazzupToken', value: newToken);
+          print(
+            '기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${newToken} 이 토큰은 스토리지에 저장해두고 관리해야함.',
+          );
+          setState(() {
+            wazzupToken = newToken;
+            _isLoggeIn = true;
+          });
+        }
       }
     }
   }

@@ -48,7 +48,7 @@ class SignupController {
   }
 
   // 회원가입 요청
-  Future<bool> requestSignUp(SocialUserDto signUpDto) async {
+  Future<Map<String,dynamic>> requestSignUp(SocialUserDto signUpDto) async {
     try {
       final response = await http.post(
         Uri.parse('${andUrl}/api/signUp/submit'),
@@ -58,20 +58,23 @@ class SignupController {
         final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
         print('회원가입 성공: ${jsonResponse['message']}'); 
-        return true;
+        String wazzupToken = jsonResponse['data']['wazzupToken'];
+        return {
+          'success':true,
+          'wazzupToken':wazzupToken,
+        };
       
-      // 이 아래는 정확히 왜 해야하는지 모르겟음 일단 적어두지만 나중에 다시 체크 필요
       }else if (response.statusCode == 409) {
         // 중복 등으로 인한 에러 (409 Conflict)
         print('회원가입 실패(중복): ${jsonResponse['message']}');
-        return false;
+        return {"success": false, "message": "중복된 회원입니다."};
       } else {
         print('서버 통신 실패: ${response.statusCode}');
-        return false;
+        return {"success": false, "message": "서버 통신 오류"};
       }
     } catch (e) {
       print('회원가입 연결 실패: ${e} nullable false에 값을 넣었는지??');
-      return false;
+      return {"success": false, "message": "연결 실패"};
     }
   }
 }

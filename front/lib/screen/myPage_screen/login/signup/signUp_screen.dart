@@ -5,13 +5,15 @@ import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  const SignupScreen({super.key, required SocialUserDto this.user});
+  final SocialUserDto user;
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  
   // 컨트롤러 불러오기
   final SignupController _signupController = SignupController();
   
@@ -390,20 +392,41 @@ class _SignupScreenState extends State<SignupScreen> {
         inputGender = step.controller.text;
       }
     }
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+     SocialUserDto joinUser = SocialUserDto(
 
-    SocialUserDto newMember = SocialUserDto(
-      usersName: inputName,
+      // 여기는 소셜로그인으로 받아온 값들
+      usersEmail: widget.user.usersEmail,
+      provider: widget.user.provider,
+      usersSnsId: widget.user.usersSnsId,
+
+      // 그리고 회원가입하면서 입력한 값들  하지만 이부분도 nickname만받고 나머지는 결국엔 나중에 pass 인증하면서 따로 추가로 받아야함...!
       usersNickname: inputNickName,
+
+
+      // 패스 인증하면서 받아야할 정보들....
+      usersName: inputName,
       usersPhone: inputPhone,
       birthDate: inputBirth,
       usersGender: inputGender,
     );
+    print('이제 이 정보를 바탕으로 (Pass)본인인증을 실시할것임 ${joinUser.toJson()}');
 
-    bool isSuccess = await _signupController.requestSignUp(newMember);
+    ///이부분에서 입력한 회원 정보를 갖고 본인인증 패스를 한번 갖다 온다음에 본인인증을 성공을 했다면
+    ///
+    ///
+    ///
+    ///
+    /// 아래 다바 등록 을 실행하면 본인인증 및 회원가입 마무리...!
+
+    Map<String, dynamic> result = await _signupController.requestSignUp(joinUser);
     if(!mounted) return;
 
-    if(isSuccess){
-      print("성공");
+    if(result['success']==true){
+      print("회원가입 성공 토큰: ${result['wazzupToken']}");
+      Navigator.of(context).pop(
+        {'wazzupToken':result['wazzupToken']}
+      );
     }else{
       int targetIndex = _steps.indexWhere((item)=>item.type==StepType.nickName);
 

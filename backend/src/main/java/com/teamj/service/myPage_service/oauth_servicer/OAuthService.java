@@ -49,8 +49,8 @@ public class OAuthService {
         
         // User가 null이 아니면 기존 유저임
         if(isUserExist!=null){
-            String wazzupToken="임시 JWT Token임 브랄라랄ㄹ라랄라";
-            data.put("token", wazzupToken);
+            String wazzupToken="기존유저 임시 JWT Token임{ADSFADSFASDFASFDAFSDAD12312F}";
+            data.put("wazzupToken", wazzupToken);
             return ResponseEntity.ok(ApiResponse.success(data,"로그인 성공"));
         }else{
             data.put("user", socialUser);
