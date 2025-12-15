@@ -10,7 +10,9 @@ class UpperAppBar extends StatelessWidget {
       children: [
         Expanded(child: Text('WAZZUP',style: wazzupFont)),
         Icon(Icons.search),
-        SizedBox(width: 5),
+        SizedBox(width: 10),
+        Icon(Icons.notifications_none),
+        SizedBox(width: 10),
         Icon(Icons.more_vert),
       ],
     );
