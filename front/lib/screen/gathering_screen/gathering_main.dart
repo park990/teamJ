@@ -17,7 +17,7 @@ class _GatheringMainState extends State<GatheringMain>
         children: [
           TabBar(
             controller: TabController(
-              length: 4,
+              length: 5,
               vsync: this,
             ),
             tabs: [
