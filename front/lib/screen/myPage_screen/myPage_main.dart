@@ -66,56 +66,44 @@ class _MypageMainState extends State<MypageMain> {
           child: Text('로그인하기'),
         ),
 
-        
-
-        // 회원가입 하는 곳 버튼
-        // ElevatedButton(
-        //   onPressed: () {
-        //     Navigator.of(context).push(
-        //       MaterialPageRoute(builder: (_)=>SignupScreen())
-        //     );
-        //   },
-        //   style: ElevatedButton.styleFrom(
-        //     backgroundColor: Color(0xFFeedaf2),
-        //   ),
-        //   child: Text('회원가입이지만 로그인 했을때 처음 로그인이면 signupscreen나와야하고 아니면 스킵하는 창'),
-        // ),
       ],
     );
   }
   
   // 로그인이 되어있을 때
   Widget _buildMyInfoScreen() {
-    
     return Column(
       children: [
         Container(child: Text('로그인 되어있슴')),
-        if(_isLoggeIn)
-        ElevatedButton(
-          onPressed: () async {
-            try {
+        if (_isLoggeIn)
+          ElevatedButton(
+            onPressed: () async {
+              await OauthService().wazzupLogout();
+              try {
+                // 소셜 로그아웃
+                await UserApi.instance.logout();
+                print('소셜 로그아웃 성공!');
+              } catch (error) {
+                print('로그아웃 실패: $error');
+              }
 
-              // 소셜 로그아웃
-              await UserApi.instance.logout();
-              print('로그아웃 성공! 기존 토큰 삭제됨.');
-              
-              setState(() {
-                _isLoggeIn=false;
-              });
-            } catch (error) {
-              print('로그아웃 실패: $error');
-            }
+              // 스토리지에 저장된 토큰도 삭제해 줘야함
+              final storage = WazzupTokenStorage();
+              await storage.deleteToken();
+              print('스토리지에 저장된 토큰 삭제 완료');
 
-            // 스토리지에 저장된 토큰도 삭제해 줘야함
-            final storage = WazzupTokenStorage();
-            await storage.deleteToken();
-            print('내부에 저장된 토큰 삭제 완료');
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[300],
+              if (mounted) {
+                setState(() {
+                  _isLoggeIn = false;
+                  wazzupToken = null;
+                });
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[300],
+            ),
+            child: Text('로그아웃하기'),
           ),
-          child: Text('로그아웃하기'),
-        ),
       ],
     );
   }

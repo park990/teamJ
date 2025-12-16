@@ -2,7 +2,9 @@ package com.teamj.service.myPage_service.oauth_servicer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,84 +15,113 @@ import org.springframework.web.client.RestTemplate;
 import com.teamj.dto.OAuthDTO;
 import com.teamj.dto.SocialUserDTO;
 import com.teamj.entity.users_entity.Users;
+import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
 import com.teamj.response.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final StringRedisTemplate redisTemplate;
 
-    public ResponseEntity<ApiResponse<?>> kakaoLogin(OAuthDTO oAuthDTO){
-    
+    public ResponseEntity<ApiResponse<?>> kakaoLogin(OAuthDTO oAuthDTO) {
+
         SocialUserDTO socialUser = new SocialUserDTO();
 
-        if("KAKAO".equals(oAuthDTO.getProvider())){
+        // 이 유저가 기존유저인지 신규 유저인지 일단 DB를 들름.
+        if ("KAKAO".equals(oAuthDTO.getProvider())) {
 
             socialUser = getSnsIdFromKakao(oAuthDTO);
 
-            if(socialUser==null){
+            if (socialUser == null) {
                 System.out.println("유저정보없음");
                 return ResponseEntity.badRequest().body(ApiResponse.error("카카오 토큰이 유효하지 않음"));
             }
 
-            System.out.println("여기 실행함!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println(socialUser.getUsersSnsId());
-            System.out.println(socialUser.getProvider()+"지금 이것은 User user 객체로 받은것이고");
-            System.out.println(socialUser.getUsersEmail());  
-        }// 이 뒤에 네이버면 네이버 구글이면 구글 else if 로 추가로 걸어주자 
+        } // 이 뒤에 네이버면 네이버 구글이면 구글 else if 로 추가로 걸어주자
 
-        Map<String,Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
 
         Users isUserExist = new Users();
         isUserExist = userRepository.findByProviderAndUsersEmail(oAuthDTO.getProvider(), socialUser.getUsersEmail());
-        
+
         // User가 null이 아니면 기존 유저임
-        if(isUserExist!=null){
-            String wazzupToken="기존유저 임시 JWT Token임{ADSFADSFASDFASFDAFSDAD12312F}";
-            data.put("wazzupToken", wazzupToken);
-            return ResponseEntity.ok(ApiResponse.success(data,"로그인 성공"));
-        }else{
+        if (isUserExist != null) {
+
+            // accessToken 생성
+            String accessToken = jwtTokenProvider.createAccessToken(isUserExist.getUsersIdx());
+
+            // refreshToken 생성
+            String refreshToken = jwtTokenProvider.createRefreshToken();
+
+            redisTemplate.opsForValue().set(
+                    "RT:" + isUserExist.getUsersIdx(),
+                    refreshToken,
+                    7,
+                    TimeUnit.DAYS);
+
+            data.put("wazzupToken", accessToken);
+            data.put("refreshToken", refreshToken);
+            return ResponseEntity.ok(ApiResponse.success(data, "로그인 성공"));
+        } else {
             data.put("user", socialUser);
             return ResponseEntity.ok(ApiResponse.register(data));
         }
     }
 
-    private SocialUserDTO getSnsIdFromKakao(OAuthDTO dto){
-        try{
-        RestTemplate restTemplate = new RestTemplate();
+    // 소셜 토큰으로 카카오 정보 갖고오기
+    private SocialUserDTO getSnsIdFromKakao(OAuthDTO dto) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization","Bearer " +dto.getSocialToken());
-        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + dto.getSocialToken());
+            HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-            "https://kapi.kakao.com/v2/user/me",
-            HttpMethod.POST,
-            entity,
-            Map.class
-        );
-        Map<String,Object> body = response.getBody();
-        SocialUserDTO user = new SocialUserDTO();
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    "https://kapi.kakao.com/v2/user/me",
+                    HttpMethod.POST,
+                    entity,
+                    Map.class);
+            Map<String, Object> body = response.getBody();
+            SocialUserDTO user = new SocialUserDTO();
 
-        if (body == null || body.get("id") == null) {
-         throw new IllegalStateException("카카오 응답에 id 없음");
-}
-        String id = String.valueOf(body.get("id"));
-        user.setUsersSnsId(id);
-        user.setProvider(dto.getProvider());
+            if (body == null || body.get("id") == null) {
+                throw new IllegalStateException("카카오 응답에 id 없음");
+            }
+            String id = String.valueOf(body.get("id"));
+            user.setUsersSnsId(id);
+            user.setProvider(dto.getProvider());
 
-        Map<String,Object> kakaoAccount =(Map<String, Object>) body.get("kakao_account");
-        if(kakaoAccount!=null && kakaoAccount.get("email")!=null){
-            user.setUsersEmail(String.valueOf(kakaoAccount.get("email")));
+            Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
+            if (kakaoAccount != null && kakaoAccount.get("email") != null) {
+                user.setUsersEmail(String.valueOf(kakaoAccount.get("email")));
+            }
+
+            return user;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        
-        return user;   
-    }catch(Exception e){
-        e.printStackTrace();
-        return null;
     }
+
+    // 로그아웃 
+    public void logout(String accessToken){
+        Long userIdx =jwtTokenProvider.getuserIdx(accessToken);
+
+        String key = "RT:"+userIdx;
+
+        if(redisTemplate.opsForValue().get(key)!=null){
+            redisTemplate.delete(key);
+            log.info("유자 {}의 refresh토큰(RT) 삭제 완료, 로그아웃 완료", userIdx);
+        }else{
+            log.info("유자 {}의 refresh토큰 없거나 만료.", userIdx);
+        }
     }
 }

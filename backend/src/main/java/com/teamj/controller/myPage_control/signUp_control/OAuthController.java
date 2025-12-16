@@ -3,6 +3,7 @@ package com.teamj.controller.myPage_control.signUp_control;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,14 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/oauth")
 public class OAuthController {
     private final OAuthService oAuthService;
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Object>> logout(@RequestHeader("Authorization") String bearerToken){
+        String accessToken = bearerToken.substring(7);
+        oAuthService.logout(accessToken);
+
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 승인"));
+    }
 
     @PostMapping("/kakao")
     public ResponseEntity<ApiResponse<?>> kakaoLogin(@RequestBody OAuthDTO dto){
