@@ -21,12 +21,12 @@ class TabInfo{
 
 final TABS =[
   TabInfo(
-    icon: Icons.home_outlined,
+    icon: LucideIcons.home,
     label: 'home',
     screen: GatheringMain(),
   ),
   TabInfo(
-    icon: CupertinoIcons.chat_bubble_2,
+    icon: LucideIcons.messageCircle,
     label: 'wChat',
     screen: RandomChatMain(),
 
@@ -38,13 +38,13 @@ final TABS =[
 
   ),
   TabInfo(
-    icon: CupertinoIcons.person_2,
+    icon: LucideIcons.users,
     label: 'friends',
     screen: FriendMain(),
 
   ),
   TabInfo(
-    icon: CupertinoIcons.person_circle,
+    icon: LucideIcons.userCircle2,
     label: 'profile',
     screen:MypageMain() ,
 
