@@ -9,6 +9,7 @@ class GatheringMain extends StatefulWidget {
 
 class _GatheringMainState extends State<GatheringMain> 
   with TickerProviderStateMixin {
+
     bool isSearching = false;
     
     @override
