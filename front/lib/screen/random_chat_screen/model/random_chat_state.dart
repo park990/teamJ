@@ -24,13 +24,13 @@ class RandomChatState {
 
   RandomChatState copyWith({
     RandomChatStatus? status,
-    String? roomId,
+    String? roomIdx,
     String? errorMessage,
   }) {
     return RandomChatState(
       status: status ?? this.status,
       roomIdx: roomIdx ?? this.roomIdx,
-      errorMessage: errorMessage,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }

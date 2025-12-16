@@ -5,14 +5,15 @@ import 'package:front/dto/random_match_dto.dart';
 
 class RandomMatchRepository {
   final String baseUrl = dotenv.env['API_URL']!;
+  final andUrl = "http://10.0.2.2:8080";
 
   Future<RandomMatchDto> enterQueue({
     required String genderOption,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/api/random-match/enter'),
+      Uri.parse('$andUrl/api/random-match/enter'),
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
         'genderOption': genderOption,
@@ -29,7 +30,10 @@ class RandomMatchRepository {
 
   Future<void> cancelQueue() async {
     await http.post(
-      Uri.parse('$baseUrl/api/random-match/cancel'),
+      Uri.parse('$andUrl/api/random-match/cancel'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
     );
   }
 }
