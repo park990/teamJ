@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:front/screen/nav_bar_screen/upper_app_bar.dart';
 
 class GatheringMain extends StatefulWidget {
   const GatheringMain({super.key});
@@ -10,26 +9,27 @@ class GatheringMain extends StatefulWidget {
 
 class _GatheringMainState extends State<GatheringMain> 
   with TickerProviderStateMixin {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          TabBar(
-            controller: TabController(
-              length: 4,
-              vsync: this,
+    bool isSearching = false;
+    
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        body: Column(
+          children: [
+            TabBar(
+              controller: TabController(
+                length: 4,
+                vsync: this,
+              ),
+              tabs: [
+                Tab(text: '홈'),
+                Tab(text: '추천'),
+                Tab(text: '탐색'),
+                Tab(text: '내 모임'),
+              ],
             ),
-            tabs: [
-              Tab(text: '홈'),
-              Tab(text: '🔥추천'),
-              Tab(text: '🔍탐색'),
-              Tab(text: '👥내 모임'),
-              Tab(text: '공지/이벤트',)
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    }
 }
