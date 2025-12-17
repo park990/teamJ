@@ -43,6 +43,7 @@ dependencies:
   google_fonts: ^6.3.3
   flutter_secure_storage: ^9.0.0
   lucide_icons: any
+  get: ^4.7.3
 
 
 dev_dependencies:
