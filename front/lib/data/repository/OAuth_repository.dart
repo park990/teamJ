@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:front/dto/social_token_and_provider_dto.dart';
-import 'package:front/data/data_source/api_client.dart';
+import 'package:front/data/data_source/remote/api_client.dart';
 
-class OauthService {
+class OauthRepository {
   ApiClient _apiClient = ApiClient();
 
   // 로그아웃 wazzupToken 삭제

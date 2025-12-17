@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:front/repository/random_match_repository.dart';
+import 'package:front/data/repository/random_match_repository.dart';
 import '../models/random_chat_state.dart';
 
 class RandomChatController extends ChangeNotifier {
