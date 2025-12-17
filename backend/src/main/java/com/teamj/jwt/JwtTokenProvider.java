@@ -54,11 +54,13 @@ public class JwtTokenProvider {
     }
 
     // Refresh 토큰 생성
-    public String createRefreshToken() {
+    public String createRefreshToken(Long userIdx) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userIdx));
         Date now = new Date();
         Date valid = new Date(now.getTime() + refreshTokenValidTime); // 7일 수정할거면 => yml
 
         return Jwts.builder()
+                .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(valid)
                 .signWith(key, SignatureAlgorithm.HS256)

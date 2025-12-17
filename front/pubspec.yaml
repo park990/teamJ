@@ -33,6 +33,7 @@ dependencies:
 
   http: ^1.6.0
   image_picker: ^1.2.1
+  flutter_riverpod: ^2.5.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -43,6 +44,7 @@ dependencies:
   google_fonts: ^6.3.3
   flutter_secure_storage: ^9.0.0
   lucide_icons: any
+  get: ^4.7.3
 
 
 dev_dependencies:

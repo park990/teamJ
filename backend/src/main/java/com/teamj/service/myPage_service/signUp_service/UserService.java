@@ -49,7 +49,7 @@ public class UserService {
 
         // 여기서 토큰 만들어서 줘야함
         String accessToken = jwtTokenProvider.createAccessToken(savedUser.getUsersIdx());
-        String refreshToken = jwtTokenProvider.createRefreshToken();
+        String refreshToken = jwtTokenProvider.createRefreshToken(savedUser.getUsersIdx());
 
         redisTemplate.opsForValue().set(
             "RT:"+savedUser.getUsersIdx(),

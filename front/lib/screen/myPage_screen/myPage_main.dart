@@ -6,6 +6,7 @@ import 'package:front/screen/myPage_screen/login/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/services/OAuth_service.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
 import 'package:front/service/wazzup_token_storage.dart';
+import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class MypageMain extends StatefulWidget {
@@ -28,7 +29,7 @@ class _MypageMainState extends State<MypageMain> {
   }
   void _checkAutoLogin() async {
     final storage = new WazzupTokenStorage();
-    String? storedToken = await storage.getToken();
+    String? storedToken = await storage.getAccessToken();
     if(storedToken!=null){
       print('자동로그인 됐음');
       setState(() {
@@ -93,6 +94,7 @@ class _MypageMainState extends State<MypageMain> {
               await storage.deleteAllToken();
               print('스토리지에 저장된 토큰 삭제 완료');
 
+                  Get.snackbar('로그아웃 완료', '로그인이성공되엇다 다시로그인할거면 다시하든지');
               if (mounted) {
                 setState(() {
                   _isLoggeIn = false;
@@ -139,7 +141,6 @@ class _MypageMainState extends State<MypageMain> {
         // 신규 유저 register면 data 안에 유저정보가 담겨 있고
         if (serverResult == 'register') {
           SocialUserDto user = SocialUserDto.fromJson(responseData['data']);
-        print('분명히 SocialUserDTO를 socialUser라고 보낸건데${responseData['data']}');
           if (!mounted) return;
 
           // 회원가입 창으로
@@ -176,7 +177,6 @@ class _MypageMainState extends State<MypageMain> {
             // 토큰 저장을 위한 스토리지
             final storage = new WazzupTokenStorage();
             await storage.saveToken(accessToken: accessToken, refreshToken: refreshToken );
-            print('${storage.getToken()} 스토리지에 저장된 토큰들임');
           setState(() {
             wazzupToken = accessToken;
             _isLoggeIn = true;
