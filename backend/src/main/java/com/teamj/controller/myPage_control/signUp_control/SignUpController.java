@@ -2,8 +2,6 @@ package com.teamj.controller.myPage_control.signUp_control;
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +37,7 @@ public class SignUpController {
 
     // 회원 가입 DB 등록
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> submitSignUp(@RequestBody SocialUserDTO SocialUserDTO) {
+    public ResponseEntity<ApiResponse<?>> submitSignUp(@RequestBody SocialUserDTO SocialUserDTO) {
         System.out.println("받은 데이터" + SocialUserDTO);
 
          return userService.registerUser(SocialUserDTO);

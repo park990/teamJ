@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:front/dto/token_and_provider_dto.dart';
+import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/service/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -46,7 +46,7 @@ class OauthService {
   }
 
   Future<Map<String, dynamic>?> sendSocialLogin(
-    TokenAndProviderDto dto,
+    SocialTokenAndProviderDto dto,
   ) async {
     try {
       String endPoint = "";

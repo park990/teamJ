@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.teamj.dto.SocialUserDTO;
+import com.teamj.dto.WazzupTokenDTO;
 import com.teamj.entity.users_entity.Users;
 import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
@@ -32,8 +33,7 @@ public class UserService {
 
     // 회원가입 db 저장
     @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> registerUser(SocialUserDTO dto) {
-        Map<String,Object> data = new HashMap<>();
+    public ResponseEntity<ApiResponse<?>> registerUser(SocialUserDTO dto) {
 
         // 1. 중복 체크 (서비스에서 바로 409 에러 리턴)
         if (userRepository.existsByUsersNickname(dto.getUsersNickname())) {
@@ -58,10 +58,12 @@ public class UserService {
             TimeUnit.DAYS
         );
 
-        data.put("wazzupToken", accessToken);
-        data.put("refreshToken", refreshToken);
+        WazzupTokenDTO tokenDTO =WazzupTokenDTO.builder()
+            .wazzupToken(accessToken)
+            .refreshToken(refreshToken)
+            .build();
 
-        return ResponseEntity.ok(ApiResponse.success(data, "회원가입 성공"));
+        return ResponseEntity.ok(ApiResponse.success(tokenDTO, "회원가입 성공"));
 
     }
 }

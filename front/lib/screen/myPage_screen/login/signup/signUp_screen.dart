@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
 import 'package:front/controller/signUp_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
@@ -60,23 +61,21 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Form(
                   key: _formKey,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    padding: const EdgeInsets.symmetric(horizontal: 30,),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
                         // 상단 본인인증 해주세요 레이블
                         _Header(),
                         // 하단 본인인증 항목 리스트들
                         Column(
-                          children: 
-                            _steps.map(
-                              (e){
-                                if(e.stepIndex > _currentStep){
-                                  return SizedBox.shrink();
-                                }
-                                return _buildStepField(e);
-                              }
-                            ).toList()
+                          children: _steps.map((e) {
+                            if (e.stepIndex > _currentStep) {
+                              return SizedBox.shrink();
+                            }
+                            return _buildStepField(e);
+                          }).toList(),
                         ),
                       ],
                     ),
@@ -84,7 +83,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
             ),
-            nextButton()
+            nextButton(),
           ],
         ),
       ),
@@ -373,6 +372,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   // 회원가입 DB 등록 
   void _submitSignUp() async {
+    
     String inputName = "";
     String inputNickName = "";
     String inputPhone = ""; 
@@ -419,15 +419,17 @@ class _SignupScreenState extends State<SignupScreen> {
     ///
     /// 아래 다바 등록 을 실행하면 본인인증 및 회원가입 마무리...!
 
-    Map<String, dynamic> result = await _signupController.requestSignUp(joinUser);
+    AuthResult result = await _signupController.requestSignUp(joinUser);
+
     if(!mounted) return;
 
-    if(result['success']==true){
-      print("회원가입 성공 토큰: ${result['wazzupToken']}");
+    if(result.success){
+      print("회원가입 성공 토큰: ${result.data}");
       Navigator.of(context).pop(
-        {'wazzupToken':result['wazzupToken']}
+        result.data
       );
     }else{
+
       int targetIndex = _steps.indexWhere((item)=>item.type==StepType.nickName);
 
       if(targetIndex !=-1){
