@@ -19,18 +19,23 @@ class WazzupTokenStorage {
   static const String _accessTokenKey = 'WAZZUP_ACCESS_TOKEN';
   static const String _refreshTokenKey = 'WAZZUP_REFRESH_TOKEN';
 
-  // 1. 토큰 저장
+  // 토큰 저장
   Future<void> saveToken({required String accessToken, required String refreshToken}) async {
     await _storage.write(key: _accessTokenKey, value: accessToken);
     await _storage.write(key: _refreshTokenKey, value: refreshToken);
   }
 
-  // 2. 토큰 읽기 (자동 로그인용)
-  Future<String?> getToken() async {
+  // 억섹스 토큰 읽기 (자동 로그인용)
+  Future<String?> getAccessToken() async {
     return await _storage.read(key: _accessTokenKey);
   }
 
-  // 3. 토큰 삭제 (로그아웃)
+  // 리프레시 토큰 읽기 (토큰 재발급 API 호출 시 사용)
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: _refreshTokenKey);
+  }
+
+  // 토큰 삭제 (로그아웃)
   Future<void> deleteAllToken() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);

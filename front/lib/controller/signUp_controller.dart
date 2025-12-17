@@ -1,24 +1,18 @@
 import "dart:convert";
 
-import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:front/dto/auth_response.dart";
 import "package:front/dto/social_user_dto.dart";
-import "package:http/http.dart" as http;
+import "package:front/service/api_client.dart";
 
 class SignupController {
-  String baseUrl = "${dotenv.env["API_URL"]}";
-  String andUrl = "http://10.0.2.2:8080";
-  final Map<String, String> _headers = {
-    'Content-Type': 'application/json; charset=UTF-8',
-  };
+  final ApiClient _apiClient = ApiClient();
 
   // 낙네임 중복 체크
   Future<bool> requestNickname(String nickName) async {
     try {
-      final response = await http.post(
-        Uri.parse("${andUrl}/api/signUp/check_nickName"),
-        headers: _headers,
-        body: jsonEncode(<String, String>{'nickName': nickName}),
+      final response = await _apiClient.post(
+        '/api/signUp/check_nickName',
+        body: {'nickName':nickName}
       );
 
       if (response.statusCode == 200) {
@@ -54,10 +48,9 @@ class SignupController {
 
     try {
       // 요청
-      final response = await http.post(
-        Uri.parse('${andUrl}/api/signUp/submit'),
-        headers: _headers,
-        body: jsonEncode(signUpDto.toJson()),
+      final response = await _apiClient.post(
+        '/api/signUp/submit',
+        body: signUpDto.toJson(),
       );
 
       final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
@@ -65,7 +58,6 @@ class SignupController {
       if (response.statusCode == 200) {
         print('회원가입 성공: ${jsonResponse['message']}');
         AuthResponse tokenData = AuthResponse.fromJson(jsonResponse['data']);
-        print('받은 토큰 을 토큰 dto에 잘 넣어줌 ${tokenData}');
 
         return AuthResult(success: true, data: tokenData);
 
