@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:front/alert/dialog.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
@@ -6,7 +8,6 @@ import 'package:front/screen/myPage_screen/login/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/services/OAuth_service.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
 import 'package:front/service/wazzup_token_storage.dart';
-import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class MypageMain extends StatefulWidget {
@@ -88,13 +89,15 @@ class _MypageMainState extends State<MypageMain> {
               } catch (error) {
                 print('로그아웃 실패: $error');
               }
+              
 
               // 스토리지에 저장된 토큰도 삭제해 줘야함
               final storage = WazzupTokenStorage();
               await storage.deleteAllToken();
               print('스토리지에 저장된 토큰 삭제 완료');
 
-                  Get.snackbar('로그아웃 완료', '로그인이성공되엇다 다시로그인할거면 다시하든지');
+              WazzupToast.showSuccess('로그아웃');
+
               if (mounted) {
                 setState(() {
                   _isLoggeIn = false;

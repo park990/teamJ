@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:front/alert/dialog.dart';
+import 'package:front/config/global_keys.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/service/wazzup_token_storage.dart';
 import 'package:front/theme/app_colors.dart';
-import 'package:get/route_manager.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
@@ -101,16 +104,14 @@ Future<bool> _refreshAccessToken() async {
       return false;
     }
   }
+
   void _forceLogOut() async {
     await _storage.deleteAllToken();
-    Get.snackbar(
-      '인증 만료',
-      '로그인 정보가 만료되었습니다. 다시 로그인 해주세요',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: wazzupButton,
-      duration: Duration(seconds: 3),
-    );
-    Get.offAll(() => const MypageMain());
+    WazzupToast.showError('로그아웃 되었습니다.\n 다시 로그인 해주세요');
+
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_)=>const MypageMain()),
+      (route)=>false); // 로그아웃 후  뒤로가기 누르면 로그인 안되어있어야하니까 
   }
 
 

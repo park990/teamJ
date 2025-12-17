@@ -43,7 +43,8 @@ dependencies:
   google_fonts: ^6.3.3
   flutter_secure_storage: ^9.0.0
   lucide_icons: any
-  get: ^4.7.3
+  flutter_riverpod: ^2.5.1
+  flutter_smart_dialog: ^4.5.0
 
 
 dev_dependencies:
