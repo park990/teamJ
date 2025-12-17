@@ -42,4 +42,5 @@ final TextStyle cardBodyFont = GoogleFonts.ibmPlexSans(
 // 보조 텍스트(부가 정보 작성할경우 ex) "호스트 외 15명 참여")
 final TextStyle captionLabelFont = GoogleFonts.ibmPlexSans(
   fontSize: 12,
+  color: Colors.grey[600],
 );
