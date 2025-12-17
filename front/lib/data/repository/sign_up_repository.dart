@@ -2,9 +2,9 @@ import "dart:convert";
 
 import "package:front/dto/auth_response.dart";
 import "package:front/dto/social_user_dto.dart";
-import "package:front/data/data_source/api_client.dart";
+import "package:front/data/data_source/remote/api_client.dart";
 
-class SignupController {
+class SignUpRepository {
   final ApiClient _apiClient = ApiClient();
 
   // 낙네임 중복 체크
