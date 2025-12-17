@@ -9,6 +9,14 @@ spring:
       minimum-idle: 8             # 기다리는 사람 숫자
       max-lifetime: 1800000 
       connection-timeout: 30000  # 꽉찼을때 사람들 기다리는 시간
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost} # 없으면 localhost 사용
+      port: ${REDIS_PORT:6379}
+jwt:
+  secret: ${JWT_SECRET_KEY} 
+  access-token-valid-in-seconds: 3600
+  refresh-token-valid-in-seconds: 604800
 
   jpa:
     show-sql: true # sql 로그 확인
