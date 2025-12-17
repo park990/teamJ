@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.teamj.dto.OAuthDTO;
 import com.teamj.dto.SocialUserDTO;
+import com.teamj.dto.WazzupTokenDTO;
 import com.teamj.entity.users_entity.Users;
 import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
@@ -30,14 +31,14 @@ public class OAuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final StringRedisTemplate redisTemplate;
 
-    public ResponseEntity<ApiResponse<?>> kakaoLogin(OAuthDTO oAuthDTO) {
+    public ResponseEntity<ApiResponse<?>> socialLogin(OAuthDTO oAuthDTO) {
 
         SocialUserDTO socialUser = new SocialUserDTO();
 
         // 이 유저가 기존유저인지 신규 유저인지 일단 DB를 들름.
         if ("KAKAO".equals(oAuthDTO.getProvider())) {
 
-            socialUser = getSnsIdFromKakao(oAuthDTO);
+            socialUser = getFromKakao(oAuthDTO);
 
             if (socialUser == null) {
                 System.out.println("유저정보없음");
@@ -45,8 +46,6 @@ public class OAuthService {
             }
 
         } // 이 뒤에 네이버면 네이버 구글이면 구글 else if 로 추가로 걸어주자
-
-        Map<String, Object> data = new HashMap<>();
 
         Users isUserExist = new Users();
         isUserExist = userRepository.findByProviderAndUsersEmail(oAuthDTO.getProvider(), socialUser.getUsersEmail());
@@ -65,18 +64,20 @@ public class OAuthService {
                     refreshToken,
                     7,
                     TimeUnit.DAYS);
-
-            data.put("wazzupToken", accessToken);
-            data.put("refreshToken", refreshToken);
-            return ResponseEntity.ok(ApiResponse.success(data, "로그인 성공"));
+            
+            WazzupTokenDTO tokenDTO = WazzupTokenDTO.builder()
+                .wazzupToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+            
+            return ResponseEntity.ok(ApiResponse.success(tokenDTO, "로그인 성공"));
         } else {
-            data.put("user", socialUser);
-            return ResponseEntity.ok(ApiResponse.register(data));
+            return ResponseEntity.ok(ApiResponse.register(socialUser));
         }
     }
 
     // 소셜 토큰으로 카카오 정보 갖고오기
-    private SocialUserDTO getSnsIdFromKakao(OAuthDTO dto) {
+    private SocialUserDTO getFromKakao(OAuthDTO dto) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 

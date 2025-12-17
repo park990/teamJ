@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:front/dto/token_and_provider_dto.dart';
+import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/services/OAuth_service.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
@@ -89,7 +90,7 @@ class _MypageMainState extends State<MypageMain> {
 
               // 스토리지에 저장된 토큰도 삭제해 줘야함
               final storage = WazzupTokenStorage();
-              await storage.deleteToken();
+              await storage.deleteAllToken();
               print('스토리지에 저장된 토큰 삭제 완료');
 
               if (mounted) {
@@ -110,7 +111,7 @@ class _MypageMainState extends State<MypageMain> {
 
   // sns 로그인을 위한 바텀 컨테이너들 sheet 보여주기
   void _showLoginBottomSheet(BuildContext context) async {
-    final TokenAndProviderDto? result = await showModalBottomSheet(
+    final SocialTokenAndProviderDto? result = await showModalBottomSheet(
       builder: (BuildContext context) {
         return LoginBottomSheet();
       },
@@ -135,15 +136,14 @@ class _MypageMainState extends State<MypageMain> {
       if (responseData != null) {
         String serverResult = responseData['result'];
 
+        // 신규 유저 register면 data 안에 유저정보가 담겨 있고
         if (serverResult == 'register') {
-          SocialUserDto user = SocialUserDto.fromJson(
-            responseData['data']['user'],
-          );
-
+          SocialUserDto user = SocialUserDto.fromJson(responseData['data']);
+        print('분명히 SocialUserDTO를 socialUser라고 보낸건데${responseData['data']}');
           if (!mounted) return;
 
           // 회원가입 창으로
-          final resultFromSignUp = await Navigator.of(context)
+          final AuthResponse? resultFromSignUp = await Navigator.of(context)
               .push(
                 MaterialPageRoute(
                   builder: (_) => SignupScreen(user: user),
@@ -151,29 +151,34 @@ class _MypageMainState extends State<MypageMain> {
               );
 
           if (resultFromSignUp != null) {
-            String newToken = resultFromSignUp['wazzupToken'];
+            String accessToken = resultFromSignUp.wazzupToken;
+            String refreshToken = resultFromSignUp.refreshToken;
 
             // 토큰 저장을 위한 스토리지
             final storage = new WazzupTokenStorage();
-            await storage.saveToken(newToken);
+            await storage.saveToken(accessToken: accessToken, refreshToken: refreshToken);
 
-            print('마이페이지까지 토큰 잘 받아옴 ${newToken}');
+            print('마이페이지까지 토큰 잘 받아옴 ${accessToken}');
             setState(() {
-              wazzupToken = newToken;
+              wazzupToken = accessToken;
               _isLoggeIn = true;
             });
           }
+          // 기존 유저 success면 data안에 토큰 정보가 담겨 있음
         } else if (serverResult == 'success') {
-          String newToken = responseData['data']['wazzupToken'];
+          AuthResponse tokenData = AuthResponse.fromJson(responseData['data']); 
+             String accessToken = tokenData.wazzupToken;
+            String refreshToken = tokenData.refreshToken;
 
+          print(
+            '기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${accessToken} 이 토큰은 스토리지에 저장해두고 관리해야함.',
+          );
             // 토큰 저장을 위한 스토리지
             final storage = new WazzupTokenStorage();
-            await storage.saveToken(newToken);
-          print(
-            '기존유저임 이는 로그인 성공으로 두고 마이페이지 화면을 보이도록 해야함 받은 토큰은 ${newToken} 이 토큰은 스토리지에 저장해두고 관리해야함.',
-          );
+            await storage.saveToken(accessToken: accessToken, refreshToken: refreshToken );
+            print('${storage.getToken()} 스토리지에 저장된 토큰들임');
           setState(() {
-            wazzupToken = newToken;
+            wazzupToken = accessToken;
             _isLoggeIn = true;
           });
         }

@@ -30,6 +30,6 @@ public class OAuthController {
     @PostMapping("/kakao")
     public ResponseEntity<ApiResponse<?>> kakaoLogin(@RequestBody OAuthDTO dto){
         
-        return oAuthService.kakaoLogin(dto);
+        return oAuthService.socialLogin(dto);
     }
 }
