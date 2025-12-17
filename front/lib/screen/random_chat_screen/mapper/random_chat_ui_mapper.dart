@@ -1,5 +1,5 @@
 import 'package:front/dto/chat_dto.dart';
-import 'package:front/screen/random_chat_screen/model/random_chat_ui_model.dart';
+import 'package:front/screen/random_chat_screen/models/random_chat_ui_model.dart';
 
 class ChatUiMapper {
   static ChatUiModel toUiModel({
