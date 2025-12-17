@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
-import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
-import 'package:front/screen/myPage_screen/login/signup/models/build_social_login_buttons.dart';
+import 'package:front/data/data_source/social/kakao_oauth_data_source.dart';
+import 'package:front/screen/myPage_screen/login/controller/social_login_controller.dart';
+import 'package:front/screen/myPage_screen/login/widgets/social_login_buttons.dart';
 
-class LoginBottomSheet extends StatelessWidget {
+class LoginBottomSheet extends ConsumerWidget {
   const LoginBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
 
@@ -34,7 +36,7 @@ class LoginBottomSheet extends StatelessWidget {
             SizedBox(height: 8),
 
             // 로그인 버튼들
-            _SocialLoginButtons(context),
+            _SocialLoginButtons(context, ref),
           ],
         ),
       ),
@@ -74,20 +76,22 @@ class LoginBottomSheet extends StatelessWidget {
   }
 
   // 바텀 sheet 로그인 buttons
-  Widget _SocialLoginButtons(BuildContext context) {
+  Widget _SocialLoginButtons(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BuildSocialLoginButtons(
+        SocialLoginButtons(
           onPressed: () async{
             print('카카오클릭');
-            String? socialToken = await WithKakao().login();
-            if(socialToken!=null){
-              if(context.mounted){
+            
+            final controller = ref.read(socialLoginProvider.notifier);
+            
+            String? socialToken = await controller.loginKakao();
+
+            if(socialToken!=null && context.mounted){
                 Navigator.of(context).pop(
                   SocialTokenAndProviderDto(provider: "KAKAO", socialToken: socialToken)
                 );
-              }
             }
           },
           text: '카카오 로그인',
@@ -95,7 +99,7 @@ class LoginBottomSheet extends StatelessWidget {
           textColor: Colors.black,
         ),
 
-        BuildSocialLoginButtons(
+        SocialLoginButtons(
           onPressed: () async {
             print('네이버 클릭');
             // String? token = await WithNaver().login();
@@ -105,7 +109,7 @@ class LoginBottomSheet extends StatelessWidget {
           textColor: Colors.white,
         ),
 
-        BuildSocialLoginButtons(
+        SocialLoginButtons(
           onPressed: () async{
             print('애플 클릭');
             // String? token = await WithApple().login();
@@ -116,7 +120,7 @@ class LoginBottomSheet extends StatelessWidget {
           textColor: Colors.white,
         ),
         
-        BuildSocialLoginButtons(
+        SocialLoginButtons(
           onPressed: () async{
             print('구글 클릭');
             // String? token = await WithGoogle().login();

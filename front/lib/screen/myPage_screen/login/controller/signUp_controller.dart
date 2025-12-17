@@ -2,7 +2,7 @@ import "dart:convert";
 
 import "package:front/dto/auth_response.dart";
 import "package:front/dto/social_user_dto.dart";
-import "package:front/service/api_client.dart";
+import "package:front/data/data_source/api_client.dart";
 
 class SignupController {
   final ApiClient _apiClient = ApiClient();

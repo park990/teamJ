@@ -13,7 +13,6 @@ class UpperAppBar extends StatelessWidget {
         SizedBox(width: 10),
         Icon(Icons.notifications_none),
         SizedBox(width: 10),
-        Icon(Icons.more_vert),
       ],
     );
   }

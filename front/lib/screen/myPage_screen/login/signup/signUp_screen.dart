@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:front/controller/signUp_controller.dart';
+import 'package:front/screen/myPage_screen/login/controller/signUp_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
