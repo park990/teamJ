@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:front/dto/social_token_and_provider_dto.dart';
-import 'package:front/service/api_client.dart';
+import 'package:front/data/data_source/api_client.dart';
 
 class OauthService {
   ApiClient _apiClient = ApiClient();
