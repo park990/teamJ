@@ -2,13 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/config/global_keys.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
-import 'package:front/service/wazzup_token_storage.dart';
-import 'package:front/theme/app_colors.dart';
+import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
