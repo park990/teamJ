@@ -22,18 +22,24 @@ final TextStyle headerFont = GoogleFonts.ibmPlexSans(
 );
 
 // 섹션 제목(페이지 내 특정 컨텐츠 블럭)
-final TextStyle subTitleFont = GoogleFonts.ibmPlexSans(
+final TextStyle sectionTitleFont = GoogleFonts.ibmPlexSans(
   fontSize: 18,
   fontWeight: FontWeight.w600,
 );
 
+// 본문제목(카드 내부)
+final TextStyle cardTitleFont = GoogleFonts.ibmPlexSans(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+);
+
 // 본문(카드 내부)
-final TextStyle bodyFont = GoogleFonts.ibmPlexSans(
+final TextStyle cardBodyFont = GoogleFonts.ibmPlexSans(
   fontSize: 14,
   fontWeight: FontWeight.w400,
 );
 
 // 보조 텍스트(부가 정보 작성할경우 ex) "호스트 외 15명 참여")
-final TextStyle labelFont = GoogleFonts.ibmPlexSans(
+final TextStyle captionLabelFont = GoogleFonts.ibmPlexSans(
   fontSize: 12,
 );
