@@ -95,12 +95,3 @@ class _RandomChatMainState extends State<RandomChatMain> {
     );
   }
 }
-
-/*
-() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => RandomChatScreen()),
-  );
-}
-*/

@@ -5,6 +5,7 @@ import 'package:front/dto/chat_dto.dart';
 
 class ChatRepository {
   final String baseUrl;
+  final andUrl = "http://10.0.2.2:8080";
 
   ChatRepository({
     required this.baseUrl,
@@ -14,9 +15,13 @@ class ChatRepository {
   Future<List<ChatDto>> fetchChats({
     required String roomId,
   }) async {
-    final uri = Uri.parse('$baseUrl/api/chat/rooms/$roomId/messages');
 
-    final response = await http.get(uri);
+    final response = await http.get(
+      Uri.parse('$andUrl/api/chat/rooms/$roomId/messages'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
 
     if (response.statusCode != 200) {
       throw Exception('채팅 메시지 조회 실패');
