@@ -1,43 +1,23 @@
 import 'dart:convert';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:front/dto/token_and_provider_dto.dart';
-import 'package:front/service/wazzup_token_storage.dart';
-import 'package:http/http.dart' as http;
+import 'package:front/dto/social_token_and_provider_dto.dart';
+import 'package:front/service/api_client.dart';
 
 class OauthService {
-  String baseUrl = "${dotenv.env["API_URL"]}";
-  String androidUrl = 'http://10.0.2.2:8080';
-  Map<String, String> headers = {
-    "Content-Type": "application/json",
-  };
+  ApiClient _apiClient = ApiClient();
 
   // 로그아웃 wazzupToken 삭제
   Future<bool> wazzupLogout() async {
     try {
-      final storage = WazzupTokenStorage();
-      String? wazzupToken = await storage.getToken();
-
-      if (wazzupToken != null) {
-        final url = Uri.parse('${androidUrl}/api/oauth/logout');
-        final response = await http.post(
-          url,
-          headers: {
-            'Authorization': 'Bearer ${wazzupToken}',
-            'Content-Type': 'application/json',
-          },
-        );
-        if (response.statusCode == 200) {
-          print('로그아웃 성공(wazzupToken Deleted)');
-          return true;
-        } else {
-          print('로그아웃 실패 ${response.statusCode}');
-          return false;
-        }
-      } else {
-        // 존재하지 않는다면 이미 로그아웃 된 상태
-        print('토큰이 존재하지 않음');
+      final response = await _apiClient.post(
+        '/api/oauth/logout',
+      );
+      if (response.statusCode == 200) {
+        print('로그아웃 성공(wazzupToken Deleted)');
         return true;
+      } else {
+        print('로그아웃 실패 ${response.statusCode}');
+        return false;
       }
     } catch (e) {
       print('서버에러 발생 ${e}');
@@ -45,9 +25,7 @@ class OauthService {
     }
   }
 
-  Future<Map<String, dynamic>?> sendSocialLogin(
-    TokenAndProviderDto dto,
-  ) async {
+  Future<Map<String, dynamic>?> sendSocialLogin(SocialTokenAndProviderDto dto) async {
     try {
       String endPoint = "";
       // dto 안에 있는 provider를 꺼내서 확인 (null 체크)
@@ -73,13 +51,10 @@ class OauthService {
           print("알 수 없는 플랫폼입니다.");
           return null;
       }
-      final url = Uri.parse('${androidUrl}${endPoint}');
 
-      print('백으로 전송 주소는: ${androidUrl}${endPoint}');
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(dto.toJson()),
+      final response = await _apiClient.post(
+        endPoint,
+        body: dto,
       );
       if (response.statusCode == 200) {
         return jsonDecode(utf8.decode(response.bodyBytes));

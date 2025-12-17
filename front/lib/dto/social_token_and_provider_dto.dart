@@ -1,8 +1,8 @@
-class TokenAndProviderDto {
+class SocialTokenAndProviderDto {
   final String? provider;
   final String? socialToken;
 
-  TokenAndProviderDto({
+  SocialTokenAndProviderDto({
     this.provider,
     this.socialToken,
   });

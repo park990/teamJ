@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:front/dto/token_and_provider_dto.dart';
+import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/services/with_kakao.dart';
-import 'package:front/screen/myPage_screen/login/build_social_login_buttons.dart';
+import 'package:front/screen/myPage_screen/login/signup/models/build_social_login_buttons.dart';
 
 class LoginBottomSheet extends StatelessWidget {
   const LoginBottomSheet({super.key});
@@ -85,7 +85,7 @@ class LoginBottomSheet extends StatelessWidget {
             if(socialToken!=null){
               if(context.mounted){
                 Navigator.of(context).pop(
-                  TokenAndProviderDto(provider: "KAKAO", socialToken: socialToken)
+                  SocialTokenAndProviderDto(provider: "KAKAO", socialToken: socialToken)
                 );
               }
             }
