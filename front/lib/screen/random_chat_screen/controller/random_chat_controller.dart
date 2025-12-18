@@ -7,7 +7,9 @@ class RandomChatController extends ChangeNotifier {
 
   RandomChatController({
     required this.matchRepository,
-  });
+  }) {
+    print('🔥 RandomChatController created: $hashCode');
+  }
   
   RandomChatState _state = RandomChatState.idle();
 
@@ -24,6 +26,7 @@ class RandomChatController extends ChangeNotifier {
     _setState(
       state.copyWith(status: RandomChatStatus.matching),
     );
+    print('startMatching: $genderOption, state: ${state.status}');
 
     try {
       final dto = await matchRepository.enterQueue(
@@ -44,6 +47,7 @@ class RandomChatController extends ChangeNotifier {
         );
       }
     } catch (e) {
+      print('에러: ${e.toString()}');
       _setState(
         state.copyWith(
           status: RandomChatStatus.error,

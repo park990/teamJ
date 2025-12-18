@@ -11,6 +11,7 @@ final randomMatchRepositoryProvider =
 /// 2. Controller Provider
 final randomChatControllerProvider =
     ChangeNotifierProvider<RandomChatController>((ref) {
-  final repo = ref.read(randomMatchRepositoryProvider);
-  return RandomChatController(matchRepository: repo);
+  return RandomChatController(
+    matchRepository: ref.read(randomMatchRepositoryProvider),
+  );
 });
