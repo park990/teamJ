@@ -12,12 +12,12 @@ class KakaoOauthDataSource {
               error.code == 'CANCELD') {
             return null;
           }
-          await UserApi.instance.loginWithKakaoAccount();
         } // catch 끝
       } else {
+        try {
         await UserApi.instance.loginWithKakaoAccount();
 
-        try {} catch (error) {
+        } catch (error) {
           print('카카오 로그인 실패 ${error}');
           return null;
         }

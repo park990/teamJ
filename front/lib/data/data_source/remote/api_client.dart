@@ -72,7 +72,7 @@ Future<bool> _refreshAccessToken() async {
       // 보통 Access Token은 헤더에, Refresh Token은 바디,
       // 여기서는 DTO에 맞춰서 바디에 담는 예시입니다.
       final response = await http.post(
-        Uri.parse('$baseUrl/api/oauth/reissue'), 
+        Uri.parse('$baseUrl/api/auth/reissue'), 
         headers: _baseHeaders,
         body: jsonEncode({
           'refreshToken': refreshToken, 

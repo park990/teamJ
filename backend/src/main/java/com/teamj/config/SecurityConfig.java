@@ -37,11 +37,16 @@ public class SecurityConfig {
             
             // 2. 주소별 권한 설정
             .authorizeHttpRequests(auth -> auth
+
+                // 로그아웃은 필터를 거치도록 하지만 어차피 로그아웃이라 안거쳐도 문제는 없지만 일단 거치도록 하자.
+                .requestMatchers("/api/auth/logout").authenticated()
+
                 .requestMatchers(
-                    "/api/signUp/**",
-                    "/api/oauth/**"
+                     "/api/signUp/**",
+                                  "/api/auth/**"
                 ).permitAll() 
-                
+
+
                 // 나머지는 다 로그인해야 들어올 수 있다
                 .anyRequest().authenticated()
             )
