@@ -1,6 +1,5 @@
 package com.teamj.service.myPage_service.oauth_servicer;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -121,9 +120,9 @@ public class OAuthService {
 
         if (redisTemplate.opsForValue().get(key) != null) {
             redisTemplate.delete(key);
-            log.info("유자 {}의 refresh토큰(RT) 삭제 완료, 로그아웃 완료", userIdx);
+            log.info("유저 {}의 refresh토큰(RT) 삭제 완료, 로그아웃 완료", userIdx);
         } else {
-            log.info("유자 {}의 refresh토큰 없거나 만료.", userIdx);
+            log.info("유저 {}의 refresh토큰 없거나 만료.", userIdx);
         }
     }
 

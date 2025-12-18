@@ -5,7 +5,7 @@ import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/widgets/login_bottom_sheet.dart';
-import 'package:front/screen/myPage_screen/login/controller/OAuth_service.dart';
+import 'package:front/data/repository/OAuth_repository.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -81,7 +81,7 @@ class _MypageMainState extends State<MypageMain> {
         if (_isLoggeIn)
           ElevatedButton(
             onPressed: () async {
-              await OauthService().wazzupLogout();
+              await OauthRepository().wazzupLogout();
               try {
                 // 소셜 로그아웃
                 await UserApi.instance.logout();
@@ -130,7 +130,7 @@ class _MypageMainState extends State<MypageMain> {
       print("소셜 토큰을 마이페이지 홈에서 pop 받은 상태: ${result.socialToken}");
       if (!mounted) return;
 
-      OauthService oAuthService = OauthService();
+      OauthRepository oAuthService = OauthRepository();
 
       // 로그인 했을 때 register이면 신규유저 success면 기존유저
       final responseData = await oAuthService.sendSocialLogin(

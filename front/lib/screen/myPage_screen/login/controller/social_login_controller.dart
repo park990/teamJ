@@ -1,6 +1,6 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/data/data_source/social/kakao_oauth_data_source.dart';
+import 'package:front/data/data_source/remote/social/kakao_oauth_data_source.dart';
 
   final socialLoginProvider = NotifierProvider<SocialLoginController, void>(() {
     return SocialLoginController();

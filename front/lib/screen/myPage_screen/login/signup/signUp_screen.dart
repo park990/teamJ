@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:front/screen/myPage_screen/login/controller/signUp_controller.dart';
+import 'package:front/data/repository/sign_up_repository.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
@@ -16,7 +16,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   
   // 컨트롤러 불러오기
-  final SignupController _signupController = SignupController();
+  final SignUpRepository _signUpRepository = SignUpRepository();
   
   // 입력을 안했을때 유효성 검사를 위한 폼키
   final _formKey = GlobalKey<FormState>();
@@ -206,7 +206,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (currentItem.type == StepType.nickName) {
       print("닉네임 중복 확인 중...");
       String nickName = currentItem.controller.text;
-       bool isDup = await _signupController.requestNickname(nickName);
+       bool isDup = await _signUpRepository.requestNickname(nickName);
 
       if (isDup) {
         setState(() {
@@ -419,7 +419,7 @@ class _SignupScreenState extends State<SignupScreen> {
     ///
     /// 아래 다바 등록 을 실행하면 본인인증 및 회원가입 마무리...!
 
-    AuthResult result = await _signupController.requestSignUp(joinUser);
+    AuthResult result = await _signUpRepository.requestSignUp(joinUser);
 
     if(!mounted) return;
 

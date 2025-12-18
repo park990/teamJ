@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
-import 'package:front/data/data_source/social/kakao_oauth_data_source.dart';
+import 'package:front/data/data_source/remote/social/kakao_oauth_data_source.dart';
 import 'package:front/screen/myPage_screen/login/controller/social_login_controller.dart';
 import 'package:front/screen/myPage_screen/login/widgets/social_login_buttons.dart';
 
