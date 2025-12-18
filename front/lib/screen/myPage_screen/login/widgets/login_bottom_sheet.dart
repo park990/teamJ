@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
-import 'package:front/data/data_source/remote/social/kakao_oauth_data_source.dart';
 import 'package:front/screen/myPage_screen/login/controller/social_login_controller.dart';
 import 'package:front/screen/myPage_screen/login/widgets/social_login_buttons.dart';
 
@@ -84,7 +83,7 @@ class LoginBottomSheet extends ConsumerWidget {
           onPressed: () async{
             print('카카오클릭');
             
-            final controller = ref.read(socialLoginProvider.notifier);
+            final controller = ref.read(socialLoginControllerProvider.notifier);
             
             String? socialToken = await controller.loginKakao();
 

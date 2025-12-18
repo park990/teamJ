@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
 
-class OauthRepository {
+class AuthRepository {
   ApiClient _apiClient = ApiClient();
 
   // 로그아웃 wazzupToken 삭제
   Future<bool> wazzupLogout() async {
     try {
       final response = await _apiClient.post(
-        '/api/oauth/logout',
+        '/api/auth/logout',
       );
       if (response.statusCode == 200) {
         print('로그아웃 성공(wazzupToken Deleted)');
@@ -36,16 +36,16 @@ class OauthRepository {
 
       switch (dto.provider) {
         case 'KAKAO':
-          endPoint = '/api/oauth/kakao';
+          endPoint = '/api/auth/kakao';
           break;
         case 'NAVER':
-          endPoint = '/api/oauth/naver';
+          endPoint = '/api/auth/naver';
           break;
         case 'APPLE':
-          endPoint = '/api/oauth/apple';
+          endPoint = '/api/auth/apple';
           break;
         case 'GOOGLE':
-          endPoint = '/api/oauth/google';
+          endPoint = '/api/auth/google';
           break;
         default:
           print("알 수 없는 플랫폼입니다.");

@@ -1,51 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:front/dto/auth_response.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:front/data/repository/sign_up_repository.dart';
+import 'package:front/screen/myPage_screen/login/controller/signup_controller.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 import 'package:front/theme/app_colors.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key, required SocialUserDto this.user});
   final SocialUserDto user;
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  
-  // 컨트롤러 불러오기
-  final SignUpRepository _signUpRepository = SignUpRepository();
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   
   // 입력을 안했을때 유효성 검사를 위한 폼키
   final _formKey = GlobalKey<FormState>();
 
-  bool _showGenderError = false;
-
-  String? _asyncErrorText;
-
-  int _currentStep = 0;
-  late List<StepItem> _steps;
-
   @override
   void initState() {
     super.initState();
-    _steps=getSignupSteps();
 
     // 화면이 전부 바뀐뒤에 텍스트 필드에 포커스 해주는 액션
     // 아래 버튼 누를때도 써주는데 처음 화면 렌더링때 이름레이블에 포커싱이 안돼서 init때 해줌.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(
-        context,
-      ).requestFocus(_steps[_currentStep].focusNode);
+      final steps = ref.read(SignupControllerProvider).steps;
+
+      if(steps.isNotEmpty){
+        FocusScope.of(context).requestFocus(steps[0].focusNode);
+      }
+      
     });
-    
   }
 
 
   @override
   Widget build(BuildContext context) {
+    final signupState = ref.watch(SignupControllerProvider);
+    final notifier = ref.read(SignupControllerProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
@@ -54,7 +48,7 @@ class _SignupScreenState extends State<SignupScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // 상단 단계표시 바
-            _stateBar(),
+            _stateBar(signupState),
 
             Expanded(
               child: SingleChildScrollView(
@@ -70,11 +64,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         _Header(),
                         // 하단 본인인증 항목 리스트들
                         Column(
-                          children: _steps.map((e) {
-                            if (e.stepIndex > _currentStep) {
+                          children: signupState.steps.map((e) {
+                            if (e.stepIndex > signupState.currentStep) {
                               return SizedBox.shrink();
                             }
-                            return _buildStepField(e);
+                            return _buildStepField(e,signupState, notifier);
                           }).toList(),
                         ),
                       ],
@@ -83,7 +77,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
             ),
-            nextButton(),
+            nextButton(signupState, notifier),
           ],
         ),
       ),
@@ -91,7 +85,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
 
-  Widget _buildStepField(StepItem e) {
+  Widget _buildStepField(StepItem e, SignupState state, SignupController notifier) {
     return Padding(
       padding: const EdgeInsets.only(top: 30),
       child: Column(
@@ -105,23 +99,19 @@ class _SignupScreenState extends State<SignupScreen> {
 
             // 성별 선택
           if (e.type == StepType.gender)
-            _buildGenderSlector(e)
+            _buildGenderSlector(e, state)
           else
             // 텍스트 상자
             TextFormField(
               style: TextStyle(fontSize: 20),
               focusNode: e.focusNode,
               controller: e.controller,
-              readOnly: (e.type==StepType.nickName&&_currentStep>e.stepIndex),
+              readOnly: (e.type==StepType.nickName&&state.currentStep>e.stepIndex),
               
               decoration: _textFieldDesign(e).copyWith(
-                suffixIcon: (e.type==StepType.nickName && _currentStep>e.stepIndex)
+                suffixIcon: (e.type==StepType.nickName && state.currentStep>e.stepIndex)
                 ?IconButton(
-                  onPressed: (){
-                    setState(() {
-                      _currentStep=e.stepIndex;
-                    });
-                  },
+                  onPressed: ()=>notifier.goToStep(e.stepIndex),
                   icon:  Icon(Icons.edit),color: Colors.grey[500])
                 :null,
               ),
@@ -130,14 +120,7 @@ class _SignupScreenState extends State<SignupScreen> {
               autovalidateMode:AutovalidateMode.onUserInteraction,
 
               // 닉네임 재입력시 오류메시지 사라지게
-              onChanged: (value) {
-                if (_asyncErrorText != null) {
-                  setState(() {
-                    _asyncErrorText = null;
-                  });
-                  _formKey.currentState!.validate();
-                }
-              },
+              onChanged: (_)=>notifier.clearNicknameError(),
 
                 // 공백 유효성 검사
               validator: (value) {
@@ -147,8 +130,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 // 닉네임 중복 오류
                 if (e.type==StepType.nickName &&
-                    _asyncErrorText != null) {
-                  return _asyncErrorText;
+                    state.nicknameError != null) {
+                  return state.nicknameError;
                 }
                 return null;
               },
@@ -159,7 +142,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   // 다음 버튼
-  Widget nextButton() {
+  Widget nextButton(SignupState state, SignupController notifier) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only( left: 30,right: 30,bottom: 20),
@@ -170,75 +153,47 @@ class _SignupScreenState extends State<SignupScreen> {
               backgroundColor: wazzupButton, 
               shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10))
             ),
-            onPressed: _nextStep,
-            child: _currentStep==_steps.length-1?Text('본인인증'):Text('다음')
+            onPressed: state.isSubmitting ? null : ()=>_handleNext(state,notifier),
+            child: state.currentStep==state.steps.length-1?Text('본인인증'):Text('다음')
           ),
         ),
       ),
     );
   }
 
-  // 다음 버튼을 누르면 다음 스텝이 나오도록 그리고 그 다음 스텝 아이템에 FOCUS
-  void _nextStep() async {
-       final currentItem=_steps[_currentStep];
+  void _handleNext(SignupState state, SignupController notifier) async {
+    if(!_formKey.currentState!.validate())return;
 
-    // 유효성 검사
-    // validation 이 false면 다음 스텝 안나오도록
-    if (!_formKey.currentState!.validate()) return;
+    final isValid = await notifier.validateCurrentStep();
 
-    // 성별 체크 유효성 검사
-    if(currentItem.type == StepType.gender){
-      // 체크 안했다면
-      if(currentItem.controller.text.isEmpty){
-        setState(() {
-          _showGenderError=true;
-        });
-        return;
-        // 체크 했다면
-      }else{
-        setState(() {
-          _showGenderError=false;
-        });
+    if(!isValid){
+      _formKey.currentState!.validate();
+      return;
+    }
+    
+    if(notifier.isLastStep){
+      final result = await notifier.submitSignUp(widget.user);
+      if(result !=null && result.success && mounted){
+        Navigator.of(context).pop(
+          result.data
+        );
       }
+      return;
     }
 
-    // 닉네임 중복체크 비동기 통신
-    if (currentItem.type == StepType.nickName) {
-      print("닉네임 중복 확인 중...");
-      String nickName = currentItem.controller.text;
-       bool isDup = await _signUpRepository.requestNickname(nickName);
+    notifier.goNextStep();
 
-      if (isDup) {
-        setState(() {
-          _asyncErrorText = "이미 사용중인 닉네임 입니다";
-        });
-        _formKey.currentState!.validate();
-        return;
-      }else{
-        setState(() {
-          _asyncErrorText=null;
-        });
-      }
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusScope.of(context).requestFocus(notifier.currentFocusNode);
+      });
     }
-    setState(() {
-      if (_currentStep < _steps.length - 1) {
-        _currentStep++;
-      } else {
-        print('완료 (본인인증 시작)');
-        _submitSignUp();
-      }
-    });
 
-    // 화면이 전부 바뀐뒤에 텍스트 필드에 포커스 해주는 액션
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(
-        context,
-      ).requestFocus(_steps[_currentStep].focusNode);
-    });
   }
 
+
   // 성별 선택 위젯
-  Widget _buildGenderSlector(StepItem item) {
+  Widget _buildGenderSlector(StepItem item, SignupState state) {
     return Column(
       children: [
         Container(
@@ -258,7 +213,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           ),
         ),
-        if(_showGenderError && item.controller.text.isEmpty)
+        if(state.showGenderError && item.controller.text.isEmpty)
         Text("성별을 선택해 주세요",style: TextStyle(color: Colors.red,fontSize: 12)),
         if (item.controller.text.isNotEmpty)
           SizedBox(
@@ -324,13 +279,13 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   // 최상단 스텝 표시상태 바 
-  Widget _stateBar(){
+  Widget _stateBar(SignupState state){
     return Padding(
       padding: EdgeInsets.symmetric(horizontal:30,vertical: 10),
       child: TweenAnimationBuilder<double>(
       tween: Tween<double>(
         begin: 0, 
-        end: (_currentStep+1) / _steps.length // 전체대비 얼마나 찼는지
+        end: (state.currentStep+1) / state.steps.length // 전체대비 얼마나 찼는지
       ),
       duration: Duration(milliseconds: 300), // 게이지 차오르는 속도
       builder: (context, value, _) => LinearProgressIndicator(
@@ -368,94 +323,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ],
     );
-  }
-
-  // 회원가입 DB 등록 
-  void _submitSignUp() async {
-    
-    String inputName = "";
-    String inputNickName = "";
-    String inputPhone = ""; 
-    String inputBirth = ""; 
-    String inputGender = "";
-
-    for(var step in _steps){
-      if(step.type==StepType.name){
-        inputName=step.controller.text;
-      }else if(step.type==StepType.nickName){
-        inputNickName=step.controller.text;
-      }else if (step.type == StepType.phone) {
-        inputPhone = step.controller.text;
-      } else if (step.type == StepType.birth) {
-        inputBirth = step.controller.text;
-      }else if (step.type == StepType.gender) {
-        inputGender = step.controller.text;
-      }
-    }
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-     SocialUserDto joinUser = SocialUserDto(
-
-      // 여기는 소셜로그인으로 받아온 값들
-      usersEmail: widget.user.usersEmail,
-      provider: widget.user.provider,
-      usersSnsId: widget.user.usersSnsId,
-
-      // 그리고 회원가입하면서 입력한 값들  하지만 이부분도 nickname만받고 나머지는 결국엔 나중에 pass 인증하면서 따로 추가로 받아야함...!
-      usersNickname: inputNickName,
-
-
-      // 패스 인증하면서 받아야할 정보들....
-      usersName: inputName,
-      usersPhone: inputPhone,
-      birthDate: inputBirth,
-      usersGender: inputGender,
-    );
-    print('이제 이 정보를 바탕으로 (Pass)본인인증을 실시할것임 ${joinUser.toJson()}');
-
-    ///이부분에서 입력한 회원 정보를 갖고 본인인증 패스를 한번 갖다 온다음에 본인인증을 성공을 했다면
-    ///
-    ///
-    ///
-    ///
-    /// 아래 다바 등록 을 실행하면 본인인증 및 회원가입 마무리...!
-
-    AuthResult result = await _signUpRepository.requestSignUp(joinUser);
-
-    if(!mounted) return;
-
-    if(result.success){
-      print("회원가입 성공 토큰: ${result.data}");
-      Navigator.of(context).pop(
-        result.data
-      );
-    }else{
-
-      int targetIndex = _steps.indexWhere((item)=>item.type==StepType.nickName);
-
-      if(targetIndex !=-1){
-        setState(() {
-          _currentStep = targetIndex;
-          _asyncErrorText= "앗..! 방금 누군가가 동일한 닉네임으로 가입했습니다.";
-        });
-          // 화면이 닉네임 창으로 넘어 간 후에 오류 메시지 띄우기
-        WidgetsBinding.instance.addPostFrameCallback((_){
-          _formKey.currentState!.validate();
-          FocusScope.of(context).requestFocus(_steps[targetIndex].focusNode);
-        });
-      }
-    }
-
-  }
-
-
-
-  // controller & focusNode dispose
-  @override
-  void dispose() {
-    super.dispose();
-    for(var step in _steps){
-      step.controller.dispose();
-      step.focusNode.dispose();
-    }
   }
 }
