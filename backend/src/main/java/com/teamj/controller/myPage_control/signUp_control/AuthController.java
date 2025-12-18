@@ -14,11 +14,13 @@ import com.teamj.response.ApiResponse;
 import com.teamj.service.myPage_service.oauth_servicer.OAuthService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/oauth")
-public class OAuthController {
+@RequestMapping("/api/auth")
+@Slf4j
+public class AuthController {
     private final OAuthService oAuthService;
 
     // 로그아웃
@@ -33,7 +35,7 @@ public class OAuthController {
     // 카카오 로그인
     @PostMapping("/kakao")
     public ResponseEntity<ApiResponse<?>> kakaoLogin(@RequestBody OAuthDTO dto){
-        
+        log.info("로그인 실행");
         return oAuthService.socialLogin(dto);
     }
 
