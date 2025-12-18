@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:front/screen/gathering_screen/model/gathering_meeting.dart';
-import 'package:front/screen/gathering_screen/widgets/ad_banner.dart';
-import 'package:front/screen/gathering_screen/widgets/gathering_card_item.dart';
+import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
 import 'package:front/theme/app_colors.dart';
 
 class GatheringMain extends StatefulWidget {
@@ -37,8 +36,6 @@ class _GatheringMainState extends State<GatheringMain>
     ),
   ];
 
-    //bool isSearching = false;
-
     @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -46,30 +43,26 @@ class _GatheringMainState extends State<GatheringMain>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // 고정: 광고 배너 영역
-            AdBanner(),
-            // Container(
-            //   height: 70,
-            //   color: Colors.grey[400],
-            //   alignment: Alignment.center,
-            //   child: Text('여기에 광고 배너(이미지)'),
-            // ),
+            //AdBanner(),
             // 고정 : 섹션 제목
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text('🔥이번 주 핫한 모임', style: sectionTitleFont),
             ),
-
             // ListView가 들어갈 곳
-            Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: _gatheringMeetings.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    return GatheringCardItem(meeting: _gatheringMeetings[index]);
-                  }
-                ),
+            SizedBox(
+              height: 250,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _gatheringMeetings.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  // 모임카드 수평으로 보여주기
+                  return GatheringHorizontalCard(meeting: _gatheringMeetings[index]);
+                },
               ),
+            ),
           ],
         ),
       );
