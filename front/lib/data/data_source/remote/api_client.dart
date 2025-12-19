@@ -77,7 +77,7 @@ Future<bool> _refreshAccessToken() async {
         body: jsonEncode({
           'refreshToken': refreshToken, 
         }),
-      );
+        );
 
       if (response.statusCode == 200) {
         // 3. 재발급 성공 -> 새 토큰 저장
