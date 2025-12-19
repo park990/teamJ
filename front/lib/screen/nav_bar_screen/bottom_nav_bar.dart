@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/const/tabs.dart';
 import 'package:front/theme/app_colors.dart';
 
-class BottomNavBar extends StatefulWidget {
+final bottomNavIndexProvider = StateProvider(<int>(ref)=>0);
+class BottomNavBar extends ConsumerStatefulWidget {
   const BottomNavBar({super.key});
 
   @override
-  State<BottomNavBar> createState() => _BottomNavBarState();
+  ConsumerState<BottomNavBar> createState() => _BottomNavBarState();
 }
 
-class _BottomNavBarState extends State<BottomNavBar> with TickerProviderStateMixin {
+class _BottomNavBarState extends ConsumerState<BottomNavBar> with TickerProviderStateMixin {
   late final TabController tabController;
 
   @override
