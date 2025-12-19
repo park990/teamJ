@@ -10,10 +10,15 @@ class RandomChatMain extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     final controller = ref.watch(randomChatControllerProvider);
     final randomChatState = controller.state;
+
+    debugPrint('[RandomChatMain] build - status=${randomChatState.status}');
+
     print('randomChatState: ${randomChatState.status}');
     if (randomChatState.status == RandomChatStatus.matching) {
+      debugPrint('[RandomChatMain] UI = MATCHING');
       return Scaffold(
         body: Center(
           child: Column(
@@ -26,7 +31,23 @@ class RandomChatMain extends ConsumerWidget {
           ),
         ),
       );
+    } else if (randomChatState.status == RandomChatStatus.error) {
+      debugPrint('[RandomChatMain] UI = ERROR');
+      return Column(
+        children: [
+          Text('매칭 실패'),
+          Text(randomChatState.errorMessage ?? ''),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(randomChatControllerProvider)
+                .reset(); // idle로
+            },
+            child: Text('다시 시도'),
+          ),
+        ],
+      );
     } else {
+      debugPrint('[RandomChatMain] UI = IDLE');
       return Scaffold(
         body: Center(
           child: Column(

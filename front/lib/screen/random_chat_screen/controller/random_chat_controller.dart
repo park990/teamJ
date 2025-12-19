@@ -8,32 +8,72 @@ class RandomChatController extends ChangeNotifier {
   RandomChatController({
     required this.matchRepository,
   }) {
-    print('🔥 RandomChatController created: $hashCode');
+    debugPrint('🔥 RandomChatController CREATED '
+        'hash=$hashCode');
   }
-  
+
   RandomChatState _state = RandomChatState.idle();
 
   RandomChatState get state => _state;
 
-  // 상태 변경 전용 함수
+  /// ==========================
+  /// 상태 변경 전용 함수
+  /// ==========================
   void _setState(RandomChatState newState) {
+    debugPrint(
+      '🔄 STATE CHANGE '
+      '[${_state.status} → ${newState.status}] '
+      'roomIdx: ${newState.roomIdx}',
+    );
+
     _state = newState;
     notifyListeners();
+
+    debugPrint('📢 notifyListeners() called');
   }
 
-  /// 랜덤채팅 시작 버튼 클릭
+  /// ==========================
+  /// 상태 초기화
+  /// ==========================
+  void reset() {
+    debugPrint('♻️ reset() called');
+    _setState(RandomChatState.idle());
+  }
+
+  /// ==========================
+  /// 랜덤채팅 시작
+  /// ==========================
   Future<void> startMatching({required String genderOption}) async {
+    debugPrint(
+      '▶ startMatching() CALLED '
+      'genderOption=$genderOption',
+    );
+
     _setState(
       state.copyWith(status: RandomChatStatus.matching),
     );
-    print('startMatching: $genderOption, state: ${state.status}');
+
+    debugPrint(
+      '⏳ AFTER set matching '
+      'currentState=${state.status}',
+    );
 
     try {
+      debugPrint('🌐 enterQueue() REQUEST START');
+
       final dto = await matchRepository.enterQueue(
         genderOption: genderOption,
       );
 
+      debugPrint(
+        '✅ enterQueue() RESPONSE '
+        'matched=${dto.matched}, '
+        'roomIdx=${dto.roomIdx}',
+      );
+
       if (dto.matched && dto.roomIdx != null) {
+        debugPrint('🎯 MATCH SUCCESS');
+
         _setState(
           state.copyWith(
             status: RandomChatStatus.matched,
@@ -41,13 +81,17 @@ class RandomChatController extends ChangeNotifier {
           ),
         );
       } else {
-        // 아직 매칭 안 됨 → 대기 상태 유지
+        debugPrint('⌛ STILL MATCHING');
+
         _setState(
           state.copyWith(status: RandomChatStatus.matching),
         );
       }
-    } catch (e) {
-      print('에러: ${e.toString()}');
+    } catch (e, s) {
+      debugPrint('❌ startMatching ERROR');
+      debugPrint('❌ error=$e');
+      debugPrintStack(stackTrace: s);
+
       _setState(
         state.copyWith(
           status: RandomChatStatus.error,
@@ -56,5 +100,4 @@ class RandomChatController extends ChangeNotifier {
       );
     }
   }
-
 }
