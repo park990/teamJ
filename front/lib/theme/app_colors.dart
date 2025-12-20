@@ -8,7 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 //#f279b6
 //#f07fb8
 
-  const Color wazzupButton = Color(0xFFa7c3f3);
+
+  const Color wazzupButton = Color(0xFFdf8eb6);
+  const Color wazzupBackGround  = Color(0xFFa7c3f3);
 
 
   // 앱바 wazzup글씨 볼드 테마
