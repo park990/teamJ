@@ -53,7 +53,7 @@ public class SecurityConfig {
             // JWt 필터 등록
             // 스프링 시큐리티 기본인증 처리단계보다 앞서 JWT필터 먼저 동작
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-            UsernamePasswordAuthenticationFilter.class);// 아이디 비번 검사보다  앞을 정의한거지만 우리는 모든 로그인 처리 소셜에 맡김으로 단지 표지판 역할임 
+            UsernamePasswordAuthenticationFilter.class);// 아이디 비번 검사보다 앞을 정의한거지만 우리는 모든 로그인 처리 소셜에 맡김으로 단지 표지판 역할임 
             
             
         return http.build();
