@@ -9,7 +9,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFFFF5F7),
         title: Padding(
           padding: const EdgeInsets.only(left: 3),
           child: UpperAppBar(),
