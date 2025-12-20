@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
-import 'package:front/screen/wazzup_screen/model/post_model.dart';
+import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class WazzupMain extends ConsumerWidget {
-  const WazzupMain({super.key});
+class BomMain extends ConsumerWidget {
+  const BomMain({super.key});
 
   @override
   Widget build(BuildContext context,ref) {
@@ -26,7 +26,7 @@ class WazzupMain extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // 맑은 연회색 배경
+      backgroundColor: wazzupBackGround, // 배경
       
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 4), 

@@ -42,6 +42,8 @@ class _GatheringMainState extends State<GatheringMain>
     @override
     Widget build(BuildContext context) {
       return Scaffold(
+      backgroundColor: wazzupBackGround, // 배경
+
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

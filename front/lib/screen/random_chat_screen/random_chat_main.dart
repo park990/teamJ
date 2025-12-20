@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/provider/random_chat_provider.dart';
 import 'package:front/screen/random_chat_screen/models/random_chat_state.dart';
 import 'package:front/screen/random_chat_screen/random_chat_screen.dart';
+import 'package:front/theme/app_colors.dart';
 
 class RandomChatMain extends ConsumerWidget {
   RandomChatMain({super.key});
@@ -49,6 +50,8 @@ class RandomChatMain extends ConsumerWidget {
     } else {
       debugPrint('[RandomChatMain] UI = IDLE');
       return Scaffold(
+      backgroundColor: wazzupBackGround, // 배경
+
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

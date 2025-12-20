@@ -4,7 +4,7 @@ import 'package:front/screen/friend_screen/friend_main.dart';
 import 'package:front/screen/gathering_screen/gathering_main.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/screen/random_chat_screen/random_chat_main.dart';
-import 'package:front/screen/wazzup_screen/wazzup_main.dart';
+import 'package:front/screen/bom_screen/bom_main.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class TabInfo{
@@ -32,9 +32,9 @@ final TABS =[
 
   ),
   TabInfo(
-    icon: LucideIcons.zap,
-    label: 'WAZZUP',
-    screen: WazzupMain(),
+    icon: LucideIcons.flower,
+    label: 'Bom',
+    screen: BomMain(),
 
   ),
   TabInfo(
