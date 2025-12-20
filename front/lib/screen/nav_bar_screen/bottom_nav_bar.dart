@@ -82,9 +82,10 @@ class _BottomNavItems extends StatelessWidget {
     return BottomNavigationBar(
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      selectedItemColor: Colors.black,
+      selectedItemColor: wazzupButton,
       unselectedLabelStyle: wazzupFont,
-      selectedLabelStyle: wazzupFont.copyWith(fontWeight: FontWeight.bold),
+      selectedLabelStyle: wazzupFont,
+      backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
       
 

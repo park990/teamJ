@@ -1,9 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
-import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/screen/wazzup_screen/model/post_model.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -29,18 +27,9 @@ class WazzupMain extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA), // 맑은 연회색 배경
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          '자유게시판',
-          style: TextStyle(color: Color(0xFF212529), fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        centerTitle: true,
-        shape: Border(bottom: BorderSide(color: Color(0xFFF1F3F5), width: 1)), // 앱바 하단 미세한 선
-      ),
+      
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8), 
+        padding: const EdgeInsets.symmetric(vertical: 4), 
         itemCount: dummyPosts.length,
         itemBuilder: (context, index) {
           return _PostCard(post: dummyPosts[index]);
@@ -55,7 +44,7 @@ class WazzupMain extends ConsumerWidget {
           }
           
         },
-      backgroundColor: Colors.pink.withValues(alpha: 0.39),
+      backgroundColor: wazzupButton.withValues(alpha: 0.75),
       elevation: 2,
       
       child: Icon(Icons.add,color: Colors.white,)
@@ -72,13 +61,13 @@ class _PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       // 카드들 사이 간격
-      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02), // 아주 연한 그림자
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -90,14 +79,15 @@ class _PostCard extends StatelessWidget {
         // 여기서 클릭하면 상세 글 화면으로 넘어가야함
         onTap: () {print('${post.id}클릭');},
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          // 카드안에 든 내용물과 카드의 패딩
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             children: [
               // --- 상단 영역: 제목 + 이미지 플레이스홀더 ---
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
+                  Expanded(  
                     child: Column(
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
@@ -126,7 +116,7 @@ class _PostCard extends StatelessWidget {
                   // --- 🖼️ 업그레이드된 이미지 플레이스홀더 ---
                   Padding(
                     // 사진만 살짝 아래로
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 15),
                     child: Container(
                       width: 50,
                       height: 50,
@@ -145,7 +135,7 @@ class _PostCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               
               // --- 하단 영역: [작성자 · 시간] | [하트 댓글 조회] ---
               Row(
@@ -199,7 +189,7 @@ class _PostCard extends StatelessWidget {
         Icon(
           icon, 
           size: 14, 
-          color: isZero ? const Color(0xFFDEE2E6) : color.withValues(alpha: 0.4)
+          color: isZero ? const Color(0xFFDEE2E6) : color.withValues(alpha: 0.5)
         ),
         const SizedBox(width: 4),
         Text(
