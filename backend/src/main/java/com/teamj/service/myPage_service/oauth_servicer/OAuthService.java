@@ -18,7 +18,7 @@ import com.teamj.dto.WazzupTokenDTO;
 import com.teamj.entity.users_entity.Users;
 import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
-import com.teamj.response.ApiResponse;
+import com.teamj.response.ApiResponse; 
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

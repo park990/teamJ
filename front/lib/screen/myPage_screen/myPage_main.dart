@@ -121,10 +121,10 @@ class _MypageMainState extends ConsumerState<MypageMain> {
           )
         );
       
-      // 회원 가입 마치면 로그인이 성공해서 돌아오는데 토큰 들고옴 
-      if(signUpResult !=null){
-        await controller.completeSignUp(signUpResult);
-      }
+        // 회원 가입 마치면 로그인이 성공해서 돌아오는데 토큰 들고옴 
+        if(signUpResult !=null){
+          await controller.completeSignUp(signUpResult);
+        }
       }
     }
   }

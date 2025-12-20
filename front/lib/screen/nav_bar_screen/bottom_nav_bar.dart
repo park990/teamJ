@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/const/tabs.dart';
 import 'package:front/theme/app_colors.dart';
 
-class BottomNavBar extends StatefulWidget {
+final bottomNavIndexProvider = StateProvider(<int>(ref)=>0);
+class BottomNavBar extends ConsumerStatefulWidget {
   const BottomNavBar({super.key});
 
   @override
-  State<BottomNavBar> createState() => _BottomNavBarState();
+  ConsumerState<BottomNavBar> createState() => _BottomNavBarState();
 }
 
-class _BottomNavBarState extends State<BottomNavBar> with TickerProviderStateMixin {
+class _BottomNavBarState extends ConsumerState<BottomNavBar> with TickerProviderStateMixin {
   late final TabController tabController;
 
   @override
@@ -80,9 +82,10 @@ class _BottomNavItems extends StatelessWidget {
     return BottomNavigationBar(
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      selectedItemColor: Colors.black,
+      selectedItemColor: wazzupButton,
       unselectedLabelStyle: wazzupFont,
-      selectedLabelStyle: wazzupFont.copyWith(fontWeight: FontWeight.bold),
+      selectedLabelStyle: wazzupFont,
+      backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
       
 

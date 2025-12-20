@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+//#d685ac
+//#eedaf2
+//#e889e5
+//#f573b4
+//#f279b6
+//#f07fb8
 
-
-  const Color wazzupButton = Color(0xFFeedaf2);
+  const Color wazzupButton = Color(0xFFd685ac);
 
 
   // 앱바 wazzup글씨 볼드 테마
   final TextStyle wazzupBarFont = GoogleFonts.ibmPlexSans(
   fontSize: 20, 
   fontWeight: FontWeight.w500, 
+  
 );
 
   // 기본 글 씨 테마 알아서 크기 조정하고 굵기 조정하셈
