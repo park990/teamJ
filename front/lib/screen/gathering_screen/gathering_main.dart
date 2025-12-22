@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/data/repository/gathering_repository.dart';
 import 'package:front/provider/gathering_meeting_provider.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
 import 'package:front/theme/app_colors.dart';
@@ -17,8 +16,8 @@ class GatheringMain extends ConsumerStatefulWidget {
 
 class _GatheringMainState extends ConsumerState<GatheringMain>
   with TickerProviderStateMixin {
-    // 현재 페이지 진행률 (0.0 ~ 1.0)
-    double _pageValue = 0;
+    // 현재 페이지 진행률 (0 ~ 1)
+    int _currentPage = 0;
 
     // PageView 스크롤 제어를 위한 컨트롤러
     late PageController _pageController;
@@ -29,19 +28,6 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
       super.initState();
       // PageController 생성 (viewportFraction: 1 = 전체 화면 크기)
       _pageController = PageController(viewportFraction: 1);
-      // 페이지 스크롤 시 진행률 업데이트 리스너 등록
-      _pageController.addListener((){
-        print("현재 스크롤 위치: ${_pageController.page}");
-        // 컨트롤러가 연결되어 있고 모임이 2개 이상일 때만 진행률 계산
-        if(_pageController.hasClients && meetings.length > 1) {
-          // 진행률 = 현재 페이지 인덱스 / 최대 페이지 인덱스
-          setState(() {
-            _pageValue = (
-              _pageController.page! / (meetings.length - 1)
-            ).clamp(0.0, 1.0); // 0.0 ~ 1.0 사이로 제한
-          });
-        }//if문 끝
-      });
     }
     // 컨트롤러 종료(메모리 누수 방지)
     @override
@@ -77,6 +63,12 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
                 scrollDirection: Axis.horizontal, // 좌우 스크롤
                 itemCount: meetings.length,
                 controller: _pageController, // 스크롤 제어를 위한 컨트롤러 연결
+                onPageChanged: (index) {
+                  setState(() {
+                    //index는 int형을 받기 때문에 double로 캐스팅해줌
+                    _currentPage = index; //사용자가 넘긴 페이지 번호를 상태에 저장.
+                  });
+                },
                 itemBuilder: (context, index) {
                   // 각 모임 카드를 수평 카드 위젯으로 표시
                   return Padding(
@@ -86,15 +78,29 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
                 },
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              //스프레드 연산자(...) - children[] 리스트 안에 다른 위젯들과 함께 사용 가능함
+              children: [...List.generate(meetings.length, (index){
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                  width: 16.0,
+                  height: 4.0,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index ? wazzupButton : Colors.white,
+                    borderRadius: BorderRadius.circular(2.0),
+                  ),
+                  );
+              }),
+              ]
+            ),
+            SizedBox(
+              height: 12,
+            ),
             // 페이지 진행률 표시 바
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(10),
-                value: _pageValue,
-                backgroundColor: Color(0xFF),
-                valueColor: AlwaysStoppedAnimation(Color(0xFFe497b8)),
-              ),
             ),
           ],
         ),
