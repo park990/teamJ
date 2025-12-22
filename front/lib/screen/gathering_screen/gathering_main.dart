@@ -60,13 +60,15 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             SizedBox(
               height: (screenHeight - screenPaddingTop - screenPaddingBottom) * 0.15,
               child: PageView.builder(
-                scrollDirection: Axis.horizontal, // 좌우 스크롤
+                // 좌우 스크롤
+                scrollDirection: Axis.horizontal,
                 itemCount: meetings.length,
-                controller: _pageController, // 스크롤 제어를 위한 컨트롤러 연결
+                // 스크롤 제어를 위한 컨트롤러 연결
+                controller: _pageController,
                 onPageChanged: (index) {
                   setState(() {
-                    //index는 int형을 받기 때문에 double로 캐스팅해줌
-                    _currentPage = index; //사용자가 넘긴 페이지 번호를 상태에 저장.
+                    //사용자가 넘긴 페이지 번호를 상태에 저장.
+                    _currentPage = index;
                   });
                 },
                 itemBuilder: (context, index) {
@@ -81,6 +83,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               //스프레드 연산자(...) - children[] 리스트 안에 다른 위젯들과 함께 사용 가능함
+              //점선 인디케이터를 모임카드 갯수만큼 생성
               children: [...List.generate(meetings.length, (index){
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
