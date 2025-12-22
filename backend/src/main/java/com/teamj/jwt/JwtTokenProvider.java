@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.teamj.config.CustomUserDetails;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -85,8 +87,9 @@ public class JwtTokenProvider {
         Long userIdx = getuserIdx(token);
 
         // DB를 들르지 않고 임시 유저객체 생성
-        UserDetails userDetails = new User(String.valueOf(userIdx), "",
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))); // 권한.
+        CustomUserDetails userDetails = new CustomUserDetails(
+        userIdx, 
+        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))); // 권한.
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
