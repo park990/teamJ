@@ -81,6 +81,7 @@ class AuthController extends Notifier<AuthState> {
 
         // 신규유저
         if(serverResult=='register'){
+          print('신규유저임 소셜 토큰으로 받아온 유저정보:${responseData['data']}를 들고 signUpScreen으로 보내줘야함');
           return SocialUserDto.fromJson(responseData['data']);
         }
 
