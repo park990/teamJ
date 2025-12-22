@@ -18,14 +18,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Table(name = "bbs_reaction")
-public class Bbs_reaction {
+public class BbsReaction {
+
     
     @EmbeddedId
     private BbsReactionId id = new BbsReactionId();
 
     @MapsId("userIdx")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_idx")
+    @JoinColumn(name="users_idx")
     private Users user;
 
     @MapsId("bbsIdx")

@@ -28,47 +28,62 @@ class Post {
   //  DTO를 받아서 Model로 변환
   factory Post.fromListDto(PostListDto dto) {
     return Post(
-      id: dto.bbsIdx ?? 0,
-      title: dto.title ?? '제목 없음',
-      author: dto.nickname ?? '익명', // SocialUserDto에서 온 닉네임 사용
-      viewCount: dto.viewCount ?? 0,
+      id: dto.bbsIdx!,
+      title: dto.title!, // 제목은 혹시 모르니 유지
+      author: dto.nickname!,
+      viewCount: dto.viewCount!,
+
+      // 2. 라이크 카운트 (현재는 0, 나중에 서버에서 가공해서 줄 값)
       likeCount: dto.likeCount ?? 0,
       commentCount: dto.commentCount ?? 0,
+
       displayDate: _formatDate(dto.createdAt),
       imageUrl: dto.imgName,
-      // gneder: dto.gender,
-      content: dto.content ?? "내용없음",
+      content: dto.content ?? "내용 없음",
     );
   }
 
-  static String _formatDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '-';
 
-    try {
-      // 1. 서버 시간을 DateTime 객체로 변환 (UTC인 경우 .toLocal() 필수)
-      DateTime postDate = DateTime.parse(dateStr).toLocal();
-      DateTime now = DateTime.now();
 
-      // 2. 오늘인지 확인 (연, 월, 일이 모두 같은지)
-      bool isToday =
-          postDate.year == now.year &&
-          postDate.month == now.month &&
-          postDate.day == now.day;
 
-      if (isToday) {
-        // 오늘이면 시:분 표시 (예: 14:30)
-        String hour = postDate.hour.toString().padLeft(2, '0');
-        String minute = postDate.minute.toString().padLeft(2,'0');
-        return "$hour:$minute";
-      } else {
-        // 오늘이 아니면 월/일 표시 (예: 12/18)
-        return "${postDate.month}/${postDate.day}";
-      }
-    } catch (e) {
-      // 파싱 실패 시 예외 처리
-      return dateStr.length >= 10
-          ? dateStr.substring(5, 10).replaceAll('-', '/')
-          : dateStr;
+static String _formatDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty) return '-';
+  
+  try {
+    // 1. 서버 응답 뒤에 타임존 정보가 없다면 강제로 +09:00을 붙여서 파싱
+    String formattedStr = dateStr;
+    if (!dateStr.contains('+') && !dateStr.contains('Z')) {
+      formattedStr = '${dateStr}+09:00'; 
     }
+
+    DateTime postDate = DateTime.parse(formattedStr).toLocal();
+    DateTime now = DateTime.now();
+    
+    // 2. 현재 시간과 게시글 시간의 차이 계산
+    Duration diff = now.difference(postDate);
+
+    // ⚠️ 중요: 서버/폰 시간 오차로 인해 음수(미래)가 나올 경우 "방금 전" 처리
+    if (diff.isNegative || diff.inMinutes < 1) {
+      return "방금 전";
+    } 
+    
+    // 3. 정상적인 시간 차이 계산
+    if (diff.inMinutes < 60) {
+      return "${diff.inMinutes}분 전";
+    } 
+    if (diff.inHours < 24) {
+      return "${diff.inHours}시간 전";
+    }
+    if (diff.inDays < 7) {
+      return "${diff.inDays}일 전";
+    } else {
+      return "${postDate.month}/${postDate.day}";
+    }
+  } catch (e) {
+    // 파싱 실패 시 예외 처리
+    return dateStr.length >= 10
+        ? dateStr.substring(5, 10).replaceAll('-', '/')
+        : dateStr;
   }
+}
 }
