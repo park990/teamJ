@@ -157,6 +157,7 @@ public class OAuthService {
                 .wazzupToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
+        log.info("토큰 재발급 완료");
 
         return ResponseEntity.ok(ApiResponse.success(tokenDTO, "토큰 재발급 성공"));
     }

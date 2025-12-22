@@ -4,20 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 // #df8eb6
 // #e687af
 
-  const Color wazzupButton = Color(0xFFdf8eb6);
-  const Color wazzupBackGround  = Color(0xFFFFF5F7);
+const Color wazzupButton = Color(0xFFdf8eb6);
+const Color wazzupBackGround = Color(0xFFFFF5F7);
 
-
-  // 앱바 wazzup글씨 볼드 테마
-  final TextStyle wazzupBarFont = GoogleFonts.ibmPlexSans(
-  fontSize: 20, 
-  fontWeight: FontWeight.w500, 
-  
+// 앱바 wazzup글씨 볼드 테마
+final TextStyle wazzupBarFont = GoogleFonts.ibmPlexSans(
+  fontSize: 20,
+  fontWeight: FontWeight.w500,
 );
 
-  // 기본 글 씨 테마 알아서 크기 조정하고 굵기 조정하셈
-  final TextStyle wazzupFont = GoogleFonts.ibmPlexSans(
-);
+// 기본 글 씨 테마 알아서 크기 조정하고 굵기 조정하셈
+final TextStyle wazzupFont = GoogleFonts.ibmPlexSans();
 
 // 타이틀/헤더(앱 최상단)
 final TextStyle headerFont = GoogleFonts.ibmPlexSans(

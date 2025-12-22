@@ -1,17 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
+import 'package:front/screen/bom_screen/post_write.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
+import 'package:front/screen/myPage_screen/login/widgets/login_handler.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class BomMain extends ConsumerWidget {
+
+class BomMain extends ConsumerStatefulWidget {
   const BomMain({super.key});
+  @override
+  ConsumerState<BomMain> createState() => _BomMainState();
+}
+
+class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin{
 
   @override
-  Widget build(BuildContext context,ref) {
+  void initState() {
+    super.initState();
+    Future.microtask((){
+      ref.read(authControllerProvider.notifier).init();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
           bool _isLoggedIn = ref.watch(authControllerProvider).isLoggedIn;
+
+
     // ⚠️ 레이아웃 테스트용 더미 데이터
     final List<Post> dummyPosts = [
       Post(id: 1, title: 'WAZZUP 앱 디자인 대격변 진행sadf 중asdfsdfsdfsdfㄴㅇㄹㄴㅇㄹㄴㅇㄹㄴㅇㄹㄹ123123132123123sdfasdf!',content: "아아아아마ㅓㅇ너ㅏ마어ㅣㅏㅓ민러ㅏㅣㄹㄴㅁ어ㅏㅁㄴ라ㅓㅣㅁㄴㅇ라ㅣㅓㅁㄴㅇ러ㅏㅣ;", author: '하두셋넷다여읽엷아열하두셋', viewCount: 999, likeCount: 822, commentCount: 525, displayDate: '14:30'),
@@ -27,9 +45,9 @@ class BomMain extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: wazzupBackGround, // 배경
-      
+
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 4), 
+        padding: const EdgeInsets.symmetric(vertical: 4),
         itemCount: dummyPosts.length,
         itemBuilder: (context, index) {
           return _PostCard(post: dummyPosts[index]);
@@ -37,20 +55,33 @@ class BomMain extends ConsumerWidget {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
-        print('글쓰기 클릭');
-          if(!_isLoggedIn){
+        onPressed: () async {
+          print('글쓰기 클릭');
+          if (!_isLoggedIn) {
             WazzupToast.showError('로그인이 필요합니다');
+            bool isSuccess = await showLoginBottomSheet(context);
+            if (isSuccess && mounted) {
+              _navigateToPostWrite();
+            }
+          } else {
+            _navigateToPostWrite();
           }
-          
         },
-      backgroundColor: wazzupButton.withValues(alpha: 0.75),
-      elevation: 2,
-      
-      child: Icon(Icons.add,color: Colors.white,)
+        backgroundColor: wazzupButton.withValues(alpha: 0.75),
+        elevation: 2,
+
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
+
+  // 글쓰기로 이동
+  void _navigateToPostWrite() {
+  Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => const PostWrite()),
+  );
+}
+
 }
 
 class _PostCard extends StatelessWidget {
@@ -210,5 +241,10 @@ class _PostCard extends StatelessWidget {
       child: Text('|', style: TextStyle(fontSize: 10, color: Colors.grey[50])),
     );
   }
+
+
+
+
+  
 
 }
