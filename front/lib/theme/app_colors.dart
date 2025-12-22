@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 //#d685ac
+//#db8db3
+//#df8eb6
+//#e497b8
 //#eedaf2
 //#e889e5
 //#f573b4
 //#f279b6
 //#f07fb8
 
-  const Color wazzupButton = Color(0xFFd685ac);
+  const Color wazzupButton = Color(0xFFdf8eb6);
 
 
   // 앱바 wazzup글씨 볼드 테마

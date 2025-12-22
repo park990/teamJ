@@ -53,6 +53,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
       double screenPaddingTop = MediaQuery.of(context).padding.top;
       double screenPaddingBottom = MediaQuery.of(context).padding.bottom;
       return Scaffold(
+        backgroundColor: Colors.white,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -82,8 +83,8 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
               child: LinearProgressIndicator(
                 borderRadius: BorderRadius.circular(10),
                 value: _pageValue,
-                backgroundColor: Colors.grey[500],
-                valueColor: AlwaysStoppedAnimation(Colors.orange),
+                backgroundColor: Color(0xFF),
+                valueColor: AlwaysStoppedAnimation(Color(0xFFe497b8)),
               ),
             ),
           ],
