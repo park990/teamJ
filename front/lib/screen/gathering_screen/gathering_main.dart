@@ -53,7 +53,8 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
       double screenPaddingTop = MediaQuery.of(context).padding.top;
       double screenPaddingBottom = MediaQuery.of(context).padding.bottom;
       return Scaffold(
-        backgroundColor: Colors.white,
+      backgroundColor: wazzupBackGround, // 배경
+
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

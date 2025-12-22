@@ -7,6 +7,7 @@ import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/myPage_screen/login/widgets/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
+import 'package:front/theme/app_colors.dart';
 class MypageMain extends ConsumerStatefulWidget {
   const MypageMain({super.key,});
 
@@ -40,6 +41,8 @@ class _MypageMainState extends ConsumerState<MypageMain> {
     
     
     return Scaffold(
+      backgroundColor: wazzupBackGround, // 배경
+
       body: Center(
         child: authState.isLoggedIn
             ? _buildMyInfoScreen()

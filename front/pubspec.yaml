@@ -45,6 +45,7 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   lucide_icons: any
   flutter_smart_dialog: ^4.5.0
+  material_symbols_icons: ^4.72.0
 
 
 dev_dependencies:
