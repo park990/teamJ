@@ -78,7 +78,7 @@ Widget _buildBody(AsyncValue<List<Post>> postListAsync) {
         controller: _refreshController,
         enablePullDown: true,
         header: CustomHeader(
-          refreshStyle: RefreshStyle.Behind,
+          refreshStyle: RefreshStyle.Follow,
           builder: (context, mode) => Container(
             height: 80,
             child: Center(child: SpinningFlower(mode: mode)),
