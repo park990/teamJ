@@ -121,6 +121,11 @@ class ApiClient {
     ); // 로그아웃 후  뒤로가기 누르면 로그인 안되어있어야하니까
   }
 
+
+
+
+
+
   // 겟 은 거의 안쓰니 까 내려둠 거의 안봐도 된다.
 
   Future<http.Response> get(String path) async {

@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "Bbs_type")
-public class Bbs_type {
+@Table(name = "bbs_type")
+public class BbsType {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

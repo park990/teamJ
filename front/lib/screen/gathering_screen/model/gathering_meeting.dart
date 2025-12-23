@@ -11,6 +11,7 @@ class GatheringMeeting {
     required this.cardImageUrl,
     required this.cardParticipantsCount,
   });
+  
   // 변경된 값을 새 객체로 업데이트
   GatheringMeeting copyWith({
     String? cardTitle,

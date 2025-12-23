@@ -4,20 +4,21 @@ import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
 import 'package:front/theme/app_colors.dart';
 
-class PostWrite extends ConsumerStatefulWidget {
-  const PostWrite({super.key});
+class PostWriteScreen extends ConsumerStatefulWidget {
+  const PostWriteScreen({super.key});
 
   @override
-  ConsumerState<PostWrite> createState() => _PostWriteState();
+  ConsumerState<PostWriteScreen> createState() => _PostWriteState();
 }
 
-class _PostWriteState extends ConsumerState<PostWrite> {
+class _PostWriteState extends ConsumerState<PostWriteScreen> {
 
   @override
   Widget build(BuildContext context) {
   final state = ref.watch(postWriteControllerProvider);
   final notifier = ref.read(postWriteControllerProvider.notifier);
 
+  // 안에 정의해둔 isSuccess의 변화를 감지
   ref.listen(postWriteControllerProvider,(previous, next){
     if(next.isSuccess){
       WazzupToast.showSuccess('글 작성 완료');
@@ -60,7 +61,7 @@ class _PostWriteState extends ConsumerState<PostWrite> {
                     // 1. 제목 입력란
                     _title(notifier.titleController),
                               
-                    Divider(thickness: 1, color: Colors.grey.withValues(alpha: 0.3)), // 얇은 구분선
+                    Divider(height: 1, thickness: 1, color: Colors.grey.withValues(alpha: 0.3)), // 얇은 구분선
                               
                     // 2. 내용 입력란 
                     _content(notifier.contentController),
@@ -91,7 +92,7 @@ class _PostWriteState extends ConsumerState<PostWrite> {
           color: Colors.grey.withValues(alpha: 0.3),
         ),
         border: InputBorder.none, // 테두리 제거
-        contentPadding: EdgeInsets.symmetric(vertical: 15),
+        contentPadding: EdgeInsets.only(top: 15,bottom: 10),
       ),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {if(value==null||value.isEmpty) return "제목을 입력해 주세요";
