@@ -1,7 +1,9 @@
 package com.teamj.service.match_service;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.stereotype.Component;
@@ -16,7 +18,20 @@ public class MatchQueueManager {
      * - FIFO (먼저 들어온 사람이 먼저 나감)
      * - 서버 메모리에 존재
      */
-    private final Queue<Long> waitingQueue = new ConcurrentLinkedQueue();
+    // 성별 옵션별로 큐 분리
+    private final Map<String, Queue<Long>> waitingQueues = new ConcurrentHashMap<>();
+
+    // 성별 옵션별로 큐 가져오기, 없으면 새로 만들기
+    private Queue<Long> getQueue(String genderOption) {
+        String key = genderOption != null ? genderOption : "random";
+        
+        Queue<Long> queue = waitingQueues.get(key);
+        if (queue == null) {
+            queue = new ConcurrentLinkedQueue<>();
+            waitingQueues.put(key, queue);
+        }
+        return queue;
+    }
 
     /**
      * 랜덤 매칭 시도
@@ -29,8 +44,8 @@ public class MatchQueueManager {
      *  - Optional.empty() → 아직 대기
      */
     public synchronized Optional<Long> tryMatch(
-            Long userIdx,
-            String genderOption
+        Long userIdx,
+        String genderOption
     ) {
         /**
          * synchronized 사용 이유
@@ -42,8 +57,11 @@ public class MatchQueueManager {
          * 👉 한 번에 한 스레드만 매칭 로직 실행
          */
 
+        // genderOption에 맞는 큐 가져오기
+        Queue<Long> targetQueue = getQueue(genderOption);
+
         // 1️⃣ 이미 대기 중인 사람이 있는지 확인
-        Long waitingUser = waitingQueue.poll();
+        Long waitingUser = targetQueue.poll();
 
         if (waitingUser != null) {
             /**
@@ -58,7 +76,7 @@ public class MatchQueueManager {
          * 2️⃣ 대기 중인 사람이 없었다
          * → 현재 유저를 큐에 넣고 대기 상태로 전환
          */
-        waitingQueue.offer(userIdx);
+        targetQueue.offer(userIdx);
 
         return Optional.empty();
     }
@@ -66,7 +84,8 @@ public class MatchQueueManager {
     /**
      * 매칭 취소 (뒤로가기 / 앱 종료 등)
      */
-    public synchronized void cancel(Long userIdx) {
-        waitingQueue.remove(userIdx);
+    public synchronized void cancel(Long userIdx, String genderOption) {
+        Queue<Long> queue = getQueue(genderOption);
+        queue.remove(userIdx);
     }
 }
