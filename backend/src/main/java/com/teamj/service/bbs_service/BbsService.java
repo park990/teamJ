@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.teamj.dto.PostDTO;
 import com.teamj.entity.bbs_entity.Bbs;
-import com.teamj.entity.bbs_entity.BbsType;
 import com.teamj.repository.bbs_repository.BbsRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,25 +38,29 @@ public class BbsService {
     }
 
     // 게시글 전부 갖고오기 자유게시판(bbsType) = 1, 삭제 안된것(isDelted) = 0
+    @Transactional
     public List<PostDTO> findActivePost(){
        List<Bbs> bbsList = bbsRepository.findByBbsTypeIdxAndIsDeletedOrderByBbsIdxDesc(1L, 0);
         return bbsList.stream().map(bbs -> {
-             // 좋아요 개수 계산 (reactionType = 1이 좋아요라고 가정)
-            long likeCount = bbs.getReactions().stream()
-                .filter(r -> r.getReactionType() == 1) // ⭐ int 타입이므로 == 사용
-                .count();
-            
+
+            // 본문 미리보기 처리
+            String rawContent = bbs.getContent();
+            String summaryContent = (rawContent != null && rawContent.length() > 25) 
+                ? rawContent.substring(0, 25) + "..." 
+                : rawContent;
+
+
                return PostDTO.builder()
                     .bbsIdx(bbs.getBbsIdx())
                     .bbsTypeIdx(bbs.getBbsType().getBbsTypeIdx())
                     .usersIdx(bbs.getUsersIdx())
                     .title(bbs.getTitle())
-                    .content(bbs.getContent())
+                    .content(summaryContent)
                     .usersNickname(bbs.getUser().getUsersNickname()) 
                     .viewCount(bbs.getViewCount())
                     .createdAt(bbs.getCreatedAt())
-                    .likeCount((int)likeCount)    
-                    .commentCount(0) //
+                    .likeCount(bbs.getLikeCount())    
+                    .commentCount(bbs.getCommentCount()) //
                     .build();
         }).collect(Collectors.toList());
     }     

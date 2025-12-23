@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "bbs_reaction")
 public class BbsReaction {
-
+    
     
     @EmbeddedId
     private BbsReactionId id = new BbsReactionId();

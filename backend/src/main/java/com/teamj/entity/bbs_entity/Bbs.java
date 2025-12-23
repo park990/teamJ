@@ -3,14 +3,10 @@ package com.teamj.entity.bbs_entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.hibernate.annotations.Formula;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.teamj.entity.users_entity.Users;
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -31,7 +28,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@EnableJpaAuditing
 @Table(name = "bbs")
 public class Bbs {
 
@@ -55,7 +51,7 @@ public class Bbs {
     @JoinColumn(name = "bbs_type_idx", insertable = false, updatable = false)
     private BbsType bbsType;
 
-     // 좋아요 및 싫어요 조인
+    // 좋아요 및 싫어요 조인
     @OneToMany(mappedBy = "bbs", fetch = FetchType.LAZY)
     private List<BbsReaction> reactions = new ArrayList<>();
 
@@ -72,10 +68,9 @@ public class Bbs {
     private int isDeleted;
 
     @CreatedDate // 생성 시 자동 저장
-    @Column(updatable = false) 
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate // 수정 시 자동 업데이트
     private LocalDateTime updatedAt;
 
     // 날짜 자동
@@ -89,5 +84,18 @@ public class Bbs {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now(); // 수정일만 현재 시간으로 갱신
     }
+
+    @OneToMany(mappedBy = "bbs", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt ASC") // 댓글을 작성순으로 정렬
+    private List<BbsComments> comments = new ArrayList<>();
+
+
+    // 댓글 갯수 가져오기
+    @Formula("(SELECT COUNT(*) FROM comments c WHERE c.bbs_idx = bbs_idx AND c.is_deleted = 0)")
+    private int commentCount;
+
+    // 좋아요 갯수 가져오기
+    @Formula("(SELECT COUNT(*) FROM bbs_reaction r WHERE r.bbs_idx = bbs_idx AND r.reaction_type = 1)")
+    private int likeCount;
 
 }
