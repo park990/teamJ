@@ -4,14 +4,14 @@ import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
 import 'package:front/theme/app_colors.dart';
 
-class PostWrite extends ConsumerStatefulWidget {
-  const PostWrite({super.key});
+class PostWriteScreen extends ConsumerStatefulWidget {
+  const PostWriteScreen({super.key});
 
   @override
-  ConsumerState<PostWrite> createState() => _PostWriteState();
+  ConsumerState<PostWriteScreen> createState() => _PostWriteState();
 }
 
-class _PostWriteState extends ConsumerState<PostWrite> {
+class _PostWriteState extends ConsumerState<PostWriteScreen> {
 
   @override
   Widget build(BuildContext context) {
