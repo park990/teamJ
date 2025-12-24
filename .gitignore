@@ -5,3 +5,6 @@
 .vscode/
 /LICENCE
 /README
+
+# Redis local data
+redis/data/
