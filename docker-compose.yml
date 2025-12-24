@@ -1,0 +1,11 @@
+
+services:
+  redis:
+    image: redis:7-alpine         # 가벼운 alpine 버전
+    container_name: bomming-redis # 컨테이너 이름
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+
+    restart: always # 컨테이너 꺼지면 자동으로 다시 키기
