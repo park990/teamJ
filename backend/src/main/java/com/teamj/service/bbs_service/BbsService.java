@@ -43,19 +43,12 @@ public class BbsService {
        List<Bbs> bbsList = bbsRepository.findByBbsTypeIdxAndIsDeletedOrderByBbsIdxDesc(1L, 0);
         return bbsList.stream().map(bbs -> {
 
-            // 본문 미리보기 처리
-            String rawContent = bbs.getContent();
-            String summaryContent = (rawContent != null && rawContent.length() > 25) 
-                ? rawContent.substring(0, 25) + "..." 
-                : rawContent;
-
-
                return PostDTO.builder()
                     .bbsIdx(bbs.getBbsIdx())
                     .bbsTypeIdx(bbs.getBbsType().getBbsTypeIdx())
                     .usersIdx(bbs.getUsersIdx())
                     .title(bbs.getTitle())
-                    .content(summaryContent)
+                    .content(bbs.getContent())
                     .usersNickname(bbs.getUser().getUsersNickname()) 
                     .viewCount(bbs.getViewCount())
                     .createdAt(bbs.getCreatedAt())
