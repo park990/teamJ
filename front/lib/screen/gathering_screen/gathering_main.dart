@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/provider/gathering_meeting_provider.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
+import 'package:front/screen/gathering_screen/widgets/gathering_keywords.dart';
 import 'package:front/theme/app_colors.dart';
 
 /// 모임 목록을 수평 스크롤로 보여주는 화면
@@ -105,6 +106,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
+            GatheringKeywords(),
           ],
         ),
       );
