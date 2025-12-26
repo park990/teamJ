@@ -15,7 +15,6 @@ public class PostDTO {
 private Long bbsIdx;
     private Long bbsTypeIdx;
     private Long usersIdx;
-    private String title;
     private String content;
     private String usersNickname; // 작성자 닉네임 (Join 결과)
     private Integer viewCount;

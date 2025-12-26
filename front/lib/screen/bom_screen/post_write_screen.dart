@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
+import 'package:front/screen/bom_screen/widget/post_header.dart';
+import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/theme/app_colors.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PostWriteScreen extends ConsumerStatefulWidget {
   const PostWriteScreen({super.key});
@@ -12,127 +16,150 @@ class PostWriteScreen extends ConsumerStatefulWidget {
 }
 
 class _PostWriteState extends ConsumerState<PostWriteScreen> {
+  
+
+  
+  // 게시글 카드와 동일한 텍스트 스타일
+  final TextStyle postContentStyle = const TextStyle(
+    fontSize: 14,
+    height: 1.6,
+    color: Color(0xFF212529),
+  );
 
   @override
   Widget build(BuildContext context) {
-  final state = ref.watch(postWriteControllerProvider);
-  final notifier = ref.read(postWriteControllerProvider.notifier);
+    final user = ref.watch(authControllerProvider); // 닉네임을 위함.
+    final state = ref.watch(postWriteControllerProvider); //
+    final notifier = ref.read(postWriteControllerProvider.notifier);
 
-  // 안에 정의해둔 isSuccess의 변화를 감지
-  ref.listen(postWriteControllerProvider,(previous, next){
-    if(next.isSuccess){
-      WazzupToast.showSuccess('글 작성 완료');
-      Navigator.pop(context);
-    }
-  });
+    ref.listen(postWriteControllerProvider, (previous, next) {
+      if (next.isSuccess) {
+        WazzupToast.showSuccess('글 작성 완료');
+        Navigator.pop(context);
+      }
+    });
 
     return Scaffold(
       backgroundColor: wazzupBackGround,
       appBar: AppBar(
         backgroundColor: wazzupBackGround,
+        elevation: 0,
         centerTitle: true,
-        elevation: 0, // 상단 바 그림자 제거로 더 깔끔하게
         title: Text('글쓰기', style: wazzupBarFont),
         actions: [
           TextButton(
-            // 로딩 중일 때는 버튼 비활성화
             onPressed: state.isSubmitting ? null : () => notifier.submitPost(),
-            child: state.isSubmitting 
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(
-                  '작성하기',
-                  style: sectionTitleFont.copyWith(
-                    color: wazzupButton,
-                  ),
-                ),
+            child: state.isSubmitting
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : Text('작성하기', style: sectionTitleFont.copyWith(color: wazzupButton)),
           ),
         ],
       ),
       body: Form(
         key: notifier.formKey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(45, 38, 21, 20),
+                child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                              
-                    // 1. 제목 입력란
-                    _title(notifier.titleController),
-                              
-                    Divider(height: 1, thickness: 1, color: Colors.grey.withValues(alpha: 0.3)), // 얇은 구분선
-                              
-                    // 2. 내용 입력란 
-                    _content(notifier.contentController),
-                              
+                    PostHeader(customName: user.nickName), // 프로필 헤더
+
+                    _buildWritingCard(state, notifier), // 카드 본체
                   ],
                 ),
               ),
-              // 사진 넣기 등등  
-              _bottom(state.imageCount)
-            ],
-          ),
+            ),
+            _bottomBar(state.imageCount, notifier), // 하단 바
+          ],
         ),
       ),
     );
   }
 
-  // 제목 들어가는 곳 
-  TextFormField _title(TextEditingController titleController) {
-    return TextFormField(
-      controller: titleController,
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      decoration: InputDecoration(
-        hintText: '제목',
-        hintStyle: TextStyle(
-          color: Colors.grey.withValues(alpha: 0.3),
-        ),
-        border: InputBorder.none, // 테두리 제거
-        contentPadding: EdgeInsets.only(top: 15,bottom: 10),
-      ),
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: (value) {if(value==null||value.isEmpty) return "제목을 입력해 주세요";
-      return null;}
-    );
-  }
-
-  // 내용들어가는 곳
-  TextFormField _content(TextEditingController contentController) {
-    return TextFormField(
-      controller: contentController,
-      maxLines: null, // 줄바꿈 무제한
-      textAlignVertical: TextAlignVertical.top,
-      style: TextStyle(fontSize: 16),
-      decoration: InputDecoration(
-        hintText: '봄밍에 공유하고싶은 이야기를 들려주세요.', // 워터마크 스타일 힌트
-        hintStyle: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.withValues(alpha: 0.3), // 아주 연하게 설정
-        ),
-        border: InputBorder.none,
-      ),
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: (value) {if(value==null||value.isEmpty) return "내용을 입력해 주세요";
-      return null;}
-    );
-  }
-
-  // 사진 넣기 등등
-  Widget _bottom(int imageCount){
+  Widget _buildWritingCard(PostWriteState state, PostWriteController notifier) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF1F3F5), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+           const SizedBox(height: 3),
+            
+            TextFormField(
+              controller: notifier.contentController,
+              maxLines: null,
+              minLines: 5,
+              style: postContentStyle,
+              
+              decoration: InputDecoration(
+                hintText: '봄밍에 공유하고싶은 이야기를 들려주세요.',
+                hintStyle: TextStyle(color: Colors.grey.withValues(alpha: 0.4)),
+                border: InputBorder.none,
+                
+              ),
+              validator: (v) => (v == null || v.isEmpty) ? "내용을 입력해주세요" : null,
+            ),
+            if (state.selectedImages.isNotEmpty) _imagePreview(state.selectedImages, notifier),
+          ],
+        ),
+      ),
+    );
+  }
+
+  
+
+  Widget _imagePreview(List<XFile> images, PostWriteController notifier) {
+    return Container(
+      height: 110,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(File(images[index].path), width: 100, height: 100, fit: BoxFit.cover),
+                ),
+                Positioned(
+                  top: 4, right: 4,
+                  child: GestureDetector(
+                    onTap: () => notifier.removeImage(index),
+                    child: Container(
+                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      child: const Icon(Icons.close, size: 18, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
+  Widget _bottomBar(int count, PostWriteController notifier) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 10, 20, MediaQuery.of(context).padding.bottom + 10),
+      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.1)))),
       child: Row(
         children: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.photo_camera_outlined,color: Colors.grey[700])),
-          IconButton(onPressed: (){}, icon: Icon(Icons.photo_library_outlined, color: Colors.grey)),
-          Spacer(),
-          Text("${imageCount}/10",
-          style: TextStyle(color: Colors.grey, fontSize: 12))
+          IconButton(onPressed: () => notifier.pickImages(), icon: const Icon(Icons.photo_library_outlined)),
+          const Spacer(),
+          Text("$count / 10", style: const TextStyle(color: Colors.grey, fontSize: 13)),
         ],
       ),
     );

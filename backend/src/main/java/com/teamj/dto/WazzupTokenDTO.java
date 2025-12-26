@@ -14,4 +14,12 @@ public class WazzupTokenDTO {
     
     // 리프레시 토큰
     private final String refreshToken;
+
+    private final Long usersIdx;
+
+    private final String usersNickname;
+    
+    // private final  String profileImageUrl;
+
+    private final String grade;
 }

@@ -1,10 +1,20 @@
 class AuthResponse {
   final String wazzupToken;
   final String refreshToken;
+  final int usersIdx;           // 내 글인지 확인용
+  final String usersNickname;    // 화면 표시용
+  final String? profileImageUrl; // 프로필 이미지
+  final String grade;            // 내 등급 아이콘 표시용
+  // final double mannerTemp;
+
 
   AuthResponse({
     required this.wazzupToken,
     required this.refreshToken,
+    required this.usersIdx,
+    required this.usersNickname,
+    this.profileImageUrl,
+    required this.grade,
   });
 
   // wazzup 토큰 받을 때
@@ -12,6 +22,10 @@ class AuthResponse {
     return AuthResponse(
       wazzupToken: json['wazzupToken'] ?? '', // null 방지
       refreshToken: json['refreshToken'] ?? '',
+      usersIdx: json['usersIdx'],
+      usersNickname: json['usersNickname'] ,
+      profileImageUrl: json['profileImageUrl']??'',
+      grade: json['grade']
     );
   }
 
