@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
+import 'package:front/theme/app_colors.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class PostHeader extends ConsumerWidget {
@@ -40,11 +41,7 @@ class PostHeader extends ConsumerWidget {
                 children: [
                   Text(
                     authorName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF495057),
-                    ),
+                    style: postNicknameStyle
                   ),
                   const Spacer(),
                   
@@ -54,7 +51,7 @@ class PostHeader extends ConsumerWidget {
                       onTap: () => _showModernActionSheet(context),
                       child: const Icon(
                         LucideIcons.moreHorizontal,
-                        size: 25,
+                        size: 20,
                         color: Color(0xFFADB5BD),
                       ),
                     ),
@@ -76,13 +73,6 @@ class PostHeader extends ConsumerWidget {
         shape: BoxShape.circle,
         color: const Color(0xFFF1F3F5),
         border: Border.all(color: Colors.white, width: 3),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(2, 2),
-          ),
-        ],
       ),
       child: const Icon(Icons.person, size: 24, color: Color(0xFFADB5BD)),
     );

@@ -11,7 +11,7 @@ class PostFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(0, 14, 0, 16),
       child: Row(
         children: [
           _buildBtn(
@@ -22,7 +22,7 @@ class PostFooter extends ConsumerWidget {
               // 여기에 ref.read(controller).likePost(post.id) 로직 추가 가능
             },
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 15),
           _buildBtn(
             icon: LucideIcons.messageCircle,
             count: post.commentCount,

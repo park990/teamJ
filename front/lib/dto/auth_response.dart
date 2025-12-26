@@ -22,10 +22,10 @@ class AuthResponse {
     return AuthResponse(
       wazzupToken: json['wazzupToken'] ?? '', // null 방지
       refreshToken: json['refreshToken'] ?? '',
-      usersIdx: json['usersIdx'],
-      usersNickname: json['usersNickname'] ,
-      profileImageUrl: json['profileImageUrl']??'',
-      grade: json['grade']
+      usersIdx: json['usersIdx'] as int? ?? 0 ,
+      usersNickname: json['usersNickname'] as String? ?? '',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+      grade: json['grade'] as String? ?? '',
     );
   }
 
