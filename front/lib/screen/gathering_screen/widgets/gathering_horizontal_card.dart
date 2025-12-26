@@ -20,14 +20,6 @@ class GatheringHorizontalCard extends StatelessWidget {
         //border: Border.all(color: Colors.pink[200]!.withOpacity(0.5)),
         //0xfffff9f0
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          )
-        ]
       ),
       child: SizedBox(
         width: 300,
