@@ -58,9 +58,13 @@ public class UserService {
             TimeUnit.DAYS
         );
 
+        // 회원가입 완료도 간단한 유저정보와 함께 전달.
         WazzupTokenDTO tokenDTO =WazzupTokenDTO.builder()
             .wazzupToken(accessToken)
             .refreshToken(refreshToken)
+            .usersIdx(savedUser.getUsersIdx())
+            .usersNickname(savedUser.getUsersNickname())
+            .grade(savedUser.getGrade())
             .build();
 
         return ResponseEntity.ok(ApiResponse.success(tokenDTO, "회원가입 성공"));

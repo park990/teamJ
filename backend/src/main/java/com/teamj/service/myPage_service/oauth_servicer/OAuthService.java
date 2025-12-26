@@ -34,19 +34,21 @@ public class OAuthService {
     public ResponseEntity<ApiResponse<?>> socialLogin(OAuthDTO oAuthDTO) {
 
         SocialUserDTO socialUser = new SocialUserDTO();
-
-        // 이 유저가 기존유저인지 신규 유저인지 일단 DB를 들름.
+        
+        // 카카오 api 요청 유저 정보 얻어오기
         if ("KAKAO".equals(oAuthDTO.getProvider())) {
-
+            
             socialUser = getFromKakao(oAuthDTO);
-
+            
+            // 카카오 유저정보 요청 불가
             if (socialUser == null) {
                 System.out.println("유저정보없음");
                 return ResponseEntity.badRequest().body(ApiResponse.error("카카오 토큰이 유효하지 않음"));
             }
-
+            
         } // 이 뒤에 네이버면 네이버 구글이면 구글 else if 로 추가로 걸어주자
-
+        
+        // 이 유저가 기존유저인지 신규 유저인지 일단 DB를 들름.
         Users isUserExist = new Users();
         isUserExist = userRepository.findByProviderAndUsersEmail(oAuthDTO.getProvider(), socialUser.getUsersEmail());
 
@@ -58,16 +60,21 @@ public class OAuthService {
 
             // refreshToken 생성
             String refreshToken = jwtTokenProvider.createRefreshToken(isUserExist.getUsersIdx());
-
+            
+            // 레디스에 리프레쉬 토큰 저장
             redisTemplate.opsForValue().set(
                     "RT:" + isUserExist.getUsersIdx(),
                     refreshToken,
                     7,
                     TimeUnit.DAYS);
-
+            
+            // 기존유저는 토큰과 함꼐 유저의 간단한 정보 전달(닉네임이나 idx는 상시로 필요로 함으로 전달해서 프론트에 넣어두자.)
             WazzupTokenDTO tokenDTO = WazzupTokenDTO.builder()
                     .wazzupToken(accessToken)
                     .refreshToken(refreshToken)
+                    .usersIdx(isUserExist.getUsersIdx())
+                    .usersNickname(isUserExist.getUsersNickname())
+                    .grade(isUserExist.getGrade())
                     .build();
 
             return ResponseEntity.ok(ApiResponse.success(tokenDTO, "로그인 성공"));

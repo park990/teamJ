@@ -55,9 +55,6 @@ public class Bbs {
     @OneToMany(mappedBy = "bbs", fetch = FetchType.LAZY)
     private List<BbsReaction> reactions = new ArrayList<>();
 
-    @Column(nullable = false)
-    private String title;
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
