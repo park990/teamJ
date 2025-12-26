@@ -55,7 +55,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             // 섹션 제목 (고정)
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Text('🔥이번 주 핫한 모임', style: sectionTitleFont),
+              child: Text('🔥 이번 주 핫한 모임', style: sectionTitleFont),
             ),
             // 모임 카드 수평 스크롤 영역 (화면 높이의 15%)
             SizedBox(
@@ -111,7 +111,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
               child: Row(
                 children: [
                   Text(
-                    '🔍요즘 유행하는 키워드',
+                    '🔍 요즘 유행하는 키워드',
                     style: sectionTitleFont,
                   ),
                 ],
