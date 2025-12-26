@@ -65,8 +65,25 @@ final TextStyle captionLabelFont = GoogleFonts.fredoka(
   color: Colors.grey[600],
 );
 
-const TextStyle postContentStyle = TextStyle(
-  fontSize: 14, // 중간 지점인 15 정도로 합의
-  height: 1.3,
-  color: Color(0xFF212529),
+TextStyle postContentStyle = const TextStyle(
+  fontFamily: 'Cafe24Dongdong',
+  fontSize: 16,
+  height: 1.4,
+  letterSpacing: 0.1,
+  color: Color(0xFF2D2D2D), // 약간 부드러운 검정
+);
+
+TextStyle postNicknameStyle = const TextStyle(
+  fontFamily: 'Cafe24Dongdong',
+  fontSize: 14,
+  height: 1.2,
+  letterSpacing: 0.1,
+  color: Color(0xFF2D2D2D), // 약간 부드러운 검정
+);
+TextStyle surroundStyle = const TextStyle(
+  fontFamily: 'Cafe24Ssurround',
+  fontSize: 14,
+  height: 1.2,
+  letterSpacing: 0.1,
+  color: Color(0xFF2D2D2D), // 약간 부드러운 검정
 );

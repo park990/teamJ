@@ -40,10 +40,9 @@ class PostCard extends ConsumerWidget {
                   const SizedBox(height: 15),
 
                   // 실제로 글쓸때의 줄바꿈을 맞추기 위해 letterspacing 필요.
-                  Text(post.content, style: postContentStyle.copyWith(letterSpacing: 1)),
-                  const SizedBox(height: 15),
+                  Text(post.content, style: postContentStyle),
               
-                  if (testImages.isNotEmpty) PostImages(post: post, images: testImages),
+                  // if (testImages.isNotEmpty) PostImages(post: post, images: testImages),
                   PostFooter(post: post),
                 ],
               ),

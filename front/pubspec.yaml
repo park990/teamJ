@@ -66,11 +66,21 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  uses-material-design: true
+  fonts:
+    - family: Cafe24Ssurround  # 1번 폰트: 굵고 강조할 때
+      fonts:
+        - asset: asset/fonts/Cafe24Ssurround-v2.0.ttf
+          weight: 700
+
+    - family: Cafe24Dongdong   # 2번 폰트: 더 귀엽고 본문용
+      fonts:
+        - asset: asset/fonts/Cafe24Dongdong-v2.0.ttf
+          weight: 700
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
   assets:
     - .env
     - asset/img/
