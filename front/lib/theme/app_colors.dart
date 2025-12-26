@@ -51,3 +51,9 @@ final TextStyle captionLabelFont = GoogleFonts.ibmPlexSans(
   fontSize: 12,
   color: Colors.grey[600],
 );
+
+const TextStyle postContentStyle = TextStyle(
+  fontSize: 14, // 중간 지점인 15 정도로 합의
+  height: 1.3,
+  color: Color(0xFF212529),
+);

@@ -12,12 +12,11 @@ class PostImages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.only(bottom: 5),
       child: SizedBox(
         height: 220,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: images.length,
           separatorBuilder: (context, index) => const SizedBox(width: 10),
           itemBuilder: (context, index) {

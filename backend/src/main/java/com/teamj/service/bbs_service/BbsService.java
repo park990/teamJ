@@ -26,7 +26,6 @@ public class BbsService {
         try{
             Bbs bbs = new Bbs();
             bbs.setUsersIdx(userIdx);
-            bbs.setTitle(dto.getTitle());
             bbs.setContent(dto.getContent());
             bbs.setBbsTypeIdx(1L);
             bbsRepository.save(bbs);
@@ -47,7 +46,6 @@ public class BbsService {
                     .bbsIdx(bbs.getBbsIdx())
                     .bbsTypeIdx(bbs.getBbsType().getBbsTypeIdx())
                     .usersIdx(bbs.getUsersIdx())
-                    .title(bbs.getTitle())
                     .content(bbs.getContent())
                     .usersNickname(bbs.getUser().getUsersNickname()) 
                     .viewCount(bbs.getViewCount())

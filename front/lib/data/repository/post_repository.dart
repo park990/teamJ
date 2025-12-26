@@ -64,11 +64,11 @@ class PostRepository {
 
 
   // 글 작성
-  Future<bool> submitPost(String title, String content) async{
+  Future<bool> submitPost(String content) async{
     try{
       final response = await _apiClient.post(
         '/api/post/submit',
-      body: {'title':title, 'content':content}
+      body: {'content':content}
       );
 
       if(response.statusCode==200){

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.PostDTO;
-import com.teamj.entity.bbs_entity.Bbs;
 import com.teamj.response.ApiResponse;
 import com.teamj.service.bbs_service.BbsService;
 
@@ -41,7 +40,6 @@ public class Bbs_controller {
         @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         log.info(userDetails.getUsername());
-        log.info(dto.getTitle());
         log.info(dto.getContent());
         Boolean isSuccess = bbsService.savePost(dto, userDetails.getUserIdx());
 

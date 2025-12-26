@@ -1,43 +1,62 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class WazzupTokenStorage {
-  static final WazzupTokenStorage _instance =
-      WazzupTokenStorage._internal();
+  static final WazzupTokenStorage _instance = WazzupTokenStorage._internal();
 
-  // 사용자가 이 클래스를 생성해도 _instance를 반환 시켜주기 위함
+  // 싱글톤 패턴 적용
   factory WazzupTokenStorage() => _instance;
 
-  // new 로 인한 새객체생성 방지
   WazzupTokenStorage._internal();
 
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true, // 안드로이드 암호화 공유 환경설정 사용
+      encryptedSharedPreferences: true, // 안드로이드 암호화 저장소 사용
     ),
   );
 
+  // 고정된 키 값 정의
   static const String _accessTokenKey = 'WAZZUP_ACCESS_TOKEN';
   static const String _refreshTokenKey = 'WAZZUP_REFRESH_TOKEN';
+  static const String _nicknameKey = 'WAZZUP_USER_NICKNAME';
+  static const String _userIdxKey = 'WAZZUP_USER_IDX';
 
-  // 토큰 저장
-  Future<void> saveToken({required String accessToken, required String refreshToken}) async {
+  // [1] 로그인/회원가입 시: 모든 정보를 한 번에 저장
+  Future<void> saveTokenAndUserInfo({
+    required String accessToken,
+    required String refreshToken,
+    required String nickname,
+    required int userIdx,
+  }) async {
     await _storage.write(key: _accessTokenKey, value: accessToken);
     await _storage.write(key: _refreshTokenKey, value: refreshToken);
+    await _storage.write(key: _nicknameKey, value: nickname);
+    await _storage.write(key: _userIdxKey, value: userIdx.toString());
   }
 
-  // 억섹스 토큰 읽기 (자동 로그인용)
-  Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessTokenKey);
+  // [2] 토큰 재발급(Reissue) 시: 기존 유저 정보는 놔두고 토큰만 업데이트 (새로 추가!)
+  Future<void> saveTokensOnly({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    await _storage.write(key: _accessTokenKey, value: accessToken);
+    await _storage.write(key: _refreshTokenKey, value: refreshToken);
+    // 💡 닉네임과 IDX 키는 건드리지 않으므로 기존 정보가 안전하게 유지
   }
 
-  // 리프레시 토큰 읽기 (토큰 재발급 API 호출 시 사용)
-  Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshTokenKey);
+  // [3] 정보 읽기 메서드들
+  Future<String?> getAccessToken() async => await _storage.read(key: _accessTokenKey);
+  
+  Future<String?> getRefreshToken() async => await _storage.read(key: _refreshTokenKey);
+  
+  Future<String?> getNickname() async => await _storage.read(key: _nicknameKey);
+  
+  Future<int?> getUserIdx() async {
+    final String? idx = await _storage.read(key: _userIdxKey);
+    return idx != null ? int.parse(idx) : null;
   }
 
-  // 토큰 삭제 (로그아웃)
-  Future<void> deleteAllToken() async {
-    await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
+  // [4] 로그아웃 시: 모든 정보 삭제
+  Future<void> deleteAll() async {
+    await _storage.deleteAll();
   }
 }

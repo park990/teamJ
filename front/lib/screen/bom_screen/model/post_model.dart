@@ -2,7 +2,6 @@ import 'package:front/dto/bbs/post_list_dto.dart';
 
 class Post {
   final int id;
-  final String title;
   final String author; // nickname을 author로 명칭 변경 (직관적)
   final int viewCount;
   final int likeCount;
@@ -14,7 +13,6 @@ class Post {
 
   Post({
     required this.id,
-    required this.title,
     required this.author,
     required this.viewCount,
     required this.likeCount,
@@ -29,7 +27,6 @@ class Post {
   factory Post.fromListDto(PostListDto dto) {
     return Post(
       id: dto.bbsIdx!,
-      title: dto.title!, // 제목은 혹시 모르니 유지
       author: dto.nickname!,
       viewCount: dto.viewCount!,
 

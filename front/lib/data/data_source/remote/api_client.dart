@@ -94,7 +94,7 @@ class ApiClient {
           jsonResponse['data'],
         );
 
-        await _storage.saveToken(
+        await _storage.saveTokensOnly(
           accessToken: newTokens.wazzupToken,
           refreshToken: newTokens.refreshToken,
         );
@@ -112,7 +112,7 @@ class ApiClient {
   }
 
   void _forceLogOut() async {
-    await _storage.deleteAllToken();
+    await _storage.deleteAll();
     WazzupToast.showError('로그아웃 되었습니다.\n 다시 로그인 해주세요');
 
     navigatorKey.currentState?.pushAndRemoveUntil(

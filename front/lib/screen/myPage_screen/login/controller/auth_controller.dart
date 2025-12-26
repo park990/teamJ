@@ -17,8 +17,27 @@ class AuthState {
   final bool isLoggedIn;
   final bool isLoading;
   final String? accessToken;
+  final String? nickName;
+  final int? userIdx;
 
-  AuthState({this.isLoggedIn = false, this.accessToken, this.isLoading = true});
+  AuthState({this.isLoggedIn = false, this.accessToken, this.isLoading = true, this.nickName, this.userIdx});
+
+  // 데이터 보존을 위한 메서드!
+  AuthState copyWith({
+    bool? isLoggedIn,
+    bool? isLoading,
+    String? accessToken,
+    String? nickName,
+    int? userIdx,
+  }) {
+    return AuthState(
+      isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      isLoading: isLoading ?? this.isLoading,
+      accessToken: accessToken ?? this.accessToken,
+      nickName: nickName ?? this.nickName,
+      userIdx: userIdx ?? this.userIdx,
+    );
+  }
 }
 
 class AuthController extends Notifier<AuthState> {
@@ -42,8 +61,10 @@ class AuthController extends Notifier<AuthState> {
   Future<void> _checkAutoLogin() async {
     try{
     final token = await _storage.getAccessToken();
+    final nickname = await _storage.getNickname();
+    final userIdx = await _storage.getUserIdx();
     if (token != null) {
-      state = AuthState(isLoggedIn: true, isLoading: false, accessToken: token);
+      state = AuthState(isLoggedIn: true, isLoading: false, accessToken: token, nickName: nickname, userIdx: userIdx);
     }else {
       // 토큰이 없어도 확인은 끝난 것 (isLoading: false)
       state = AuthState(isLoggedIn: false, isLoading: false);
@@ -64,7 +85,7 @@ class AuthController extends Notifier<AuthState> {
       } catch (e) {
         print('카카오톡 로그아웃 에러: {e}');
       }
-      await _storage.deleteAllToken();
+      await _storage.deleteAll();
       state = AuthState(isLoggedIn: false, accessToken: null);
     } catch (e) {
       print('WAZZUP 로그아웃 에러: ${e}');
@@ -89,6 +110,8 @@ class AuthController extends Notifier<AuthState> {
         else if(serverResult=='success'){
           AuthResponse tokenData = AuthResponse.fromJson(responseData['data']);
           print('기존 유저임 와접 토큰 발급: ${tokenData}');
+          print('기존 유저임 닉네임 갖고옴: ${tokenData.usersNickname}');
+          
           await _saveTokenAndUpdateState(tokenData);
           return "success";
         }
@@ -98,18 +121,28 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  // 로그인 상태로 변경 후 토큰 스토리지에 저장
-  Future<void> _saveTokenAndUpdateState(AuthResponse tokenData) async {
+    // 로그인 상태로 변경 후 토큰 스토리지에 저장
+    Future<void> _saveTokenAndUpdateState(AuthResponse tokenData) async {
+    await _storage.saveTokenAndUserInfo(
+      accessToken: tokenData.wazzupToken,
+      refreshToken: tokenData.refreshToken,
+      nickname: tokenData.usersNickname,
+      userIdx: tokenData.usersIdx,
+    );
 
-    await _storage.saveToken(
-    accessToken: tokenData.wazzupToken,
-    refreshToken: tokenData.refreshToken);
-
-    state = AuthState(isLoggedIn: true, accessToken: tokenData.wazzupToken);
+    // 상태 업데이트
+    state = state.copyWith(
+      isLoggedIn: true,
+      isLoading: false,
+      accessToken: tokenData.wazzupToken,
+      nickName: tokenData.usersNickname,
+      userIdx: tokenData.usersIdx,
+    );
   }
   
-  // 회원가입 완료 후 호출할 함수 (외부에서 호출용) 아직 안써봤는데 언제 쓰는거지?
+  // 회원가입 완료 후 호출할 함수 회원가입해도 토큰받아와서 저장해줘야함.
   Future<void> completeSignUp(AuthResponse tokenData) async {
+    print('${tokenData.usersNickname} ㄹ회원가입회원가입 회원가입회ㄱ원가입한 닉네');
     await _saveTokenAndUpdateState(tokenData);
   }
 }
