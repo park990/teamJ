@@ -17,8 +17,6 @@ class GatheringHorizontalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.brown[100]!),
-        //border: Border.all(color: Colors.pink[200]!.withOpacity(0.5)),
-        //0xfffff9f0
         borderRadius: BorderRadius.circular(12),
       ),
       child: SizedBox(

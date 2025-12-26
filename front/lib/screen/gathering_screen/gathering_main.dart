@@ -107,8 +107,17 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             ),
             // 페이지 진행률 표시 바
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Text(
+                    '🔍요즘 유행하는 키워드',
+                    style: sectionTitleFont,
+                  ),
+                ],
+              ),
             ),
+            //키워드 태그 불러오기
             GatheringKeywords(),
           ],
         ),
