@@ -82,7 +82,7 @@ class ApiClient {
         headers: _baseHeaders,
         body: jsonEncode({'refreshToken': refreshToken}),
       );
-
+    print('서버 응답: ${response.body}');
       if (response.statusCode == 200) {
         // 3. 재발급 성공 -> 새 토큰 저장
         final jsonResponse = jsonDecode(
@@ -90,13 +90,15 @@ class ApiClient {
         );
 
         // 서버 응답 구조가 기존 AuthResponse와 같다면
-        AuthResponse newTokens = AuthResponse.fromJson(
-          jsonResponse['data'],
-        );
+        final data = jsonResponse['data'];
+        
+
+        String newAt = data['wazzupToken'] ?? '';
+        String newRt = data['refreshToken'] ?? '';
 
         await _storage.saveTokensOnly(
-          accessToken: newTokens.wazzupToken,
-          refreshToken: newTokens.refreshToken,
+          accessToken: newAt,
+          refreshToken: newRt
         );
         return true;
       } else {

@@ -17,8 +17,6 @@ class PostWriteScreen extends ConsumerStatefulWidget {
 
 class _PostWriteState extends ConsumerState<PostWriteScreen> {
   
-
-  
   // 게시글 카드와 동일한 텍스트 스타일
   final TextStyle postContentStyle = const TextStyle(
     fontSize: 14,
@@ -51,7 +49,7 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
             onPressed: state.isSubmitting ? null : () => notifier.submitPost(),
             child: state.isSubmitting
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : Text('작성하기', style: sectionTitleFont.copyWith(color: wazzupButton)),
+                : Text('작성하기', style: surroundStyle.copyWith(color: wazzupButton)),
           ),
         ],
       ),
@@ -105,6 +103,7 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
                 border: InputBorder.none,
                 
               ),
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (v) => (v == null || v.isEmpty) ? "내용을 입력해주세요" : null,
             ),
             if (state.selectedImages.isNotEmpty) _imagePreview(state.selectedImages, notifier),
