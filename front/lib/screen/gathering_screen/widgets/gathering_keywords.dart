@@ -23,9 +23,9 @@ class GatheringKeywords extends ConsumerWidget {
             return Material(
               child: Ink(
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[400] ?? Colors.grey),
+                    border: Border.all(color: Colors.brown[300]!),
                   ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
@@ -37,7 +37,7 @@ class GatheringKeywords extends ConsumerWidget {
                       horizontal: 16, vertical: 8
                     ),
                     child: Text(
-                      item.title, style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                      item.title, style: TextStyle(fontWeight: FontWeight.w700, color: Colors.black87),
                     ),
                   ),
                 ),

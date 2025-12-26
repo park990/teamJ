@@ -13,46 +13,63 @@ class GatheringHorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 300,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(
-              meeting.cardImageUrl, fit: BoxFit.cover, height: 130,
-            ),
-            SizedBox(
-              //height: 15,
-              width: 10,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    meeting.cardTitle,
-                    style: cardTitleFont,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis
-                  ),
-                  SizedBox(
-                    height: 4
-                  ),
-                  Text(
-                    meeting.cardBody, style: cardBodyFont, maxLines: 1, overflow: TextOverflow.ellipsis
-                  ),
-                  SizedBox(
-                    height: 4
-                  ),
-                  Text(
-                    '참여자 ${meeting.cardParticipantsCount} 명', style: captionLabelFont
-                  ),
-                ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.brown[100]!),
+        //border: Border.all(color: Colors.pink[200]!.withOpacity(0.5)),
+        //0xfffff9f0
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          )
+        ]
+      ),
+      child: SizedBox(
+        width: 300,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset(
+                meeting.cardImageUrl, fit: BoxFit.cover, height: 130,
               ),
-            ),
-          ],
+              SizedBox(
+                //height: 15,
+                width: 10,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      meeting.cardTitle,
+                      style: cardTitleFont,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis
+                    ),
+                    SizedBox(
+                      height: 4
+                    ),
+                    Text(
+                      meeting.cardBody, style: cardBodyFont, maxLines: 1, overflow: TextOverflow.ellipsis
+                    ),
+                    SizedBox(
+                      height: 4
+                    ),
+                    Text(
+                      '참여자 ${meeting.cardParticipantsCount} 명', style: captionLabelFont
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -81,6 +81,9 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
                 },
               ),
             ),
+            SizedBox(
+              height: 5,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               //스프레드 연산자(...) - children[] 리스트 안에 다른 위젯들과 함께 사용 가능함
