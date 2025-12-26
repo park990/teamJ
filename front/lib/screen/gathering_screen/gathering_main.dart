@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/provider/gathering_meeting_provider.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
+import 'package:front/screen/gathering_screen/widgets/gathering_keywords.dart';
 import 'package:front/theme/app_colors.dart';
 
 /// 모임 목록을 수평 스크롤로 보여주는 화면
@@ -54,7 +55,7 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             // 섹션 제목 (고정)
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Text('🔥이번 주 핫한 모임', style: sectionTitleFont),
+              child: Text('🔥 이번 주 핫한 모임', style: sectionTitleFont),
             ),
             // 모임 카드 수평 스크롤 영역 (화면 높이의 15%)
             SizedBox(
@@ -80,6 +81,9 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
                 },
               ),
             ),
+            SizedBox(
+              height: 5,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               //스프레드 연산자(...) - children[] 리스트 안에 다른 위젯들과 함께 사용 가능함
@@ -103,8 +107,18 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
             ),
             // 페이지 진행률 표시 바
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Text(
+                    '🔍 요즘 유행하는 키워드',
+                    style: sectionTitleFont,
+                  ),
+                ],
+              ),
             ),
+            //키워드 태그 불러오기
+            GatheringKeywords(),
           ],
         ),
       );
