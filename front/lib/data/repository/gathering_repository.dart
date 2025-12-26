@@ -46,11 +46,7 @@ List<GatheringKeywordModel> keywords = [
       slug: 'foodTour'
     ),
     GatheringKeywordModel(
-      title: '두바이쫀득쿠키',
-      slug: 'dubaiCookie'
-    ),
-    GatheringKeywordModel(
-      title: '스포츠',
+      title: '연애/결혼',
       slug: 'sports'
     ),
     GatheringKeywordModel(
@@ -60,5 +56,9 @@ List<GatheringKeywordModel> keywords = [
     GatheringKeywordModel(
       title: '스포츠',
       slug: 'sports'
+    ),
+    GatheringKeywordModel(
+      title: '두바이쫀득쿠키',
+      slug: 'dubaiCookie'
     ),
   ];
