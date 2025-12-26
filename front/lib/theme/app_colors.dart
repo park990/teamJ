@@ -12,19 +12,28 @@ import 'package:google_fonts/google_fonts.dart';
 const Color wazzupButton = Color(0xFFdf8eb6);
 const Color wazzupBackGround = Color(0xFFFFF5F7);
 
+// eng
 //pacifico
 //bungeeShade
 //courgette
 //lobster
+//mali
+//gochiHand
+//architectsDaughter
+//atma
+
+// kor
+// jua
+// gaegu
 
 // 앱바 wazzup글씨 볼드 테마
-final TextStyle wazzupBarFont = GoogleFonts.fredoka(
+final TextStyle wazzupBarFont = GoogleFonts.gaegu(
   fontSize: 20,
-  fontWeight: FontWeight.w500,
+  fontWeight: FontWeight.w500
 );
 
 // 기본 글 씨 테마 알아서 크기 조정하고 굵기 조정하셈
-  final TextStyle wazzupFont = GoogleFonts.lobster();
+  final TextStyle wazzupFont = GoogleFonts.mali();
 
 // 타이틀/헤더(앱 최상단)
 final TextStyle headerFont = GoogleFonts.fredoka(
