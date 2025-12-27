@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/config/global_keys.dart';
-import 'package:front/dto/auth_response.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
@@ -142,7 +141,7 @@ class ApiClient {
       },
     );
 
-    if (response.statusCode == 401) {
+    if (response.statusCode == 401 || response.statusCode == 403) {
       print("[ApiClient] 401 감지! 토큰 재발급 시도...");
       bool refreshed = await _refreshAccessToken();
 
