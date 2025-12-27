@@ -1,44 +1,68 @@
-package com.teamj.service.myPage_service.oauth_servicer;
-
-import java.util.Map;
+package com.teamj.service.myPage_service.oauth_service;
 import java.util.concurrent.TimeUnit;
-
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.teamj.dto.OAuthDTO;
 import com.teamj.dto.SocialUserDTO;
+import com.teamj.dto.UserDTO;
 import com.teamj.dto.WazzupTokenDTO;
 import com.teamj.entity.users_entity.Users;
 import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
-import com.teamj.response.ApiResponse; 
-
+import com.teamj.response.ApiResponse;
+import com.teamj.service.myPage_service.oauth_service.social.GetFromSocialService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OAuthService {
+public class AuthService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final StringRedisTemplate redisTemplate;
+    private final GetFromSocialService getFromSocialService;
+
+
+
+    // 자동로그인 때 토큰으로 유저정보 얻어오기
+    public ResponseEntity<ApiResponse<?>> getUserMe(Long userIdx) {
+        try {
+            // 1. DB에서 유저 정보 조회
+            Users user = userRepository.findById(userIdx)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
+
+            // 2. 응답용 DTO 생성 (토큰을 제외한 순수 정보만)
+            UserDTO userInfo = UserDTO.builder()
+                    .usersIdx(user.getUsersIdx())
+                    .usersNickname(user.getUsersNickname())
+                    .grade(user.getGrade())
+                    .build();
+            
+            log.info("front상태 저장위해 user {} 정보 전달",userInfo.getUsersNickname());
+
+            // 3. ApiResponse.success로 감싸서 반환
+            return ResponseEntity.ok(ApiResponse.success(userInfo, "유저 정보 조회 성공"));
+
+        } catch (Exception e) {
+            log.error("유저 정보 조회 에러: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("인증 정보가 유효하지 않습니다."));
+        }
+    }
+
+
 
     public ResponseEntity<ApiResponse<?>> socialLogin(OAuthDTO oAuthDTO) {
-
         SocialUserDTO socialUser = new SocialUserDTO();
         
         // 카카오 api 요청 유저 정보 얻어오기
         if ("KAKAO".equals(oAuthDTO.getProvider())) {
             
-            socialUser = getFromKakao(oAuthDTO);
+            socialUser = getFromSocialService.getFromKakao(oAuthDTO);
             
             // 카카오 유저정보 요청 불가
             if (socialUser == null) {
@@ -83,41 +107,6 @@ public class OAuthService {
         }
     }
 
-    // 소셜 토큰으로 카카오 정보 갖고오기
-    private SocialUserDTO getFromKakao(OAuthDTO dto) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + dto.getSocialToken());
-            HttpEntity<String> entity = new HttpEntity<>(null, headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    "https://kapi.kakao.com/v2/user/me",
-                    HttpMethod.POST,
-                    entity,
-                    Map.class);
-            Map<String, Object> body = response.getBody();
-            SocialUserDTO user = new SocialUserDTO();
-
-            if (body == null || body.get("id") == null) {
-                throw new IllegalStateException("카카오 응답에 id 없음");
-            }
-            String id = String.valueOf(body.get("id"));
-            user.setUsersSnsId(id);
-            user.setProvider(dto.getProvider());
-
-            Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
-            if (kakaoAccount != null && kakaoAccount.get("email") != null) {
-                user.setUsersEmail(String.valueOf(kakaoAccount.get("email")));
-            }
-
-            return user;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     // 로그아웃
     public void logout(String accessToken) {

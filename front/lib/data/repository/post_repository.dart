@@ -8,28 +8,6 @@ class PostRepository {
   final ApiClient _apiClient = ApiClient();
 
 
-
-  // 상세 글 확인
-  Future<Post?> getPostDetail(int postId) async{
-    try{
-      final response = await _apiClient.get(
-        '/api/post/getDetail/$postId',
-      );
-      if(response.statusCode==200){
-        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
-        print('상세글 가져오기 성공 ${jsonResponse['message']}');
-
-        final detailData = jsonResponse['data'];
-        return null;
-      }else{
-        print('상세글 가져오기 실패${response.statusCode}');
-        return null;
-      }
-    }catch(e){
-      print('상세글 에러: ${e}');
-      return null;
-    }
-  }
   
 
   // 글 목록 불러오기

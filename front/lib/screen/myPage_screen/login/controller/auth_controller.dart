@@ -4,6 +4,7 @@ import 'package:front/data/repository/Auth_repository.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/dto/social_user_dto.dart';
+import 'package:http/http.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 final authRepositoryProvider = Provider((ref)=>AuthRepository());
@@ -61,10 +62,21 @@ class AuthController extends Notifier<AuthState> {
   Future<void> _checkAutoLogin() async {
     try{
     final token = await _storage.getAccessToken();
-    final nickname = await _storage.getNickname();
-    final userIdx = await _storage.getUserIdx();
+
     if (token != null) {
-      state = AuthState(isLoggedIn: true, isLoading: false, accessToken: token, nickName: nickname, userIdx: userIdx);
+      state = AuthState(isLoggedIn: true, isLoading: false, accessToken: token);
+
+      try{
+        final response = await _repository.getUserInfo();
+        if(response!=null)
+        state= state.copyWith(
+          isLoading: false,
+          nickName: response.usersNickname,
+          userIdx: response.usersIdx,
+        );
+      }catch(e){
+
+      }
     }else {
       // 토큰이 없어도 확인은 끝난 것 (isLoading: false)
       state = AuthState(isLoggedIn: false, isLoading: false);
@@ -123,11 +135,9 @@ class AuthController extends Notifier<AuthState> {
 
     // 로그인 상태로 변경 후 토큰 스토리지에 저장
     Future<void> _saveTokenAndUpdateState(AuthResponse tokenData) async {
-    await _storage.saveTokenAndUserInfo(
+    await _storage.saveTokensOnly(
       accessToken: tokenData.wazzupToken,
       refreshToken: tokenData.refreshToken,
-      nickname: tokenData.usersNickname,
-      userIdx: tokenData.usersIdx,
     );
 
     // 상태 업데이트

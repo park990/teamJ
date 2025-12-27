@@ -2,9 +2,35 @@ import 'dart:convert';
 
 import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/user_dto.dart';
 
 class AuthRepository {
   ApiClient _apiClient = ApiClient();
+
+
+  // 자동로그인 때 스토리지 토큰으로 유저 정보 갖고와서 상태에 저장.
+  Future<UserDto?> getUserInfo() async {
+    try{
+      final response = await _apiClient.get('/api/auth/me');
+
+      if(response.statusCode==200){
+        final Map<String, dynamic> decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        
+        // ApiResponse의 'data' 부분을 DTO로 바로 변환!
+        if (decodedResponse['data'] != null) {
+          return UserDto.fromJson(decodedResponse['data']);
+        }
+        return null;
+      }else{
+        print('유저 정보 불러오기 실패: ${response.statusCode}');
+        return null;
+      }
+    }catch(e){
+      print('유저 정보 통신 오류: ${e}');
+      return null;
+    }
+  }
+
 
   // 로그아웃 wazzupToken 삭제
   Future<bool> wazzupLogout() async {

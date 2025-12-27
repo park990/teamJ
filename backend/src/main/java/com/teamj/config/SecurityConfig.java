@@ -40,7 +40,9 @@ public class SecurityConfig {
 
                 // 로그아웃은 필터를 거치도록 하지만 어차피 로그아웃이라 안거쳐도 문제는 없지만 일단 거치도록 하자.
                 .requestMatchers(
-                    "/api/auth/logout"
+                    "/api/auth/logout",
+                                  "/api/auth/me"
+
                 ).authenticated()
 
                 .requestMatchers(
