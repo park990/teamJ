@@ -1,4 +1,5 @@
 import 'package:front/screen/gathering_screen/model/gathering_meeting.dart';
+import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
 
 List<GatheringMeeting> meetings = [
     //더미데이터
@@ -31,5 +32,33 @@ List<GatheringMeeting> meetings = [
       cardBody: '당근 말기환자들 모임',
       cardImageUrl: 'asset/img/image.png',
       cardParticipantsCount: 1,
+    ),
+  ];
+
+List<GatheringKeywordModel> keywords = [
+    // 키워드 데이터
+    GatheringKeywordModel(
+      title: 'teamJ',
+      slug: 'teamJ'
+    ),
+    GatheringKeywordModel(
+      title: '맛집탐방',
+      slug: 'foodTour'
+    ),
+    GatheringKeywordModel(
+      title: '연애/결혼',
+      slug: 'sports'
+    ),
+    GatheringKeywordModel(
+      title: '영화',
+      slug: 'movies'
+    ),
+    GatheringKeywordModel(
+      title: '스포츠',
+      slug: 'sports'
+    ),
+    GatheringKeywordModel(
+      title: '두바이쫀득쿠키',
+      slug: 'dubaiCookie'
     ),
   ];
