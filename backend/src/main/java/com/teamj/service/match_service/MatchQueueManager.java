@@ -2,49 +2,66 @@ package com.teamj.service.match_service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamj.dto.randomChat_dto.MatchCriteria;
 import com.teamj.dto.randomChat_dto.WaitingUser;
 import com.teamj.entity.users_entity.Users;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class MatchQueueManager {
+
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
+
+    private static final String QUEUE_KEY_PREFIX = "match:queue:";
+
+    private String getQueueKey(Users.Gender actualGender) {
+        // actualGender가 null일 수 없어야 함 (필수 정보)
+        return QUEUE_KEY_PREFIX + actualGender.name();  // "MALE" 또는 "FEMALE"
+    }
+
+    /**
+     * WaitingUser를 JSON 문자열로 변환
+     */
+    private String toJson(WaitingUser user) {
+        try {
+            return objectMapper.writeValueAsString(user);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("WaitingUser JSON 변환 실패", e);
+        }
+    }
+
+    /**
+     * JSON 문자열을 WaitingUser로 변환
+     */
+    private WaitingUser fromJson(String json) {
+        try {
+            return objectMapper.readValue(json, WaitingUser.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("WaitingUser JSON 파싱 실패", e);
+        }
+    }
 
     /**
      * 🔥 랜덤 매칭 대기열
      *
      * - 아직 상대를 못 만난 유저들이 들어가는 곳
      * - FIFO (먼저 들어온 사람이 먼저 나감)
-     * - 서버 메모리에 존재
+     * - Redis에 저장 (서버 재시작 후에도 유지)
      */
-    // 성별만으로 큐 분리
-    private final Map<String, Queue<WaitingUser>> waitingQueues = new ConcurrentHashMap<>();
-
-    /**
-     * 매칭 조건에 맞는 큐 가져오기 (없으면 생성)
-     */
-    private Queue<WaitingUser> getQueue(String desiredGender) {
-        String key = desiredGender != null ? desiredGender : "random";
-        Queue<WaitingUser> queue = waitingQueues.get(key);
-        // 조건에 맞는 큐가 없으면 새로 만들어서 반환
-        if (queue == null) {
-            queue = new ConcurrentLinkedQueue<>();
-            waitingQueues.put(key, queue);
-        }
-        
-        return queue;
-    }
 
     /**
      * 매칭 시도
-     * 
+     *
      * 로직:
      * 1. 내가 원하는 성별 큐에서 상대 찾기
      * 2. 양방향 검증 (내가 원하는 성별 = 상대 실제 성별 && 상대가 원하는 성별 = 내 실제 성별)
@@ -61,41 +78,83 @@ public class MatchQueueManager {
          *
          * 👉 한 번에 한 스레드만 매칭 로직 실행
          */
+
         // 매칭조건을 WaitingUser에서 가져옴
         String desiredGender = me.getCriteria().getDesiredGender();
-        // 매칭조건에 맞는 큐 가져오기
-        Queue<WaitingUser> targetQueue = getQueue(desiredGender);
 
-        // 큐에서 한 명씩 확인
+        // 내 실제 성별
+        Users.Gender myActualGender = me.getActualGender();
+
+        // 매칭 성공 → 상대 유저
+        WaitingUser matchedUser = null;
+        String matchedQueueKey = null;  // 매칭된 큐 추적용
+    
+        if ("random".equals(desiredGender)) {
+            // Random 선택 → MALE 큐와 FEMALE 큐 둘 다 확인
+            
+            // 1. MALE 큐 확인
+            matchedUser = findMatchInQueue(me, Users.Gender.MALE);
+            if (matchedUser != null) {
+                matchedQueueKey = getQueueKey(Users.Gender.MALE);
+            } else {
+                // 2. FEMALE 큐 확인
+                matchedUser = findMatchInQueue(me, Users.Gender.FEMALE);
+                if (matchedUser != null) {
+                    matchedQueueKey = getQueueKey(Users.Gender.FEMALE);
+                }
+            }
+        } else {
+            // 특정 성별 원함
+            Users.Gender targetGender = "female".equals(desiredGender) 
+                ? Users.Gender.FEMALE 
+                : Users.Gender.MALE;
+            
+            matchedUser = findMatchInQueue(me, targetGender);
+            if (matchedUser != null) {
+                matchedQueueKey = getQueueKey(targetGender);
+            }
+        }
+        
+        if (matchedUser != null) {
+            return Optional.of(matchedUser.getUserIdx()); // Optional.of: 값이 있는 Optional 객체 생성
+        }
+        
+        // 매칭 실패 → 내 실제 성별 큐에 추가
+        String myQueueKey = getQueueKey(myActualGender);
+        redisTemplate.opsForList().rightPush(myQueueKey, toJson(me));
+        return Optional.empty();
+    }
+    
+    /**
+     * 특정 큐에서 매칭 가능한 상대 찾기
+     */
+    private WaitingUser findMatchInQueue(WaitingUser me, Users.Gender targetGender) {
+        String queueKey = getQueueKey(targetGender);
         List<WaitingUser> checkedUsers = new ArrayList<>();
         WaitingUser matchedUser = null;
-
-        while (!targetQueue.isEmpty()) {
-            WaitingUser candidate = targetQueue.poll(); // poll: 큐에서 하나 꺼내기
-            checkedUsers.add(candidate); // 확인한 사람 리스트에 추가
-
-            // 양방향 검증
+        
+        while (true) {
+            String candidateJson = redisTemplate.opsForList().leftPop(queueKey);
+            if (candidateJson == null) break;
+            
+            WaitingUser candidate = fromJson(candidateJson);
+            checkedUsers.add(candidate);
+            
             if (isMatch(me, candidate)) {
                 matchedUser = candidate;
                 break;
             }
         }
-
-        // 매칭 실패한 사람들 다시 큐에 넣기
-        for (WaitingUser user : checkedUsers) {
+        
+        // 매칭 실패한 사람들 다시 큐에 넣기 (역순으로)
+        for (int i = checkedUsers.size() - 1; i >= 0; i--) {
+            WaitingUser user = checkedUsers.get(i);
             if (user != matchedUser) {
-                targetQueue.offer(user); // offer: 큐에 하나 추가
+                redisTemplate.opsForList().leftPush(queueKey, toJson(user));
             }
         }
-
-        // 매칭 성공 → 상대 유저 인덱스 반환
-        if (matchedUser != null) {
-            return Optional.of(matchedUser.getUserIdx());
-        }
-
-        // 매칭 실패 → 나도 큐에 추가
-        targetQueue.offer(me);
-        return Optional.empty();
+        
+        return matchedUser;  // 매칭된 사람 반환, 없으면 null
     }
 
     /**
@@ -152,8 +211,28 @@ public class MatchQueueManager {
     /**
      * 매칭 취소 (뒤로가기 / 앱 종료 등)
      */
-    public synchronized void cancel(Long userIdx, String desiredGender) {
-        Queue<WaitingUser> queue = getQueue(desiredGender);
-        queue.removeIf(waitingUser -> waitingUser.getUserIdx().equals(userIdx));
+    public synchronized void cancel(Long userIdx, Users.Gender actualGender) {
+
+        // 매칭조건에 맞는 큐 키 생성
+        String queueKey = getQueueKey(actualGender);
+        
+        // 큐에 있는 모든 사람 리스트
+        List<WaitingUser> allUsers = new ArrayList<>();
+        
+        // 큐에 있는 모든 사람 확인
+        while (true) {
+            String userJson = redisTemplate.opsForList().leftPop(queueKey); // 큐에서 왼쪽(앞)에서 하나 꺼내기
+            if (userJson == null) break; // 큐가 비었으면 종료
+            allUsers.add(fromJson(userJson)); // 확인한 사람 리스트에 추가
+        }
+        
+        // 큐에 있는 모든 사람 다시 넣기 (역순으로)
+        for (int i = allUsers.size() - 1; i >= 0; i--) {
+            WaitingUser user = allUsers.get(i);
+            if (!user.getUserIdx().equals(userIdx)) { // 취소한 사람은 큐에 넣지 않음
+                // opsForList().rightPush: 큐에 오른쪽(뒤)에 하나 추가
+                redisTemplate.opsForList().rightPush(queueKey, toJson(user));
+            }
+        }
     }
 }
