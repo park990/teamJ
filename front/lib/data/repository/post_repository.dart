@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/dto/bbs/post_list_dto.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PostRepository {
   final ApiClient _apiClient = ApiClient();
@@ -41,8 +42,8 @@ class PostRepository {
   }
 
 
-  // 글 작성
-  Future<bool> submitPost(String content) async{
+  // 글 작성 List<XFile> images 도받아서 따로 보내줘야함
+  Future<bool> submitPost(String content, ) async{
     try{
       final response = await _apiClient.post(
         '/api/post/submit',
