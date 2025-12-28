@@ -89,10 +89,11 @@ class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
     // 누른순간 submitting = true로 설정.
     state = state.copyWith(isSubmitting: true);
     try{
-      final content= contentController.text;
-
+      final content = contentController.text;
+      final image = state.selectedImages;
 
       final result = await _repository.submitPost(content);
+      
       print(result);
 
       await Future.delayed(const Duration(seconds: 1));
