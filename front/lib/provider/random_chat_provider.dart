@@ -4,11 +4,6 @@ import 'package:front/screen/random_chat_screen/controller/random_chat_controlle
 import 'package:front/data/data_source/remote/api_client.dart';
 
 
-/// 0. ApiClient Provider
-final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
-});
-
 /// 1. Repository Provider
 final randomMatchRepositoryProvider =
     Provider<RandomMatchRepository>((ref) {

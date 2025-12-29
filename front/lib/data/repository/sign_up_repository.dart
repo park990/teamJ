@@ -5,12 +5,13 @@ import "package:front/dto/social_user_dto.dart";
 import "package:front/data/data_source/remote/api_client.dart";
 
 class SignUpRepository {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient apiClient;
+  SignUpRepository(this.apiClient);
 
   // 낙네임 중복 체크
   Future<bool> requestNickname(String nickName) async {
     try {
-      final response = await _apiClient.post(
+      final response = await apiClient.post(
         '/api/signUp/check_nickName',
         body: {'nickName':nickName}
       );
@@ -48,7 +49,7 @@ class SignUpRepository {
 
     try {
       // 요청
-      final response = await _apiClient.post(
+      final response = await apiClient.post(
         '/api/signUp/submit',
         body: signUpDto.toJson(),
       );

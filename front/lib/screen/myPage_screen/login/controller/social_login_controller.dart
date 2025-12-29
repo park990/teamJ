@@ -1,12 +1,6 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/data_source/remote/social/kakao_oauth_data_source.dart';
-
-final socialLoginProvider = Provider((ref)=>KakaoOauthDataSource());
-
-  final socialLoginControllerProvider = NotifierProvider<SocialLoginController, void>(() {
-    return SocialLoginController();
-  });
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 
 class SocialLoginController extends Notifier<void>{
   
@@ -19,7 +13,7 @@ class SocialLoginController extends Notifier<void>{
 
   @override
   void build() {
-    _kakaoSource = ref.read(socialLoginProvider);
+    _kakaoSource = ref.read(kakaoLoginProvider);
   }
 
   Future<String?> loginKakao() async{
