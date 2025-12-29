@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_user_dto.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/myPage_screen/login/widgets/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
 

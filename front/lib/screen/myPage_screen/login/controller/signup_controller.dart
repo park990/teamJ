@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/data/repository/sign_up_repository.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_user_dto.dart';
+import 'package:front/screen/myPage_screen/login/provider/signup_provider.dart';
 import 'package:front/screen/myPage_screen/login/signup/models/step_item.dart';
 
 const _sentinel = Object();
@@ -42,12 +44,6 @@ class SignupState {
   );
 }
 }
-
-final signupRepositoryProvider = Provider((ref)=>SignUpRepository());
-
-final SignupControllerProvider = NotifierProvider.autoDispose<SignupController,SignupState>(() {
-  return SignupController();
-});
 
 class SignupController extends AutoDisposeNotifier<SignupState>{
 

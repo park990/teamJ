@@ -6,7 +6,8 @@ import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PostRepository {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient apiClient;
+  PostRepository(this.apiClient);
 
 
   
@@ -14,7 +15,7 @@ class PostRepository {
   // 글 목록 불러오기
   Future<List<Post>> getList() async {
     try{
-      final response = await _apiClient.get(
+      final response = await apiClient.get(
         '/api/post/getList',
         //  나중에 바디에 게시판 타입 넣고 보내주면 게시판 나눌 수 있음
       );
@@ -45,7 +46,7 @@ class PostRepository {
   // 글 작성 List<XFile> images 도받아서 따로 보내줘야함
   Future<bool> submitPost(String content, ) async{
     try{
-      final response = await _apiClient.post(
+      final response = await apiClient.post(
         '/api/post/submit',
       body: {'content':content}
       );

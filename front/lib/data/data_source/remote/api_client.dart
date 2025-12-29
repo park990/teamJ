@@ -2,16 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/config/global_keys.dart';
+import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
 
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(ref);
+});
 class ApiClient {
-  static final ApiClient _instance = ApiClient._internal();
-  factory ApiClient() => _instance;
-  ApiClient._internal();
+  Ref ref;
+  ApiClient(this.ref);
 
   // dotenv.env의 api url = 10.0.2.2:8080 으로 고정
   final String baseUrl = "${dotenv.env["API_URL"]}";
@@ -39,7 +44,7 @@ class ApiClient {
     if (response.statusCode == 401 || response.statusCode == 403) {
       if (path.contains('/logout')) {
         print("[ApiClient] 로그아웃 중 토큰 만료 감지. 바로 로컬 로그아웃 처리.");
-        _forceLogOut();
+        _forceLogOut(ref);
         return response;
       }
 
@@ -103,7 +108,7 @@ class ApiClient {
       } else {
         print("[ApiClient] 토큰 재발급 실패: ${response.statusCode}");
         // 실패 시 토큰 삭제 (로그아웃 처리)
-        _forceLogOut();
+        _forceLogOut(ref);
         return false;
       }
     } catch (e) {
@@ -112,14 +117,10 @@ class ApiClient {
     }
   }
 
-  void _forceLogOut() async {
+  void _forceLogOut(ref) async {
     await _storage.deleteAll();
     WazzupToast.showError('로그아웃 되었습니다.\n 다시 로그인 해주세요');
-
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MypageMain()),
-      (route) => false,
-    ); // 로그아웃 후  뒤로가기 누르면 로그인 안되어있어야하니까
+    ref.read(authControllerProvider.notifier).logout;
   }
 
 
