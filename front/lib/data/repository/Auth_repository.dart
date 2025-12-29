@@ -5,13 +5,14 @@ import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/dto/user_dto.dart';
 
 class AuthRepository {
-  ApiClient _apiClient = ApiClient();
+  ApiClient apiClient;
+  AuthRepository(this.apiClient);
 
 
   // 자동로그인 때 스토리지 토큰으로 유저 정보 갖고와서 상태에 저장.
   Future<UserDto?> getUserInfo() async {
     try{
-      final response = await _apiClient.get('/api/auth/me');
+      final response = await apiClient.get('/api/auth/me');
 
       if(response.statusCode==200){
         final Map<String, dynamic> decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
@@ -35,7 +36,7 @@ class AuthRepository {
   // 로그아웃 wazzupToken 삭제
   Future<bool> wazzupLogout() async {
     try {
-      final response = await _apiClient.post(
+      final response = await apiClient.post(
         '/api/auth/logout',
       );
       if (response.statusCode == 200) {
@@ -78,7 +79,7 @@ class AuthRepository {
           return null;
       }
 
-      final response = await _apiClient.post(
+      final response = await apiClient.post(
         endPoint,
         body: dto,
       );

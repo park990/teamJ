@@ -1,11 +1,8 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/repository/post_repository.dart';
-import 'package:front/screen/bom_screen/controller/post_list_controller.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:image_picker/image_picker.dart';
-
-final postRepositoryProvider = Provider((ref) => PostRepository());
 
 class PostWriteState {
   final List<XFile> selectedImages;
@@ -35,9 +32,7 @@ class PostWriteState {
   }
 }
 
-final postWriteControllerProvider =NotifierProvider.autoDispose<PostWriteController, PostWriteState>(() {
-      return PostWriteController();
-    });
+
 
 class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
   PostRepository get _repository => ref.read(postRepositoryProvider);

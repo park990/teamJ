@@ -4,15 +4,9 @@ import 'package:front/data/repository/Auth_repository.dart';
 import 'package:front/dto/auth_response.dart';
 import 'package:front/dto/social_token_and_provider_dto.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:http/http.dart';
+import 'package:front/provider/token_storage_provider.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-
-final authRepositoryProvider = Provider((ref)=>AuthRepository());
-final tokenStorageProvider = Provider((ref)=>WazzupTokenStorage());
-
-final authControllerProvider =NotifierProvider<AuthController, AuthState>(() {
-      return AuthController();
-    });
 
 class AuthState {
   final bool isLoggedIn;

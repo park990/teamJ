@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/bom_screen/widget/post_header.dart';
 import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 
