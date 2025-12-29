@@ -22,11 +22,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "bbs")
 public class Bbs {
@@ -86,13 +84,38 @@ public class Bbs {
     @OrderBy("createdAt ASC") // 댓글을 작성순으로 정렬
     private List<BbsComments> comments = new ArrayList<>();
 
-
+    
+    
     // 댓글 갯수 가져오기
     @Formula("(SELECT COUNT(*) FROM comments c WHERE c.bbs_idx = bbs_idx AND c.is_deleted = 0)")
     private int commentCount;
-
+    
     // 좋아요 갯수 가져오기
     @Formula("(SELECT COUNT(*) FROM bbs_reaction r WHERE r.bbs_idx = bbs_idx AND r.reaction_type = 1)")
     private int likeCount;
+    
+    
+    
+    public static Bbs create(String content, Long userIdx) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("게시글 내용은 필수입니다.");
+        }
+        
+        Bbs bbs = new Bbs();
+        bbs.usersIdx = userIdx;
+        bbs.content = content;
+        bbs.bbsTypeIdx = 1L;
+        bbs.isDeleted = 0;
+        bbs.viewCount = 0;
+        
+        return bbs;
+    }
+    
+    @OneToMany(mappedBy = "bbs", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<BbsMedia> medias = new ArrayList<>();
 
+    public void addMedia(BbsMedia media){
+        medias.add(media);
+        media.setBbs(this);
+    }
 }

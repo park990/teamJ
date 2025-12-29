@@ -25,3 +25,15 @@ jwt:
     properties:
       hibernate:
         format_sql: true #sql 들여쓰기 트루해 놓는게 정신건강에 좋음
+
+cloud:
+  aws:
+    s3:
+      bucket: bomming-media  # 본인 버킷 이름
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}  # .env
+      secret-key: ${AWS_SECRET_KEY}  # .env
+    region:
+      static: ap-northeast-2 # 서울 (버지니아면 us-east-1)
+    stack:
+      auto: false

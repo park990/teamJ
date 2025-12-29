@@ -1,4 +1,5 @@
 // screen/bom_screen/widgets/post_images.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:front/screen/bom_screen/const/full_image_viewer.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
@@ -11,6 +12,12 @@ class PostImages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('${images}이미지이미지이미지이미지');
+    if(images.isEmpty) {
+
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: SizedBox(
@@ -26,12 +33,22 @@ class PostImages extends StatelessWidget {
                 builder: (_) => FullImageViewerScreen(imagePaths: images, initialIndex: index),
                 fullscreenDialog: true,
               )),
-              child: Hero(
-                tag: heroTag,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(images[index], width: 280, height: 220, fit: BoxFit.cover),
+
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(imageUrl: images[index],
+                fit:BoxFit.cover,
+                placeholder: (context, url) =>
+                Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey.shade200,
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
+                errorWidget: (context, url, error) =>
+                const Icon(Icons.broken_image),
+                ),
+                
               ),
             );
           },

@@ -85,13 +85,12 @@ class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
     state = state.copyWith(isSubmitting: true);
     try{
       final content = contentController.text;
-      final image = state.selectedImages;
+      final images = state.selectedImages;
 
-      final result = await _repository.submitPost(content);
+      final result = await _repository.submitPost(content, images);
       
       print(result);
 
-      await Future.delayed(const Duration(seconds: 1));
       if(result){
       print('글 등록 완료${content}');
 
