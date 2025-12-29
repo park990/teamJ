@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/provider/random_chat_provider.dart';
+import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 import 'package:front/screen/random_chat_screen/models/random_chat_state.dart';
 import 'package:front/screen/random_chat_screen/random_chat_screen.dart';
 import 'package:front/theme/app_colors.dart';
