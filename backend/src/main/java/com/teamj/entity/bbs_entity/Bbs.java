@@ -87,12 +87,37 @@ public class Bbs {
     
     
     // 댓글 갯수 가져오기
-    @Formula("(SELECT COUNT(*) FROM comments c WHERE c.bbs_idx = bbs_idx AND c.is_deleted = 0)")
-    private int commentCount;
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int likeCount;
     
     // 좋아요 갯수 가져오기
-    @Formula("(SELECT COUNT(*) FROM bbs_reaction r WHERE r.bbs_idx = bbs_idx AND r.reaction_type = 1)")
-    private int likeCount;
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int commentCount;
+
+    // 좋아요 증가 (+1)
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    // 좋아요 감소 (-1)
+    public void decreaseLikeCount() {
+        // 음수가 되지 않도록 방어 로직 추가
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
+    // 댓글 증가 (+1)
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
+
+    // 댓글 감소 (-1)
+    public void decreaseCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
     
     
     
