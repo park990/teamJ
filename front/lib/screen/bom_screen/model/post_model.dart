@@ -1,42 +1,45 @@
 import 'package:front/dto/bbs/post_list_dto.dart';
 
 class Post {
-  final int id;
+  final int bbsIdx;
   final String author; // nickname을 author로 명칭 변경 (직관적)
   final int viewCount;
   final int likeCount;
+  final bool isLiked;
   final int commentCount;
   final String displayDate; // 가공된 날짜 (예: 12/19)
- final List<String>? imageUrls; // img_name이 있을 경우의 경로
+  final List<String> imageUrls; // img_name이 있을 경우의 경로
   // final String? gneder;
   final String content;
 
   Post({
-    required this.id,
+    required this.bbsIdx,
     required this.author,
     required this.viewCount,
     required this.likeCount,
     required this.commentCount,
     required this.displayDate,
     // required this.gneder,
-    this.imageUrls,
+    required this.imageUrls,
     required this.content,
+    required this.isLiked
   });
 
   //  DTO를 받아서 Model로 변환
   factory Post.fromListDto(PostListDto dto) {
     return Post(
-      id: dto.bbsIdx!,
+      bbsIdx: dto.bbsIdx!,
       author: dto.nickname!,
       viewCount: dto.viewCount!,
 
       // 2. 라이크 카운트 (현재는 0, 나중에 서버에서 가공해서 줄 값)
-      likeCount: dto.likeCount ?? 0,
-      commentCount: dto.commentCount ?? 0,
+      likeCount: dto.likeCount ?? 0,  
+      isLiked: dto.isLiked,
 
+      commentCount: dto.commentCount ?? 0,
       displayDate: _formatDate(dto.createdAt),
-      imageUrls: dto.imgName != null ? [dto.imgName!] : [],
-      content: dto.content ?? "내용 없음",
+      imageUrls: dto.imgUrls ?? [],
+      content: dto.content ?? "",
     );
   }
 

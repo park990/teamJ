@@ -5,7 +5,6 @@ import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/bom_screen/widget/post_header.dart';
-import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
@@ -37,6 +36,11 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
         WazzupToast.showSuccess('글 작성 완료');
         Navigator.pop(context);
       }
+    });
+
+    ref.listen(postWriteControllerProvider.select((s) => s.selectedImages), (previous, next) {
+       // 폼 키가 현재 연결되어 있다면 다시 검사 수행
+       notifier.formKey.currentState?.validate();
     });
 
     return Scaffold(
@@ -105,8 +109,18 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
                 border: InputBorder.none,
                 
               ),
+
+              // 내용 유효성 검사.
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (v) => (v == null || v.isEmpty) ? "내용을 입력해주세요" : null,
+              validator: (value){
+                bool isTextEmpty =  (value == null || value.trim().isEmpty);
+                bool isImageEmpty = ref.read(postWriteControllerProvider).selectedImages.isEmpty;
+                if(isTextEmpty && isImageEmpty){
+                  return "내용을 입력해주세요";
+                }
+                  return null;
+                }
+
             ),
             if (state.selectedImages.isNotEmpty) _imagePreview(state.selectedImages, notifier),
           ],
@@ -139,7 +153,7 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
                     onTap: () => notifier.removeImage(index),
                     child: Container(
                       decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, size: 18, color: Colors.white),
+                      child: const Icon(Icons.close, size: 20, color: Colors.white),
                     ),
                   ),
                 ),

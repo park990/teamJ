@@ -2,7 +2,6 @@ package com.teamj.controller.myPage_control.signUp_control;
 
 import java.util.Map;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.OAuthDTO;
-import com.teamj.response.ApiResponse;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.myPage_service.oauth_service.AuthService;
 
 import lombok.RequiredArgsConstructor;

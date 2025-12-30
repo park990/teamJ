@@ -1,4 +1,3 @@
-// screen/bom_screen/widgets/post_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
@@ -13,8 +12,6 @@ class PostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 테스트 이미지 (나중엔 post.imageUrls 사용)
-    final List<String> testImages = ['asset/img/image.png', 'asset/img/image.png'];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(45, 38, 21, 12),
@@ -28,21 +25,24 @@ class PostCard extends ConsumerWidget {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(25),
               border: Border.all(color: const Color(0xFFF1F3F5), width: 1),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  
               
-                  const SizedBox(height: 15),
-
-                  // 실제로 글쓸때의 줄바꿈을 맞추기 위해 letterspacing 필요.
+                  if(post.content.trim().isNotEmpty)
                   Text(post.content, style: postContentStyle),
-              
-                  // if (testImages.isNotEmpty) PostImages(post: post, images: testImages),
+                  
+                  PostImages(post: post, images: post.imageUrls),
+
+                  if(post.imageUrls.isNotEmpty)
+                  SizedBox(height: 5),
+
                   PostFooter(post: post),
                 ],
               ),

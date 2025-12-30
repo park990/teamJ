@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.teamj.dto.randomChat_dto.MatchCriteria;
-import com.teamj.dto.randomChat_dto.MatchResult;
+import com.teamj.dto.randomChat_dto.MatchData;
 import com.teamj.dto.randomChat_dto.WaitingUser;
+import com.teamj.dto.response.WebSocketResponse;
 import com.teamj.entity.doubleKey_entity.ParticipantId;
 import com.teamj.entity.meet_entity.MeetRoom;
 import com.teamj.entity.meet_entity.Participant;
@@ -31,7 +32,7 @@ public class MatchService {
     private final UserRepository userRepository;
 
     @Transactional
-    public MatchResult enterQueue(Long userIdx, String genderOption) {
+    public WebSocketResponse<MatchData> enterQueue(Long userIdx, String genderOption) {
         // 1. 유저 정보 조회
         Users user = userRepository.findById(userIdx)
             .orElseThrow(() -> new RuntimeException("User not found: " + userIdx));
@@ -53,14 +54,16 @@ public class MatchService {
 
         if (matchedIdx.isEmpty()) {
             log.info("매칭 대기 중 userIdx={}, desiredGender={}", userIdx, genderOption);
-            return MatchResult.waiting();
+            MatchData matchData = MatchData.waiting();
+            return WebSocketResponse.success("MATCH", matchData);
         }
 
         // 5. 매칭 성공 → 방 생성
         Long partnerIdx = matchedIdx.get();
         Long roomIdx = createRoom(userIdx, partnerIdx);
 
-        return MatchResult.matched(roomIdx, partnerIdx);
+        MatchData matchData = MatchData.matched(roomIdx, partnerIdx);
+        return WebSocketResponse.success("MATCH", matchData);
     }
 
     private Long createRoom(Long userIdx1, Long userIdx2) {

@@ -47,7 +47,9 @@ dependencies:
   flutter_smart_dialog: ^4.5.0
   material_symbols_icons: ^4.72.0
   pull_to_refresh_flutter3: ^2.0.2  # 가장 자유도가 높은 리프레시 패키지
-  lottie: ^3.1.2
+  lottie: ^3.1.2  
+  cached_network_image: ^3.4.1 # S3에서 이미지를 갖고오기 위함
+  stomp_dart_client: ^3.0.1  # STOMP 클라이언트
 
 
 dev_dependencies:
