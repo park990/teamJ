@@ -7,8 +7,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.PostDTO;
@@ -36,21 +37,18 @@ public class Bbs_controller {
 
     // 게시글 등록
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<Boolean>> submit(@RequestBody PostDTO dto,
+    public ResponseEntity<ApiResponse<?>> submit(@RequestPart(value = "content",required = false) String content,
+        @RequestPart(value="images",required = false) List<MultipartFile> images,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         log.info(userDetails.getUsername());
-        log.info(dto.getContent());
-        Boolean isSuccess = bbsService.savePost(dto, userDetails.getUserIdx());
+        log.info(content);
+        log.info("이미지 개수: {}", images != null ? images.size() : 0);
 
-        if(isSuccess){
+        bbsService.savePost(content, userDetails.getUserIdx(), images);
+
             return ResponseEntity.ok(ApiResponse.success("글 등록 성공"));
-        }
-        else{
-            return ResponseEntity.status(500).body(ApiResponse.error("글 등록 실패"));
-        }
+        
     }
-
-
 
 }

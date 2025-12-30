@@ -7,7 +7,7 @@ class Post {
   final int likeCount;
   final int commentCount;
   final String displayDate; // 가공된 날짜 (예: 12/19)
- final List<String>? imageUrls; // img_name이 있을 경우의 경로
+  final List<String> imageUrls; // img_name이 있을 경우의 경로
   // final String? gneder;
   final String content;
 
@@ -19,7 +19,7 @@ class Post {
     required this.commentCount,
     required this.displayDate,
     // required this.gneder,
-    this.imageUrls,
+    required this.imageUrls,
     required this.content,
   });
 
@@ -35,8 +35,8 @@ class Post {
       commentCount: dto.commentCount ?? 0,
 
       displayDate: _formatDate(dto.createdAt),
-      imageUrls: dto.imgName != null ? [dto.imgName!] : [],
-      content: dto.content ?? "내용 없음",
+      imageUrls: dto.imgUrls ?? [],
+      content: dto.content ?? "",
     );
   }
 

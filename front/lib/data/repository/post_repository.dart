@@ -9,9 +9,6 @@ class PostRepository {
   final ApiClient apiClient;
   PostRepository(this.apiClient);
 
-
-  
-
   // 글 목록 불러오기
   Future<List<Post>> getList() async {
     try{
@@ -23,9 +20,9 @@ class PostRepository {
         final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
 
         print('게시판 리스트 가져오기 성공${jsonResponse['message']}');
-        final List<PostListDto> dtoList = (jsonResponse['data'] as List)
-          .map((e) => PostListDto.fromJson(e))
-          .toList();
+
+        final List<PostListDto> dtoList =
+         (jsonResponse['data'] as List).map((e) => PostListDto.fromJson(e)).toList();
         
         
           return dtoList.map((dto) => Post.fromListDto(dto)).toList();
@@ -43,12 +40,13 @@ class PostRepository {
   }
 
 
-  // 글 작성 List<XFile> images 도받아서 따로 보내줘야함
-  Future<bool> submitPost(String content, ) async{
+  // 글 작성 
+  Future<bool> submitPost(String content, List<XFile> images) async{
     try{
-      final response = await apiClient.post(
+      final response = await apiClient.postMultipart(
         '/api/post/submit',
-      body: {'content':content}
+        fields:{ 'content': content},
+        images: images,
       );
 
       if(response.statusCode==200){
