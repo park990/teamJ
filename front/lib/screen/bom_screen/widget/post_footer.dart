@@ -11,7 +11,7 @@ class PostFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+      padding: const EdgeInsets.fromLTRB(0, 7, 0, 3),
       child: Row(
         children: [
           _buildBtn(

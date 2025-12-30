@@ -20,5 +20,8 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>>{
     state = const AsyncLoading(); // 로딩 상태로 전환
     state = await AsyncValue.guard(() => _repository.getList());
   }
+
+
+  
 }
 

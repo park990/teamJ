@@ -36,5 +36,15 @@ public class BbsReaction {
 
     @Column
     private int reactionType;
+
+
+    public BbsReaction(Users user, Bbs bbs, int reactionType) {
+        this.user = user;
+        this.bbs = bbs;
+        this.reactionType = reactionType;
+        
+        // 복합키(ID)에도 값을 같이 세팅해주는 게 안전합니다.
+        this.id = new BbsReactionId(user.getUsersIdx(), bbs.getBbsIdx());
+    }
     
 }
