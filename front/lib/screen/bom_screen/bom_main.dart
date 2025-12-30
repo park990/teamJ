@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
-import 'package:front/screen/bom_screen/controller/post_list_controller.dart';
 import 'package:front/screen/bom_screen/const/spinning_flower.dart';
 import 'package:front/screen/bom_screen/post_write_screen.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/bom_screen/widget/post_card.dart';
-import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/myPage_screen/login/widgets/login_handler.dart';
@@ -67,15 +65,6 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
 
 
 
-
-
-
-
-
-
-
-
-
   // WIDGET폴더를 갖고 만든 POST_CARD를 리스트로 생성 
   Widget _buildBody(AsyncValue<List<Post>> postListAsync) {
     if (postListAsync.hasValue) {
@@ -99,7 +88,8 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 4),
           itemCount: postListAsync.value!.length,
-          itemBuilder: (context, index) => PostCard(post: postListAsync.value![index]),
+          itemBuilder: (context, index) => 
+          PostCard(post: postListAsync.value![index]),
         ),
       );
     }

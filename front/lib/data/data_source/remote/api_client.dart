@@ -1,15 +1,11 @@
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
-import 'package:front/config/global_keys.dart';
-import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
-import 'package:front/screen/myPage_screen/myPage_main.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref);
@@ -120,7 +116,7 @@ class ApiClient {
   void _forceLogOut(ref) async {
     await _storage.deleteAll();
     WazzupToast.showError('로그아웃 되었습니다.\n 다시 로그인 해주세요');
-    ref.read(authControllerProvider.notifier).logout;
+    ref.read(authControllerProvider.notifier).logout();
   }
 
 
@@ -163,6 +159,59 @@ class ApiClient {
         print("[ApiClient] 리프레시 토큰도 만료됨. 재로그인 필요.");
       }
     }
+    return response;
+  }
+  
+Future<http.Response> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required List<XFile> images,
+  }) async {
+    String url = '$baseUrl$path';
+    String? accessToken = await _storage.getAccessToken();
+
+    Future<http.MultipartRequest> createRequest(String? token) async {
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+      
+      // 1. 헤더 설정
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // 2. 일반 필드 추가 (content 등)
+      request.fields.addAll(fields);
+
+      // 3. 이미지 파일 추가
+      for (var image in images) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images', // 서버에서 받는 파라미터명 (백엔드와 맞추세요)
+            image.path,
+          ),
+        );
+      }
+      return request;
+    }
+
+    // 첫 번째 요청 전송
+    var request = await createRequest(accessToken);
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    // 401/403 에러 처리 (기존 post와 동일한 로직)
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      print("[ApiClient] 멀티파트 401 감지! 토큰 재발급 시도...");
+      bool refreshed = await _refreshAccessToken();
+
+      if (refreshed) {
+        String? newAccessToken = await _storage.getAccessToken();
+        // 재발급 성공 시 새로운 토큰으로 다시 요청 생성 및 전송
+        var retryRequest = await createRequest(newAccessToken);
+        var retryStreamedResponse = await retryRequest.send();
+        return await http.Response.fromStream(retryStreamedResponse);
+      }
+    }
+
     return response;
   }
 

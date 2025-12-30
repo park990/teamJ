@@ -68,7 +68,6 @@ final TextStyle captionLabelFont = GoogleFonts.fredoka(
 TextStyle postContentStyle = const TextStyle(
   fontFamily: 'Cafe24Dongdong',
   fontSize: 16,
-  height: 1.4,
   letterSpacing: 0.1,
   color: Color(0xFF2D2D2D), // 약간 부드러운 검정
 );
