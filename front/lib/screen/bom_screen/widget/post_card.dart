@@ -25,21 +25,24 @@ class PostCard extends ConsumerWidget {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(25),
               border: Border.all(color: const Color(0xFFF1F3F5), width: 1),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  
               
-                  const SizedBox(height: 15),
-
+                  if(post.content.trim().isNotEmpty)
                   Text(post.content, style: postContentStyle),
-              
+                  
                   PostImages(post: post, images: post.imageUrls),
-  
+
+                  if(post.imageUrls.isNotEmpty)
+                  SizedBox(height: 5),
+
                   PostFooter(post: post),
                 ],
               ),

@@ -10,7 +10,6 @@ import com.teamj.dto.PostDTO;
 import com.teamj.entity.bbs_entity.Bbs;
 import com.teamj.entity.bbs_entity.BbsMedia;
 import com.teamj.entity.bbs_entity.BbsMedia.MediaType;
-import com.teamj.repository.bbs_repository.BbsMediaRepository;
 import com.teamj.repository.bbs_repository.BbsRepository;
 import com.teamj.util.S3Uploader;
 
@@ -30,18 +29,18 @@ public class BbsService {
     public void savePost(String content, Long userIdx,List<MultipartFile> images){
         
             Bbs bbs = Bbs.create(content, userIdx);
-            Bbs savedBbs = bbsRepository.save(bbs);
-
+            
             if(images!=null && !images.isEmpty()){
                 for(MultipartFile image:images){
                     String imageUrl = s3Uploader.upload(image,"post");
-                    log.info("S3에 저장된 이미지 URL: {}",imageUrl);
-
+                    log.info("S3에 저장된 이미지 URL: {}", imageUrl);
+                    
                     BbsMedia media = BbsMedia.create(null, imageUrl, MediaType.IMAGE);
-
-                    savedBbs.addMedia(media);
+                    
+                    bbs.addMedia(media);
                 }
             }
+            bbsRepository.save(bbs);
     }
 
     // 게시글 전부 갖고오기 자유게시판(bbsType) = 1, 삭제 안된것(isDelted) = 0

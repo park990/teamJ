@@ -55,7 +55,10 @@ class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
   // 사진선택
   Future<void> pickImages() async{
     try{
-      final List<XFile> pickedImages = await imagePicker.pickMultiImage();
+      final List<XFile> pickedImages = await imagePicker.pickMultiImage(
+        maxWidth: 1024,
+        imageQuality: 60,
+      );
         if(pickedImages.isNotEmpty){
           final updatedList = [...state.selectedImages, ...pickedImages].take(10).toList();
 
@@ -79,13 +82,17 @@ class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
 
   // 게시글 작성하기 버튼
   Future<void> submitPost() async {
-    if(!formKey.currentState!.validate()) return;
+      final content = contentController.text.trim();
+      final images = state.selectedImages;
 
+    if(images.isEmpty){ 
+      if(!formKey.currentState!.validate()) return;
+    }else{
+      formKey.currentState?.save();
+    }
     // 누른순간 submitting = true로 설정.
     state = state.copyWith(isSubmitting: true);
     try{
-      final content = contentController.text;
-      final images = state.selectedImages;
 
       final result = await _repository.submitPost(content, images);
       

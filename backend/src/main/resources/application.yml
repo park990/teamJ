@@ -13,10 +13,6 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost} # 없으면 localhost 사용
       port: ${REDIS_PORT:6379}
-jwt:
-  secret: ${JWT_SECRET_KEY} 
-  access-token-valid-in-seconds: 3600
-  refresh-token-valid-in-seconds: 604800
 
   jpa:
     show-sql: true # sql 로그 확인
@@ -25,6 +21,17 @@ jwt:
     properties:
       hibernate:
         format_sql: true #sql 들여쓰기 트루해 놓는게 정신건강에 좋음
+
+  servlet:
+    multipart:
+      max-file-size: 20MB      # 파일 하나당 최대 크기 (기본 1MB -> 20MB로 증량)
+      max-request-size: 20MB
+      
+jwt:
+  secret: ${JWT_SECRET_KEY} 
+  access-token-valid-in-seconds: 3600
+  refresh-token-valid-in-seconds: 604800
+
 
 cloud:
   aws:

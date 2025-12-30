@@ -7,7 +7,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +37,7 @@ public class Bbs_controller {
 
     // 게시글 등록
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<Boolean>> submit(@RequestPart String content,
+    public ResponseEntity<ApiResponse<?>> submit(@RequestPart(value = "content",required = false) String content,
         @RequestPart(value="images",required = false) List<MultipartFile> images,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ){

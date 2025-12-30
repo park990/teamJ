@@ -53,7 +53,7 @@ public class Bbs {
     @OneToMany(mappedBy = "bbs", fetch = FetchType.LAZY)
     private List<BbsReaction> reactions = new ArrayList<>();
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(columnDefinition = "integer default 0")
@@ -97,9 +97,6 @@ public class Bbs {
     
     
     public static Bbs create(String content, Long userIdx) {
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("게시글 내용은 필수입니다.");
-        }
         
         Bbs bbs = new Bbs();
         bbs.usersIdx = userIdx;
