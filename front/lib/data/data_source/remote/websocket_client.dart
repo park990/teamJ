@@ -25,11 +25,9 @@ class WebSocketClient {
   bool get isConnected => _isConnected;
 
   // 1. 연결 시 토큰 가져와서 헤더에 넣기 (api_client와 동일한 패턴)
-  Future<void> connect({
-    Function(StompFrame)? onConnect,
-    Function(StompFrame)? onError,
-    Function(StompFrame)? onDisconnect,
-  }) async {
+  Future<void> connect({Function(StompFrame)? onConnect,
+  Function(StompFrame)? onError,
+  Function(StompFrame)? onDisconnect, }) async {
     if (_isConnected) {
       print("[WebSocketClient] 이미 연결되어 있습니다.");
       return;
