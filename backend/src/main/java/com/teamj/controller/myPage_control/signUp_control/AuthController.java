@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.OAuthDTO;
-import com.teamj.response.ApiResponse;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.myPage_service.oauth_service.AuthService;
 
 import lombok.RequiredArgsConstructor;

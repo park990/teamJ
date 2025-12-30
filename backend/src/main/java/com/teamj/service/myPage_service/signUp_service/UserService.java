@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.teamj.dto.SocialUserDTO;
 import com.teamj.dto.WazzupTokenDTO;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.entity.users_entity.Users;
 import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
-import com.teamj.response.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 
