@@ -1,6 +1,7 @@
 package com.teamj.service.bbs_service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,10 +10,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.teamj.dto.PostDTO;
 import com.teamj.entity.bbs_entity.Bbs;
 import com.teamj.entity.bbs_entity.BbsMedia;
+import com.teamj.entity.bbs_entity.BbsReaction;
 import com.teamj.entity.bbs_entity.BbsMedia.MediaType;
+import com.teamj.entity.doubleKey_entity.BbsReactionId;
+import com.teamj.entity.users_entity.Users;
+import com.teamj.repository.bbs_repository.BbsReactionRepository;
 import com.teamj.repository.bbs_repository.BbsRepository;
+import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
 import com.teamj.util.S3Uploader;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 public class BbsService {
     private final BbsRepository bbsRepository;
     private final S3Uploader s3Uploader;
+    private final BbsReactionRepository bbsReactionRepository;
+    private final UserRepository userRepository;
 
     // 게시글 저장
     @Transactional 
@@ -68,5 +75,43 @@ public class BbsService {
                     .build();
                     
         }).collect(Collectors.toList());
-    }     
+    }
+    
+    // 좋아요 토글 기능
+
+    @Transactional
+    public boolean toggleLike(Long bbsIdx, Long userIdx){
+        
+        // 복합키 객체 생성
+        BbsReactionId reactionId = new BbsReactionId(userIdx, bbsIdx); 
+
+        // DB조회
+        Optional<BbsReaction> existReation = bbsReactionRepository.findById(reactionId);
+
+        //bbs 게시글 리스트 불러올때 전체 카운트 다시 들고 오기 위해서
+        Bbs bbs = bbsRepository.findById(bbsIdx).orElseThrow( () -> new IllegalArgumentException("게시글 없음"));
+
+        if(existReation.isPresent()){
+            bbsReactionRepository.delete(existReation.get());
+            
+            // like 감소 로직이 있어야 하나??
+            bbs.decreaseLikeCount();
+
+            return false;
+        }else{
+
+            // BbsReaction 안에 User라는 객체로 저장해놔서 user라는 객체로 넣어줘야함. 단 refrenceBy로 들고와서 DB를 들렀다오는게 아님, 임시 user객체임.
+            Users user = userRepository.getReferenceById(userIdx);
+            
+            // BbsReaction 안에 setter를 정의 안해놨기 때문에 생성자 정의 해둔것으로 넣어둠.
+            BbsReaction newReaction = new BbsReaction(user, bbs, 1);
+            bbsReactionRepository.save(newReaction);
+            
+            // likeCount 증가 로직 있어야 하나??
+            bbs.increaseLikeCount();
+            
+            return true;
+        }
+
+    }
 }

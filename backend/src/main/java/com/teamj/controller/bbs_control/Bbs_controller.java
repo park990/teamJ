@@ -1,12 +1,14 @@
 package com.teamj.controller.bbs_control;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,6 +51,26 @@ public class Bbs_controller {
 
             return ResponseEntity.ok(ApiResponse.success("글 등록 성공"));
         
+    }
+
+    // 좋아요 토글 기능
+    @PostMapping("/likeToggle")
+    public ResponseEntity<ApiResponse<Boolean>> likeToggle(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody Map<String,Long> requestBody
+    ){
+        if(userDetails == null){
+            return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요함."));
+        }
+
+        Long bbsIdx= requestBody.get("bbsIdx");
+        
+
+        boolean isLiked = bbsService.toggleLike(bbsIdx, userDetails.getUserIdx());
+        
+        String message = isLiked ? "좋아요 등록 성공" : "좋아요 취소 성공";
+
+        return ResponseEntity.ok(ApiResponse.success(isLiked, message));
     }
 
 }
