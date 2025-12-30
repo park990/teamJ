@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.PostDTO;
-import com.teamj.response.ApiResponse;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.bbs_service.BbsService;
 
 import lombok.RequiredArgsConstructor;
