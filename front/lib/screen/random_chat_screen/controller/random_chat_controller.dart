@@ -9,7 +9,7 @@ class RandomChatController extends ChangeNotifier {
     required this.matchRepository,
   }) {
     debugPrint('🔥 RandomChatController CREATED '
-        'hash=$hashCode');
+        'hash=$hashCode'); // 메모리 주소 출력
   }
 
   RandomChatState _state = RandomChatState.idle();

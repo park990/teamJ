@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.teamj.dto.randomChat_dto.MatchCriteria;
+import com.teamj.dto.randomChat_dto.MatchResult;
 import com.teamj.dto.randomChat_dto.WaitingUser;
 import com.teamj.entity.doubleKey_entity.ParticipantId;
 import com.teamj.entity.meet_entity.MeetRoom;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RandomMatchService {
+public class MatchService {
 
     private final MatchQueueManager queueManager;
     private final MeetRoomRepository roomRepository;
@@ -30,7 +31,7 @@ public class RandomMatchService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Optional<Long> enterQueue(Long userIdx, String genderOption) {
+    public MatchResult enterQueue(Long userIdx, String genderOption) {
         // 1. 유저 정보 조회
         Users user = userRepository.findById(userIdx)
             .orElseThrow(() -> new RuntimeException("User not found: " + userIdx));
@@ -47,20 +48,22 @@ public class RandomMatchService {
             criteria
         );
 
-        // 5. 매칭 시도
+        // 4. 매칭 시도
         Optional<Long> matchedIdx = queueManager.tryMatch(waitingUser);
 
         if (matchedIdx.isEmpty()) {
             log.info("매칭 대기 중 userIdx={}, desiredGender={}", userIdx, genderOption);
-            return Optional.empty();
+            return MatchResult.waiting();
         }
 
-        // 6. 매칭 성공 → 방 생성
+        // 5. 매칭 성공 → 방 생성
         Long partnerIdx = matchedIdx.get();
-        return createRoom(userIdx, partnerIdx);
+        Long roomIdx = createRoom(userIdx, partnerIdx);
+
+        return MatchResult.matched(roomIdx, partnerIdx);
     }
 
-    private Optional<Long> createRoom(Long userIdx1, Long userIdx2) {
+    private Long createRoom(Long userIdx1, Long userIdx2) {
         Users user1 = userRepository.findById(userIdx1).orElseThrow();
         Users user2 = userRepository.findById(userIdx2).orElseThrow();
 
@@ -91,6 +94,6 @@ public class RandomMatchService {
         participantRepository.save(p2);
 
         log.info("매칭 완료 roomIdx={}, users=[{}, {}]", room.getRoomIdx(), userIdx1, userIdx2);
-        return Optional.of(room.getRoomIdx());
+        return room.getRoomIdx();
     }
 }
