@@ -15,14 +15,51 @@ final webSocketClientProvider = Provider<WebSocketClient>((ref) {
 /**
  * WebSocketClient
  * 
- * 【 역할 】
- * - HTTP의 api_client.dart처럼, WebSocket 연결에 토큰을 자동으로 넣어주는 역할
- * - 매칭, 채팅 등 실시간 통신이 필요한 곳에서 사용
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 🔥 HTTP vs WebSocket: 핵심 차이
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * 
- * 【 STOMP 객체들 】
- * 1. StompClient: WebSocket 연결을 관리하는 객체 (전화기 같은 거)
- * 2. StompConfig: 연결 설정을 담는 객체 (전화기 설정)
- * 3. StompFrame: 서버가 보내는 메시지 덩어리 (편지봉투)
+ * 【 HTTP (api_client.dart) - 우편 시스템 】
+ * 1. 요청 보내기: http.post(url, body: data)
+ * 2. 대기: await
+ * 3. 응답 받기: Response response (1번만!)
+ * 4. 상태 확인: response.statusCode == 200
+ * 5. 끝: 연결 종료
+ * 
+ * 【 WebSocket (websocket_client.dart) - 전화 통화 】
+ * 1. 연결 시작: _stompClient.activate()
+ * 2. 이벤트 대기: 백그라운드에서 계속 감시
+ * 3. 응답 받기: 콜백 함수들 (여러 번!)
+ *    - onConnect: 연결 성공 (1번)
+ *    - onMessage: 메시지 수신 (여러 번)
+ *    - onStompError: 에러 발생 (필요시)
+ *    - onDisconnect: 연결 종료 (1번)
+ * 4. 상태 확인: STOMP 명령어 (CONNECTED, ERROR 등)
+ * 5. 유지: 연결 끊을 때까지 계속
+ * 
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 🔥 라이브러리가 하는 일 (우리가 안 보는 부분!)
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
+ * stomp_dart_client 라이브러리는 내부에서:
+ * 1. WebSocket 연결 관리
+ * 2. 서버 메시지 감시 (24시간 대기 중)
+ * 3. 메시지 도착 시 첫 줄 읽기:
+ *    - "CONNECTED" → onConnect 콜백 호출
+ *    - "ERROR" → onStompError 콜백 호출
+ *    - "MESSAGE" → subscribe 콜백 호출
+ * 4. 우리는 콜백만 등록, 실행은 라이브러리가!
+ * 
+ * HTTP의 statusCode(200, 401)처럼,
+ * STOMP도 명령어(CONNECTED, ERROR)로 상태를 구분함!
+ * 
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 🔥 STOMP 객체들
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
+ * StompClient: WebSocket 연결을 관리하는 객체
+ * StompConfig: 연결 설정 (URL, 토큰, 콜백 함수들)
+ * StompFrame: 서버가 보내는 메시지 (command, headers, body)
  */
 class WebSocketClient {
   Ref ref;
@@ -40,23 +77,48 @@ class WebSocketClient {
   bool get isConnected => _isConnected;
 
   /**
-   * connect() - WebSocket 서버 연결
+   * connect() - WebSocket 연결 시작
    * 
-   * 【 역할 】
-   * - 서버와 WebSocket 연결을 시작하는 메서드
-   * - 연결할 때 토큰을 헤더에 넣어서 인증 처리
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 HTTP와의 차이점
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * 
-   * 【 파라미터 】
-   * - onConnect: 연결 성공 시 실행할 콜백 함수
-   * - onError: 에러 발생 시 실행할 콜백 함수
-   * - onDisconnect: 연결 끊김 시 실행할 콜백 함수
+   * HTTP:
+   * Response res = await http.post(...);  // ← 응답 받을 때까지 대기!
+   * print(res.statusCode);                // ← 응답 받은 후 실행
    * 
-   * 【 로직 흐름 】
-   * 1. 이미 연결되어 있으면 종료
-   * 2. 토큰 가져오기
-   * 3. WebSocket URL 구성
-   * 4. StompClient 생성 및 설정
-   * 5. 연결 활성화
+   * WebSocket:
+   * await connect();                      // ← 연결 준비만 완료!
+   * print("다른 작업 가능");               // ← 연결 완료 전에도 실행
+   * // 실제 연결 완료는 onConnect에서 알림!
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 이벤트 핸들러 (콜백) 등록
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * 이벤트 핸들러는 "이럴 때 이거 실행해줘"를 등록하는 것!
+   * 실제 실행은 stomp_dart_client 라이브러리가 자동으로!
+   * 
+   * onConnect: 서버가 "CONNECTED" 메시지 보내면 실행
+   * onError: 네트워크 끊김, 타임아웃 등 발생 시 실행
+   * onDisconnect: 연결 종료되면 실행
+   * 
+   * HTTP처럼 우리가 직접 if문으로 체크하는 게 아니라,
+   * 라이브러리가 서버 메시지 보고 자동으로 판단해서 호출!
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 실행 순서 (타임라인)
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * [0ms]   connect() 시작
+   * [5ms]   토큰 가져오기 (await)
+   * [10ms]  StompClient 생성 (콜백 등록만!)
+   * [15ms]  activate() 호출 (백그라운드 연결 시작)
+   * [16ms]  connect() 함수 종료 ← 여기까지만!
+   * [17ms]  "다른 작업 가능" 출력 가능
+   * ...
+   * [100ms] 서버 응답 도착
+   * [101ms] onConnect 콜백 실행! ← 이제야 실제 연결 완료!
    */
   Future<void> connect({
     Function(StompFrame)? onConnect,
@@ -80,162 +142,243 @@ class WebSocketClient {
     // 3. WebSocket URL 구성
     String endpoint = '$baseWSUrl/ws/matching';
 
-    // 4. StompClient 생성 및 설정
-    // StompClient: WebSocket 연결을 관리하는 객체
+    // 4. StompClient 생성 및 이벤트 핸들러 등록
     _stompClient = StompClient(
-      // StompConfig: 연결 설정을 담는 객체
       config: StompConfig(
-        // 서버 주소
         url: endpoint,
-
-        // 연결 시 헤더에 토큰 포함 (api_client와 동일한 패턴)
         stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
 
-        // 연결 성공 시 콜백
-        // StompFrame: 서버가 보내는 메시지 덩어리
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // 🔥 onConnect: 연결 성공 이벤트
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //
+        // 언제 실행? 서버가 "CONNECTED" 메시지 보내면!
+        // 누가 실행? stomp_dart_client 라이브러리가 자동으로!
+        //
+        // 서버 메시지 예시:
+        // CONNECTED
+        // version:1.2
+        // ^@
+        //
+        // HTTP 비유: response.statusCode == 200
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         onConnect: (frame) {
           _isConnected = true;
           debugPrint("[WebSocketClient] 연결 성공");
           onConnect?.call(frame);
         },
 
-        // WebSocket 레벨 에러 발생 시 콜백
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // 🔥 onWebSocketError: WebSocket 레벨 에러
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //
+        // 언제 실행?
+        // - 네트워크 끊김
+        // - 서버 응답 없음 (타임아웃)
+        // - DNS 에러
+        //
+        // STOMP 프로토콜 이전 단계의 에러!
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         onWebSocketError: (dynamic error) {
           debugPrint("[WebSocketClient] 연결 오류: $error");
           _isConnected = false;
           onError?.call(StompFrame(command: 'ERROR', body: error.toString()));
         },
 
-        // STOMP 레벨 에러 발생 시 콜백
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // 🔥 onStompError: STOMP 레벨 에러
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //
+        // 언제 실행? 서버가 "ERROR" 메시지 보내면!
+        //
+        // 서버 메시지 예시:
+        // ERROR
+        // message:Unauthorized
+        //
+        // 401: Token expired
+        // ^@
+        //
+        // HTTP 비유: response.statusCode == 401 또는 403
+        //
+        // 백엔드가 frame.body에 "401" 또는 "403" 포함해서
+        // 보내주면 _handleStompError가 자동으로 토큰 재발급!
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         onStompError: (frame) {
           debugPrint("[WebSocketClient] STOMP 오류: ${frame.body}");
-          // 토큰 만료(401, 403) 체크
           _handleStompError(frame);
           onError?.call(frame);
         },
 
-        // 연결 끊김 시 콜백
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // 🔥 onDisconnect: 연결 종료 이벤트
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //
+        // 언제 실행?
+        // - disconnect() 호출
+        // - 서버가 연결 종료
+        // - 네트워크 끊김
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         onDisconnect: (frame) {
           _isConnected = false;
           debugPrint("[WebSocketClient] 연결 끊김");
           onDisconnect?.call(frame);
         },
 
-        // 백엔드에서 SockJS 사용하므로 true로 설정
         useSockJS: true,
-
-        // 연결 실패 시 재연결 대기 시간
         reconnectDelay: const Duration(seconds: 5),
-
-        // 하트비트 설정 (연결 유지 확인용)
         heartbeatIncoming: const Duration(seconds: 0),
         heartbeatOutgoing: const Duration(seconds: 20),
       ),
     );
 
-    // 5. 연결 활성화 (실제 서버에 연결 시작)
+    // 5. 연결 활성화 (백그라운드에서 연결 시작)
+    // 이 함수는 여기서 종료! 연결 완료는 onConnect에서 알림!
     _stompClient?.activate();
   }
 
   /**
    * send() - 서버에 메시지 전송
    * 
-   * 【 역할 】
-   * - 연결된 WebSocket을 통해 서버에 메시지를 보내는 메서드
-   * - 매칭 요청, 채팅 메시지 전송 등에 사용
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 HTTP와의 차이점
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * 
-   * 【 파라미터 】
-   * - destination: 메시지를 보낼 목적지 (예: '/app/match/enter')
-   * - body: 전송할 데이터 (Map 형태)
+   * HTTP:
+   * Response res = await http.post(url, body: data);
+   * // 보내고 응답 받을 때까지 대기
    * 
-   * 【 로직 흐름 】
-   * 1. 연결 상태 확인
-   * 2. 데이터를 JSON으로 변환하여 전송
+   * WebSocket:
+   * send('/app/match/enter', {'genderOption': 'female'});
+   * // 보내고 즉시 리턴! 응답은 subscribe 콜백으로!
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 destination 경로 규칙
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * '/app'으로 시작: 서버의 @MessageMapping으로 전달
+   * 예: '/app/match/enter' → @MessageMapping("/match/enter")
+   * 
+   * 백엔드에서 WebSocketConfig에 설정한 prefix!
    */
   void send(String destination, Map<String, dynamic> body) {
-    // 1. 연결 상태 확인
     if (!_isConnected || _stompClient == null) {
       debugPrint("[WebSocketClient] 연결되지 않았습니다.");
       throw Exception("WebSocket이 연결되지 않았습니다.");
     }
 
-    // 2. 서버에 메시지 전송
-    // destination: 메시지를 받을 서버의 주소 (예: /app/match/enter)
-    // body: JSON으로 변환한 데이터
     _stompClient!.send(destination: destination, body: jsonEncode(body));
   }
 
   /**
-   * subscribe() - 서버에서 오는 메시지 구독
+   * subscribe() - 서버 메시지 구독 (받기 등록)
    * 
-   * 【 역할 】
-   * - 특정 주소로 오는 메시지를 받겠다고 등록하는 메서드
-   * - 매칭 결과, 채팅 메시지 수신 등에 사용
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 "구독"의 의미
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * 
-   * 【 파라미터 】
-   * - destination: 구독할 주소 (예: '/queue/match/123')
-   * - callback: 메시지 받으면 실행할 함수
+   * "이 주소로 메시지 오면 알려줘!"라고 미리 등록하는 것!
    * 
-   * 【 로직 흐름 】
-   * 1. 연결 상태 확인
-   * 2. 해당 주소 구독 등록
-   * 3. 메시지 오면 callback 실행
+   * 예시:
+   * subscribe('/queue/match/123', (message) {
+   *   print("매칭 결과: ${message.body}");
+   * });
+   * 
+   * → 서버가 '/queue/match/123'로 메시지 보내면
+   * → 라이브러리가 자동으로 callback 실행!
+   * 
+   * HTTP에는 없는 개념!
+   * HTTP는 한 번 요청하면 한 번 응답 오지만,
+   * WebSocket은 미리 구독해놓으면 여러 번 받을 수 있음!
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 destination 경로 규칙
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * '/queue'로 시작: 개인 메시지 (1:1)
+   * 예: '/queue/match/123' → 특정 유저에게만
+   * 
+   * '/topic'으로 시작: 브로드캐스트 (1:N)
+   * 예: '/topic/room/456' → 채팅방 전체에게
+   * 
+   * 백엔드에서 messagingTemplate.convertAndSend()로 보냄!
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 서버 메시지가 오는 흐름
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * 1. 프론트: subscribe('/queue/match/123', callback)
+   * 2. 서버: messagingTemplate.convertAndSend('/queue/match/123', data)
+   * 3. 라이브러리: "MESSAGE" 명령어 감지!
+   * 4. 라이브러리: destination이 '/queue/match/123'인지 확인
+   * 5. 라이브러리: 맞으면 callback 자동 실행!
    */
   void subscribe({
     required String destination,
     required Function(StompFrame) callback,
   }) {
-    // 1. 연결 상태 확인
     if (!_isConnected || _stompClient == null) {
       throw Exception("WebSocket이 연결되지 않았습니다.");
     }
 
-    // 2. 특정 주소의 메시지 구독
-    // destination: 메시지를 받을 주소 (예: /queue/match/123)
-    // callback: 메시지가 오면 실행할 함수
     _stompClient!.subscribe(destination: destination, callback: callback);
   }
 
   /**
-   * disconnect() - WebSocket 연결 끊기
-   * 
-   * 【 역할 】
-   * - 서버와의 WebSocket 연결을 종료하는 메서드
-   * 
-   * 【 로직 흐름 】
-   * 1. StompClient 비활성화
-   * 2. 연결 상태 초기화
+   * disconnect() - 연결 종료
    */
   void disconnect() {
-    // 1. StompClient 비활성화 (연결 종료)
     _stompClient?.deactivate();
-
-    // 2. 연결 상태 초기화
     _stompClient = null;
     _isConnected = false;
     debugPrint("[WebSocketClient] 연결 해제");
   }
 
   /**
-   * _handleStompError() - STOMP 에러 처리
+   * _handleStompError() - STOMP 에러 자동 처리
    * 
-   * 【 역할 】
-   * - STOMP 에러를 처리하는 내부 메서드
-   * - 토큰 만료(401, 403) 감지 시 자동 재발급 시도
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 HTTP vs WebSocket 에러 처리
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * 
-   * 【 파라미터 】
-   * - frame: 에러 정보가 담긴 StompFrame
+   * HTTP (api_client.dart):
+   * if (response.statusCode == 401) {
+   *   await refreshToken();
+   *   // 재시도
+   * }
    * 
-   * 【 로직 흐름 】
-   * 1. 에러 메시지 확인
-   * 2. 401 또는 403이면 토큰 재발급 시도
+   * WebSocket (websocket_client.dart):
+   * if (frame.body.contains('401')) {
+   *   await refreshToken();
+   *   await reconnect();
+   * }
+   * 
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 🔥 백엔드와의 약속
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * 
+   * 백엔드 인터셉터가 이렇게 ERROR 프레임을 보낼 것을 기대:
+   * 
+   * ERROR
+   * message:Unauthorized
+   * 
+   * 401: Token expired  ← body에 "401" 포함!
+   * ^@
+   * 
+   * 또는:
+   * 
+   * ERROR
+   * message:Forbidden
+   * 
+   * 403: Invalid token  ← body에 "403" 포함!
+   * ^@
+   * 
+   * HTTP의 response.statusCode == 401처럼,
+   * WebSocket은 frame.body.contains('401')로 체크!
    */
   Future<void> _handleStompError(StompFrame frame) async {
-    // 1. 에러 메시지에서 401, 403 확인
     String? body = frame.body;
     if (body != null && (body.contains('401') || body.contains('403'))) {
       debugPrint("[WebSocketClient] 토큰 만료 감지. 재발급 시도...");
-      // 2. 토큰 재발급 후 재연결
       await reconnectWithRefresh();
     }
   }
@@ -243,30 +386,19 @@ class WebSocketClient {
   /**
    * reconnectWithRefresh() - 토큰 재발급 후 재연결
    * 
-   * 【 역할 】
-   * - 토큰을 재발급받고 WebSocket을 재연결하는 메서드
-   * - api_client의 자동 재발급과 동일한 역할
-   * 
-   * 【 로직 흐름 】
-   * 1. 기존 연결 해제
-   * 2. HTTP로 토큰 재발급 요청
-   * 3. 성공 시 새 토큰으로 재연결
-   * 4. 실패 시 로그아웃 처리
+   * api_client.dart의 자동 토큰 재발급과 동일한 패턴!
+   * HTTP 요청 실패 시 자동 재발급하듯,
+   * WebSocket 에러 시 자동 재발급 후 재연결!
    */
   Future<void> reconnectWithRefresh() async {
     try {
-      // 1. 기존 연결 해제
       disconnect();
-
-      // 2. HTTP로 토큰 재발급 (api_client와 동일한 로직)
       bool refreshed = await _refreshAccessToken();
 
       if (refreshed) {
-        // 3. 재발급 성공 → 새 토큰으로 재연결
         debugPrint("[WebSocketClient] 토큰 재발급 성공. 재연결 시도...");
         await connect();
       } else {
-        // 4. 재발급 실패 → 로그아웃 처리
         debugPrint("[WebSocketClient] 토큰 재발급 실패");
         _forceLogOut(ref);
       }
@@ -276,20 +408,13 @@ class WebSocketClient {
   }
 
   /**
-   * _refreshAccessToken() - 토큰 재발급 요청
+   * _refreshAccessToken() - 토큰 재발급 (HTTP 요청)
    * 
-   * 【 역할 】
-   * - HTTP 요청으로 서버에 토큰 재발급을 요청하는 메서드
-   * - api_client의 _refreshAccessToken과 동일한 로직
-   * 
-   * 【 로직 흐름 】
-   * 1. 리프레시 토큰 가져오기
-   * 2. HTTP POST로 재발급 요청
-   * 3. 새 토큰 저장
+   * WebSocket이지만 토큰 재발급은 HTTP로!
+   * api_client.dart와 동일한 로직
    */
   Future<bool> _refreshAccessToken() async {
     try {
-      // 1. 스토리지에서 리프레시 토큰 가져오기
       String? refreshToken = await _storage.getRefreshToken();
 
       if (refreshToken == null) {
@@ -297,14 +422,12 @@ class WebSocketClient {
         return false;
       }
 
-      // 2. HTTP POST로 서버에 재발급 요청
       final response = await http.post(
         Uri.parse('$baseApiUrl/api/auth/reissue'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({'refreshToken': refreshToken}),
       );
 
-      // 3. 재발급 성공 시 새 토큰 저장
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         final data = jsonResponse['data'];
@@ -325,23 +448,13 @@ class WebSocketClient {
   }
 
   /**
-   * _forceLogOut() - 강제 로그아웃 처리
+   * _forceLogOut() - 강제 로그아웃
    * 
-   * 【 역할 】
-   * - 토큰 재발급 실패 시 로그아웃 처리하는 메서드
-   * - api_client의 _forceLogOut과 동일한 역할
-   * 
-   * 【 로직 흐름 】
-   * 1. 저장된 토큰 삭제
-   * 2. WebSocket 연결 해제
+   * api_client.dart의 _forceLogOut과 동일!
    */
   void _forceLogOut(Ref ref) async {
-    // 1. 저장된 토큰 삭제
     await _storage.deleteAll();
-
-    // 2. WebSocket 연결 해제
     disconnect();
-
-    // TODO: 필요시 로그아웃 UI 처리 (WazzupToast, authControllerProvider 등)
+    // TODO: 로그아웃 UI 처리
   }
 }
