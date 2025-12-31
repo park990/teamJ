@@ -8,3 +8,6 @@
 
 # Redis local data
 redis/data/
+
+# docs 폴더 전체 무시
+docs/
