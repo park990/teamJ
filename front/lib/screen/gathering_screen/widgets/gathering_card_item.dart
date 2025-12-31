@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:front/screen/gathering_screen/model/gathering_meeting.dart';
+import 'package:front/screen/gathering_screen/model/gathering_card_model.dart';
 import 'package:front/theme/app_colors.dart';
 
 class GatheringCardItem extends StatelessWidget {
-  final GatheringMeeting meeting;
+  final GatheringMeetingModel meeting;
 
   const GatheringCardItem({
     required this.meeting,
@@ -18,7 +18,7 @@ class GatheringCardItem extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.asset(
-            meeting.cardImageUrl,
+            meeting.imageUrl,
             width: 120,
             height: 100,
             fit: BoxFit.cover,
@@ -29,11 +29,11 @@ class GatheringCardItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(meeting.cardTitle, style: cardTitleFont),
+              Text(meeting.title, style: cardTitleFont),
               const SizedBox(height: 4),
-              Text(meeting.cardBody, style: cardBodyFont),
+              Text(meeting.content, style: cardBodyFont),
               const SizedBox(height: 8),
-              Text('참여자 ${meeting.cardParticipantsCount}명', style: captionLabelFont),
+              Text('참여자 ${meeting.currentParticipants}명', style: captionLabelFont),
             ],
           ),
         ),

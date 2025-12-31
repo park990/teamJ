@@ -32,7 +32,7 @@ public class MeetRoom {
     private String roomType;
 
     @Column
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     @Column
     private LocalDateTime meetDate;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:front/screen/gathering_screen/model/gathering_meeting.dart'; //데이터모델
+import 'package:front/screen/gathering_screen/model/gathering_card_model.dart'; //데이터모델
 import 'package:front/theme/app_colors.dart'; //폰트
 
 class GatheringHorizontalCard extends StatelessWidget {
   // 데이터 주입(카드내용)
-  final GatheringMeeting meeting;
+  final GatheringMeetingModel meeting;
 
   const GatheringHorizontalCard({
     required this.meeting,
@@ -27,7 +27,11 @@ class GatheringHorizontalCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.asset(
-                meeting.cardImageUrl, fit: BoxFit.cover, height: 130,
+                (meeting.imageUrl == null || meeting.imageUrl!.isEmpty)
+                    ? 'asset/img/image.png'
+                    : meeting.imageUrl!,
+                fit: BoxFit.cover,
+                height: 130,
               ),
               SizedBox(
                 //height: 15,
@@ -38,7 +42,7 @@ class GatheringHorizontalCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      meeting.cardTitle,
+                      meeting.title,
                       style: cardTitleFont,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis
@@ -47,13 +51,13 @@ class GatheringHorizontalCard extends StatelessWidget {
                       height: 4
                     ),
                     Text(
-                      meeting.cardBody, style: cardBodyFont, maxLines: 1, overflow: TextOverflow.ellipsis
+                      meeting.content, style: cardBodyFont, maxLines: 1, overflow: TextOverflow.ellipsis
                     ),
                     SizedBox(
                       height: 4
                     ),
                     Text(
-                      '참여자 ${meeting.cardParticipantsCount} 명', style: captionLabelFont
+                      '참여자 ${meeting.currentParticipants} 명', style: captionLabelFont
                     ),
                   ],
                 ),

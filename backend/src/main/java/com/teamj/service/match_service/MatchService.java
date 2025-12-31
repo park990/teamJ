@@ -73,7 +73,7 @@ public class MatchService {
         MeetRoom room = MeetRoom.builder()
             .roomName("랜덤채팅방")
             .roomType("RANDOM_1ON1")
-            .createAt(LocalDateTime.now())
+            .createdAt(LocalDateTime.now())
             .max(2)
             .build();
 
