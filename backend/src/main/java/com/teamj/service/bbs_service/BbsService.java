@@ -66,7 +66,7 @@ public class BbsService {
 
                     //존재 하면 true 존재 안하면 false
                     isLiked = bbsReactionRepository.existsById(reactionId);
-                    System.out.println(bbs.getBbsIdx()+"글에 대한" +userIdx+"님의 좋아요 여부에 관해 "+isLiked);
+                    // System.out.println(bbs.getBbsIdx()+"글에 대한" +userIdx+"님의 좋아요 여부에 관해 "+isLiked);
                 }
 
 
