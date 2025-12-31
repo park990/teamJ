@@ -31,7 +31,7 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
   @override
   Widget build(BuildContext context) {
     bool _isLoggedIn = ref.watch(authControllerProvider).isLoggedIn;
-    final postListAsync = ref.watch(postListControllerPorvider);
+    final postListAsync = ref.watch(postListControllerProvider);
 
     return Scaffold(
       backgroundColor: wazzupBackGround,
@@ -80,7 +80,7 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
         ),
         onRefresh: () async {
           await Future.wait([
-            ref.read(postListControllerPorvider.notifier).refresh(),
+            ref.read(postListControllerProvider.notifier).refresh(),
             Future.delayed(const Duration(milliseconds: 1500)),
           ]);
           _refreshController.refreshCompleted();

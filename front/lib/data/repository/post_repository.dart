@@ -68,4 +68,27 @@ class PostRepository {
     }
   }
 
+  // 좋아요 토글 기능
+  Future<bool?> toggleLike(int postIdx) async{
+    try{
+      final response = await apiClient.post(
+        '/api/post/likeToggle',
+        body:{'bbsIdx': postIdx},
+      );
+
+      if(response.statusCode==200){
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        final bool serverIsliked = jsonResponse['data'];
+
+        print('서버 토글 응답: ${serverIsliked}');
+        return serverIsliked;
+      }
+    }catch(e){
+      print('서버 토글 응답 오류: ${e}');
+      return null;
+    }
+  }
+
+
+
 }

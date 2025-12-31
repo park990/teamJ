@@ -1,6 +1,5 @@
 import 'package:image_picker/image_picker.dart';
 
-/////////////////////////
 
 class ChatDto {
   final String chatIdx;
