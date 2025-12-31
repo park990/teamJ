@@ -48,7 +48,9 @@ public class SecurityConfig {
                 .requestMatchers(
                      "/api/signUp/**",
                                   "/api/auth/**",
-                                  "/api/post/getList"
+                                  "/api/post/getList",
+                                  "/api/gathering/newList",
+                                  "/api/gathering/hotList"
                 ).permitAll() 
 
 
