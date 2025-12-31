@@ -125,7 +125,6 @@ class ApiClient {
 
 
   // 겟 은 거의 안쓰니 까 내려둠 거의 안봐도 된다.
-
   Future<http.Response> get(String path) async {
     String url = '$baseUrl$path';
     String? token = await _storage.getAccessToken();

@@ -9,6 +9,22 @@ import 'package:google_fonts/google_fonts.dart';
 //#f279b6
 //#f07fb8
 
+
+
+
+
+
+
+
+
+
+
+
+
+//파스텔
+// 0xFFEBF5FF
+// 0xFFE9F7EF
+
 const Color wazzupButton = Color(0xFFdf8eb6);
 const Color wazzupBackGround = Color(0xFFFFF5F7);
 

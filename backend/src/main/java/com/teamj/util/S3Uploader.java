@@ -32,9 +32,9 @@ public class S3Uploader {
             File uploadFile = convert(multipartFile).orElseThrow(()->new IllegalArgumentException("MultipartFile -> File 전환 실패"));
             
             return uploadToS3(uploadFile, dirName);
-
+        
         }catch(IOException e){
-            throw new RuntimeException("이미지 업로드 실패",e);
+            throw new RuntimeException("이미지 업로드 실패", e);
         }
     }
 

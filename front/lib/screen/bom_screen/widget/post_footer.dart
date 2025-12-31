@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
+import 'package:front/screen/bom_screen/widget/comment_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -39,7 +40,10 @@ class PostFooter extends ConsumerWidget {
             count: post.commentCount,
             color: Colors.blueAccent,
             isActive:  false,
-            onTap: () {},
+            onTap: () {
+              CommentBottomSheet.show(context,post.bbsIdx);
+              print("클릭");
+            },
           ),
           const Spacer(),
           Text(post.displayDate, style: const TextStyle(fontSize: 11, color: Color(0xFFADB5BD))),
