@@ -3,7 +3,7 @@ package com.teamj.exception;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.teamj.response.ApiResponse; // 사용자님의 ApiResponse 패키지 경로에 맞게 수정
+import com.teamj.dto.response.ApiResponse; //사용자님의 ApiResponse 패키지 경로에 맞게 수정
 import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
