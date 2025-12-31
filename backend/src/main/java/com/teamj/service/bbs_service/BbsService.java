@@ -52,13 +52,23 @@ public class BbsService {
 
     // 게시글 전부 갖고오기 자유게시판(bbsType) = 1, 삭제 안된것(isDelted) = 0
     @Transactional
-    public List<PostDTO> findActivePost(){
+    public List<PostDTO> findActivePost(Long userIdx){
        List<Bbs> bbsList = bbsRepository.findByBbsTypeIdxAndIsDeletedOrderByBbsIdxDesc(1L, 0);
         return bbsList.stream().map(bbs -> {
                 List<String> imageUrls = bbs.getMedias().stream()
                     //"BbsMedia 클래스 안에 있는 getImageUrl 기능을 갖다 써라"
                     .map(BbsMedia::getImageUrl)
                     .collect(Collectors.toList());
+                
+                boolean isLiked = false;
+                if(userIdx != null){
+                    BbsReactionId reactionId = new BbsReactionId(userIdx, bbs.getBbsIdx());
+
+                    //존재 하면 true 존재 안하면 false
+                    isLiked = bbsReactionRepository.existsById(reactionId);
+                    // System.out.println(bbs.getBbsIdx()+"글에 대한" +userIdx+"님의 좋아요 여부에 관해 "+isLiked);
+                }
+
 
                return PostDTO.builder()
                     .bbsIdx(bbs.getBbsIdx())
@@ -70,18 +80,19 @@ public class BbsService {
                     .createdAt(bbs.getCreatedAt())
                     .likeCount(bbs.getLikeCount())
                     .commentCount(bbs.getCommentCount())
-
                     .imgUrls(imageUrls)
+
+                    // 지금 이사용자가 불러오는 게시글에 좋아요를 눌렀는지 안눌렀는지 확인하기 위함.
+                    .isLiked(isLiked)
                     .build();
                     
         }).collect(Collectors.toList());
     }
     
     // 좋아요 토글 기능
-
     @Transactional
     public boolean toggleLike(Long bbsIdx, Long userIdx){
-        
+        System.out.println("bbsIdx는"+bbsIdx+"그리고 userIdx는"+userIdx);
         // 복합키 객체 생성
         BbsReactionId reactionId = new BbsReactionId(userIdx, bbsIdx); 
 

@@ -102,7 +102,7 @@ class PostWriteController extends AutoDisposeNotifier<PostWriteState> {
       print('글 등록 완료${content}');
 
       // 글쓰기 성공시 목록 프로바이더 무효화 즉 BomMain으로 돌아왓을 때 리스트가 서버에서 최신글을 불러옴
-      ref.invalidate(postListControllerPorvider);
+      ref.invalidate(postListControllerProvider);
 
       // 등록후 pop을 실행하는데 그전에 isSubmitting = false로 두고 isSuccess: ture로
       state = state.copyWith(isSubmitting: false, isSuccess: true);

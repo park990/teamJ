@@ -31,8 +31,11 @@ public class Bbs_controller {
 
     // 게시글  전부 불러오기(삭제된거 제외)
     @GetMapping("/getList")
-    public ResponseEntity<ApiResponse<List<PostDTO>>> getList(){//@pathVariable Long typeIdx){
-        List<PostDTO> list = bbsService.findActivePost();
+    public ResponseEntity<ApiResponse<List<PostDTO>>> getList(@AuthenticationPrincipal CustomUserDetails userDetails){//@pathVariable Long typeIdx){
+        Long userIdx = (userDetails != null) ? userDetails.getUserIdx() : null;
+
+        List<PostDTO> list = bbsService.findActivePost(userIdx);
+        
         return ResponseEntity.ok(ApiResponse.success(list,"조회 성공"));
     }
 

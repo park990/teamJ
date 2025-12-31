@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class PostFooter extends ConsumerWidget {
@@ -18,8 +19,10 @@ class PostFooter extends ConsumerWidget {
             icon: LucideIcons.heart,
             count: post.likeCount,
             color: Colors.redAccent,
+            isActive: post.isLiked,
+            
             onTap: () {
-              // 여기에 ref.read(controller).likePost(post.id) 로직 추가 가능
+              ref.read(postListControllerProvider.notifier).toggleLike(post.bbsIdx);
             },
           ),
           const SizedBox(width: 15),
@@ -27,6 +30,7 @@ class PostFooter extends ConsumerWidget {
             icon: LucideIcons.messageCircle,
             count: post.commentCount,
             color: Colors.blueAccent,
+            isActive:  false,
             onTap: () {},
           ),
           const Spacer(),
@@ -36,18 +40,22 @@ class PostFooter extends ConsumerWidget {
     );
   }
 
-  Widget _buildBtn({required IconData icon, required int count, required Color color, required VoidCallback onTap}) {
+  Widget _buildBtn({required IconData icon, required int count, required Color color, required VoidCallback onTap, required bool isActive}) {
     final bool isZero = count == 0;
+    final IconData targetIcon = isActive ? Icons.favorite : icon;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: isZero ? const Color(0xFFDEE2E6) : color.withValues(alpha: 0.8)),
+          Icon(targetIcon, size: 20, color: isZero ? const Color(0xFFDEE2E6) : color.withValues(alpha: 0.8)),
           const SizedBox(width: 5),
           Text('$count', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isZero ? const Color(0xFFDEE2E6) : const Color(0xFF495057))),
         ],
       ),
     );
   }
+
+  
 }

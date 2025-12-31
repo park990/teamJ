@@ -14,7 +14,7 @@ final postRepositoryProvider = Provider<PostRepository>((ref) {
 });
 
 // bomMainScreen에서 PostListController를 사용하기 위함.
-final postListControllerPorvider = AsyncNotifierProvider.autoDispose<PostListController,List<Post>>((){
+final postListControllerProvider = AsyncNotifierProvider.autoDispose<PostListController,List<Post>>((){
   return PostListController();
 });
 
