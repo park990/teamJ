@@ -25,6 +25,33 @@ class Post {
     required this.isLiked
   });
 
+
+  Post copyWith({
+    int? bbsIdx,
+    String? author,
+    int? viewCount,
+    int? likeCount,
+    bool? isLiked,
+    int? commentCount,
+    String? displayDate,
+    List<String>? imageUrls,
+    String? content,
+  }) {
+    return Post(
+      bbsIdx: bbsIdx ?? this.bbsIdx,
+      author: author ?? this.author,
+      viewCount: viewCount ?? this.viewCount,
+      likeCount: likeCount ?? this.likeCount, // 이게 있어야 좋아요 숫자 변경 가능
+      isLiked: isLiked ?? this.isLiked,       // 이게 있어야 하트 색 변경 가능
+      commentCount: commentCount ?? this.commentCount,
+      displayDate: displayDate ?? this.displayDate,
+      imageUrls: imageUrls ?? this.imageUrls,
+      content: content ?? this.content,
+    );
+  }
+
+
+
   //  DTO를 받아서 Model로 변환
   factory Post.fromListDto(PostListDto dto) {
     return Post(

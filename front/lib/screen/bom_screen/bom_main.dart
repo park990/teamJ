@@ -31,7 +31,7 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
   @override
   Widget build(BuildContext context) {
     bool _isLoggedIn = ref.watch(authControllerProvider).isLoggedIn;
-    final postListAsync = ref.watch(postListControllerPorvider);
+    final postListAsync = ref.watch(postListControllerProvider);
 
     return Scaffold(
       backgroundColor: wazzupBackGround,
@@ -55,10 +55,13 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
     );
   }
 
-  void _navigateToPostWrite() {
-    Navigator.of(context).push(
+  void _navigateToPostWrite()async {
+    await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const PostWriteScreen()),
     );
+
+      // 글쓰기 성공시 or 뒤로가기 눌렀을때 목록 프로바이더 무효화 즉 BomMain으로 돌아왓을 때 리스트가 서버에서 최신글을 불러옴
+      ref.invalidate(postListControllerProvider);
   }
 
 
@@ -80,7 +83,7 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
         ),
         onRefresh: () async {
           await Future.wait([
-            ref.read(postListControllerPorvider.notifier).refresh(),
+            ref.read(postListControllerProvider.notifier).refresh(),
             Future.delayed(const Duration(milliseconds: 1500)),
           ]);
           _refreshController.refreshCompleted();
