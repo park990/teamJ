@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.PostDTO;
-import com.teamj.response.ApiResponse;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.bbs_service.BbsService;
 
 import lombok.RequiredArgsConstructor;

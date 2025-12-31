@@ -1,4 +1,4 @@
-package com.teamj.response;
+package com.teamj.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

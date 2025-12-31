@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.teamj.dto.SocialUserDTO;
-import com.teamj.response.ApiResponse;
+import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.myPage_service.signUp_service.UserService;
 
 import lombok.RequiredArgsConstructor;
