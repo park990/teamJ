@@ -1,8 +1,10 @@
 // screen/bom_screen/widgets/post_footer.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class PostFooter extends ConsumerWidget {
@@ -22,7 +24,13 @@ class PostFooter extends ConsumerWidget {
             isActive: post.isLiked,
             
             onTap: () {
+              bool isLoggedIn = ref.read(authControllerProvider).isLoggedIn;
+              if(isLoggedIn){
               ref.read(postListControllerProvider.notifier).toggleLike(post.bbsIdx);
+              }
+              else{
+                WazzupToast.showError("로그인이 필요합니다");
+              }
             },
           ),
           const SizedBox(width: 15),
