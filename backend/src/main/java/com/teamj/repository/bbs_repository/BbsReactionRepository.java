@@ -9,5 +9,4 @@ import com.teamj.entity.doubleKey_entity.BbsReactionId;
 
 @Repository
 public interface BbsReactionRepository extends JpaRepository<BbsReaction,BbsReactionId>{
-    int countcountBy(Bbs bbs);
 }
