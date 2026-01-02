@@ -38,6 +38,9 @@ public class MeetRoom {
     private LocalDateTime meetDate;
 
     @Column
+    private String meetPlace;
+
+    @Column
     private int max;
 
     @Column

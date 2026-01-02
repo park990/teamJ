@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/data/repository/gathering_repository.dart';
-import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
 import 'package:front/screen/gathering_screen/model/gathering_model.dart';
 //******** 기본 인프라 Provider (ApiClient, Repository) ********/
 // ApiClient 인스턴스를 제공하는 Provider
@@ -63,21 +61,5 @@ class GatheringNewListNotifier extends AsyncNotifier<List<GatheringModel>> {
     state = const AsyncLoading();
     final repository = ref.read(gatheringRepositoryProvider);
     state = await AsyncValue.guard(() => repository.fetchNewGatherings());
-  }
-}
-
-//******** 키워드(태그) Provider ********/
-// GatheringKeywordProvider를 Riverpod에 등록
-final gatheringKeywordProvider =
-  AsyncNotifierProvider<GatheringKeywordProvider, List<GatheringKeywordModel>>((){
-    return GatheringKeywordProvider();
-});
-
-// 키워드(태그) 목록 상태 관리
-class GatheringKeywordProvider extends AsyncNotifier<List<GatheringKeywordModel>>{
-  @override
-  List<GatheringKeywordModel> build() {
-    // 추후 API 연동 시 여기도 repository 호출로 변경 필요
-    return keywords;
   }
 }
