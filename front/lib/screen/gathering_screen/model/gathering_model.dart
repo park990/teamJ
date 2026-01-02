@@ -22,7 +22,7 @@ class GatheringModel {
         title: json['roomName'] ?? '',
         content: json['roomDesc'] ?? '',
         imageUrl: json['roomImg'] ?? '',
-        currentParticipants: json['users_idx'] ?? 0,
+        currentParticipants: json['usersIdx'] ?? 0,
       ),
       maxParticipants: json['max'] ?? 0,
       location: json['meetPlace'] ?? '',
