@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/alert/dialog.dart';
 import 'package:front/data/repository/post_repository.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
@@ -22,8 +23,8 @@ class PostListController
   }
 
   // 좋아요 토글 기능
-  // screen/bom_screen/controller/post_list_controller.dart
   Future<void> toggleLike(int postIdx) async {
+    //state.value = List<post>
     final currentState = state.value;
     if (currentState == null) return;
 
@@ -33,11 +34,12 @@ class PostListController
     );
     if (targetIndex == -1) return;
 
+    // 게시글 중에서 몇번째 게시글인지 index확인
     final targetPost = currentState[targetIndex];
 
     // 그냥 반대로 뒤집기 (Toggle)
     final changedPost = targetPost.copyWith(
-      isLiked: !targetPost.isLiked,
+      isLiked: ! targetPost.isLiked,
       likeCount: targetPost.isLiked
           ? targetPost.likeCount - 1
           : targetPost.likeCount + 1,
@@ -45,17 +47,30 @@ class PostListController
 
     // 리스트 갈아끼우기 (화면 갱신)
     final newList = List<Post>.from(currentState);
+
     newList[targetIndex] = changedPost;
     state = AsyncData(newList);
 
+    
     // 2. 서버에 진짜 보내기
     final serverResult = await _repository.toggleLike(postIdx);
 
+    if (serverResult == null) {
+      // 1. 롤백: 아까 바꿨던 state를 다시 원래(currentState)로 되돌림
+      state = AsyncData(currentState);
+      
+      // 2. 사용자에게 알림
+      WazzupToast.showError("세션이 만료되었거나 오류가 발생했습니다.");
+      
+      return; // 여기서 함수 종료
+    }
+   
+
     // 3. 만약 서버 결과가 내 폰이랑 다르면? 서버 기준으로 다시 맞춤 (동기화)
-    if (serverResult != null && serverResult != changedPost.isLiked) {
+    if (serverResult != changedPost.isLiked) {
       newList[targetIndex] = changedPost.copyWith(
         isLiked: serverResult,
-        
+
         likeCount: serverResult
             ? changedPost.likeCount + 1
             : changedPost.likeCount - 1,

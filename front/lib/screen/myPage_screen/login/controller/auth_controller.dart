@@ -64,7 +64,7 @@ class AuthController extends Notifier<AuthState> {
         final response = await _repository.getUserInfo();
         if(response!=null){
         print('상태등록된 유저정보: ${response.usersNickname}');
-        state= state.copyWith(
+        state = state.copyWith(
           isLoading: false,
           nickName: response.usersNickname,
           userIdx: response.usersIdx,

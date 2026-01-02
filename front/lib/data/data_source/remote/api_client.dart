@@ -100,6 +100,7 @@ class ApiClient {
           accessToken: newAt,
           refreshToken: newRt
         );
+       
         return true;
       } else {
         print("[ApiClient] 토큰 재발급 실패: ${response.statusCode}");
@@ -125,7 +126,6 @@ class ApiClient {
 
 
   // 겟 은 거의 안쓰니 까 내려둠 거의 안봐도 된다.
-
   Future<http.Response> get(String path) async {
     String url = '$baseUrl$path';
     String? token = await _storage.getAccessToken();

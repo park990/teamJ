@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/social_user_dto.dart';
-import 'package:front/screen/myPage_screen/login/controller/auth_controller.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/myPage_screen/login/widgets/login_bottom_sheet.dart';
 import 'package:front/screen/myPage_screen/login/signup/signUp_screen.dart';
@@ -25,6 +24,8 @@ mixin LoginHandlerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
       if (result != null && mounted) {
         final controller = ref.read(authControllerProvider.notifier);
+        
+        // 위에서 소셜 provider랑 social 토큰 받아온것을 통해 백으로 보냄
         final processedResult = await controller.handleSocialLogin(result);
 
         if (!mounted) return false;
