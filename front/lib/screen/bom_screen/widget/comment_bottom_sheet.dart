@@ -104,7 +104,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
   Widget _buildHandle() {
     return Center(
       child: Container(
-        margin: const EdgeInsets.only(top: 12, bottom: 12),
+        margin: const EdgeInsets.only(top: 12, bottom: 8),
         width: 40,
         height: 4,
         decoration: BoxDecoration(
@@ -116,12 +116,15 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-         Text("댓글", style: wazzupBarFont),
-    
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+           Text("댓글", style: wazzupBarFont),
+      
+        ],
+      ),
     );
   }
 
