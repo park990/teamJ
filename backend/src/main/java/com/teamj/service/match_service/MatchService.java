@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import com.teamj.dto.randomChat_dto.MatchCriteria;
 import com.teamj.dto.randomChat_dto.MatchData;
 import com.teamj.dto.randomChat_dto.WaitingUser;
@@ -30,6 +32,7 @@ public class MatchService {
     private final MeetRoomRepository roomRepository;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;  // WebSocket 메시지 전송용
 
     @Transactional
     public WebSocketResponse<MatchData> enterQueue(Long userIdx, String genderOption) {
@@ -62,6 +65,16 @@ public class MatchService {
         Long partnerIdx = matchedIdx.get();
         Long roomIdx = createRoom(userIdx, partnerIdx);
 
+        log.info("🎉 매칭 성공! user1={}, user2={}, roomIdx={}", userIdx, partnerIdx, roomIdx);
+
+        // 6. 상대방(먼저 대기하던 사람)에게 매칭 완료 알림 전송
+        //    partnerIdx가 먼저 대기하던 사람이고, userIdx가 나중에 들어온 사람
+        MatchData partnerMatchData = MatchData.matched(roomIdx, userIdx);  // 상대방 입장에서는 내가 partner
+        WebSocketResponse<MatchData> partnerResponse = WebSocketResponse.success("MATCH", partnerMatchData);
+        messagingTemplate.convertAndSend("/queue/match/" + partnerIdx, partnerResponse);
+        log.info("✅ 상대방에게 매칭 알림 전송 완료 - partnerIdx: {}", partnerIdx);
+
+        // 7. 요청자에게 응답 (Controller에서 전송할 데이터)
         MatchData matchData = MatchData.matched(roomIdx, partnerIdx);
         return WebSocketResponse.success("MATCH", matchData);
     }
