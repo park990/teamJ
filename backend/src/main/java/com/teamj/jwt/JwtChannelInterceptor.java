@@ -1,19 +1,13 @@
-package com.teamj.config;
-
-import java.util.Collections;
+package com.teamj.jwt;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import com.teamj.jwt.JwtTokenProvider;
-import com.teamj.config.CustomUserDetails;  // WebSocket 인증 시 사용
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,30 +88,20 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                     return null;
                 }
                 
-                // 3-5. 토큰에서 userIdx 추출
+                // 3-5. JwtTokenProvider로 Authentication 객체 생성
+                //      HTTP의 JwtAuthenticationFilter와 동일한 방식!
+                //      → 코드 중복 제거 + 권한 설정 일관성 유지 (ROLE_USER)
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                
+                // userIdx 로그 출력을 위해 추출
                 Long userIdx = jwtTokenProvider.getuserIdx(token);
-                log.info("✅ JWT 검증 성공 - userIdx: {}", userIdx);
+                log.info("✅ JWT 검증 성공 - userIdx: {}, 권한: ROLE_USER", userIdx);
                 
-                // 3-6. CustomUserDetails 생성 (Spring Security 인증 객체)
-                //      CustomUserDetails는 userIdx와 authorities를 받는 생성자 사용
-                CustomUserDetails userDetails = new CustomUserDetails(
-                    userIdx, 
-                    Collections.emptyList()  // authorities (권한 - 일단 빈 리스트)
-                );
-                
-                // 3-7. Authentication 객체 생성
-                //      (Spring Security가 인식할 수 있는 형태로 변환)
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails,                         // principal (인증된 사용자 정보)
-                    null,                                // credentials (비밀번호 - JWT 방식이라 null)
-                    userDetails.getAuthorities()         // authorities (CustomUserDetails의 권한 목록)
-                );
-                
-                // 3-8. StompHeaderAccessor에 User 설정
+                // 3-6. StompHeaderAccessor에 User 설정
                 //      → 이렇게 설정하면 @MessageMapping에서 Principal로 접근 가능
                 accessor.setUser(authentication);
                 
-                // 3-9. SecurityContextHolder에 인증 정보 저장
+                // 3-7. SecurityContextHolder에 인증 정보 저장
                 //      → 이렇게 설정하면 @MessageMapping에서 @AuthenticationPrincipal로 접근 가능
                 //      → HTTP의 JwtAuthenticationFilter와 동일한 역할!
                 SecurityContextHolder.getContext().setAuthentication(authentication);
