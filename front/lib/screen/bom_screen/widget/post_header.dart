@@ -48,6 +48,7 @@ class PostHeader extends ConsumerWidget {
                   // 더보기 버튼 (showMore가 true이고 post가 있을 때만)
                   if (showMore && post != null)
                     GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => _showModernActionSheet(context),
                       child: const Icon(
                         LucideIcons.moreHorizontal,
