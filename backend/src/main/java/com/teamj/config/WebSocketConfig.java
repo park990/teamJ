@@ -1,14 +1,22 @@
 package com.teamj.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSocketMessageBroker  // ← WebSocket 메시지 브로커 활성화
+@RequiredArgsConstructor       // ← 생성자 주입을 위한 Lombok 어노테이션
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    // JwtChannelInterceptor 주입
+    // (HTTP의 JwtAuthenticationFilter 주입과 동일한 역할)
+    private final JwtChannelInterceptor jwtChannelInterceptor;
 
     // 1. registerStompEndpoints - 클라이언트가 WebSocket 연결을 시도하는 주소를 임의로 등록하는 부분 
     // -> 처음 웹소켓을 연결할 때 사용하는 요청
@@ -53,6 +61,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app");
     }
 
+    // ✨ 핵심: 인터셉터 등록!
+    // (SecurityConfig의 addFilterBefore()와 비슷한 역할)
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(jwtChannelInterceptor);
+    }
 }
 
 
