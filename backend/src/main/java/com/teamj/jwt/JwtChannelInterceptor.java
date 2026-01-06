@@ -1,4 +1,4 @@
-package com.teamj.config;
+package com.teamj.jwt;
 
 import java.util.Collections;
 
@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import com.teamj.jwt.JwtTokenProvider;
 import com.teamj.config.CustomUserDetails;  // WebSocket 인증 시 사용
 
 import lombok.RequiredArgsConstructor;
