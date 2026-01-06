@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/gathering_newList_dto.dart';
 import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
-import 'package:front/screen/gathering_screen/model/gathering_model.dart';
+import 'package:front/dto/gathering_hotList_dto.dart';
 
 class GatheringRepository {
   final ApiClient apiClient;
@@ -9,23 +10,27 @@ class GatheringRepository {
   GatheringRepository(this.apiClient);
 
   //******** 핫한 모임 불러오기 ********/
-  Future<List<GatheringModel>> fetchHotGatherings() async {
+  Future<List<GatheringHotlistDto>> fetchHotGatherings() async {
     final response = await apiClient.get('/api/gathering/hotList');
-    return _parseResponse(response);
+    return _parseResponse<GatheringHotlistDto>(
+      response,
+      (json) => GatheringHotlistDto.fromJson(json)
+    );
   }
 
   //******** 새로운 모임 불러오기 ********/
-  Future<List<GatheringModel>> fetchNewGatherings() async {
+  Future<List<GatheringNewlistDto>> fetchNewGatherings() async {
     // 엔드포인트 호출
     final response = await apiClient.get('/api/gathering/newList');
-    return _parseResponse(response);
+    return _parseResponse<GatheringNewlistDto>(
+      response,
+      (json) => GatheringNewlistDto.fromJson(json)
+    );
   }
 
-  //******** 응답 파싱 및 예외 처리 ********/
-  List<GatheringModel> _parseResponse(dynamic response) {
-    // 한글 깨짐 방지
+  //******** 공통 파싱 함수 및 예외 처리 ********/
+  List<T> _parseResponse<T>(dynamic response, T Function(Map<String, dynamic>) fromJson) {
     final body = utf8.decode(response.bodyBytes);
-
     // 에러 처리
     if(response.statusCode != 200) {
       throw Exception('데이터 조회 실패: ${response.statusCode}');
@@ -39,7 +44,7 @@ class GatheringRepository {
 
     // 객체 리스트로 변환해서 반환
     return dataList
-        .map((e) => GatheringModel.fromJson(e))
+        .map((e) => fromJson(e as Map<String, dynamic>))
         .toList();
   }
 }

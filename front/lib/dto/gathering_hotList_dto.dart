@@ -1,6 +1,6 @@
 import 'package:front/screen/gathering_screen/model/gathering_card_model.dart';
 
-class GatheringModel {
+class GatheringHotlistDto {
   final GatheringMeetingModel meetingInfo;
 
   final int maxParticipants;
@@ -8,7 +8,7 @@ class GatheringModel {
   final String categoryName;
   final DateTime meetingDate;
 
-  const GatheringModel({
+  const GatheringHotlistDto({
     required this.meetingInfo,
     required this.maxParticipants,
     required this.location,
@@ -16,8 +16,8 @@ class GatheringModel {
     required this.meetingDate,
   });
 
-  factory GatheringModel.fromJson(Map<String, dynamic> json) {
-    return GatheringModel(
+  factory GatheringHotlistDto.fromJson(Map<String, dynamic> json) {
+    return GatheringHotlistDto(
       meetingInfo: GatheringMeetingModel(
         title: json['roomName'] ?? '',
         content: json['roomDesc'] ?? '',
