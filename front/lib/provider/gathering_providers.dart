@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/data/repository/gathering_repository.dart';
-import 'package:front/screen/gathering_screen/model/gathering_model.dart';
+import 'package:front/dto/gathering_hotList_dto.dart';
+import 'package:front/dto/gathering_newList_dto.dart';
 //******** 기본 인프라 Provider (ApiClient, Repository) ********/
 // ApiClient 인스턴스를 제공하는 Provider
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -18,14 +19,14 @@ final gatheringRepositoryProvider = Provider<GatheringRepository>((ref) {
 //******** 핫한 모임 Provider ********/
 // Provider 등록
 final gatheringHotListProvider =
-    AsyncNotifierProvider<GatheringHotListNotifier, List<GatheringModel>>(() {
+    AsyncNotifierProvider<GatheringHotListNotifier, List<GatheringHotlistDto>>(() {
   return GatheringHotListNotifier();
 });
 
 // 상태 관리 클래스
-class GatheringHotListNotifier extends AsyncNotifier<List<GatheringModel>> {
+class GatheringHotListNotifier extends AsyncNotifier<List<GatheringHotlistDto>> {
   @override
-  FutureOr<List<GatheringModel>> build() async {
+  FutureOr<List<GatheringHotlistDto>> build() async {
     // Repository에서 '핫한 모임' 가져오기
     final repository = ref.watch(gatheringRepositoryProvider);
     return await repository.fetchHotGatherings();
@@ -43,14 +44,14 @@ class GatheringHotListNotifier extends AsyncNotifier<List<GatheringModel>> {
 //******** 새로운 모임 Provider ********/
 // Provider 등록
 final gatheringNewListProvider =
-    AsyncNotifierProvider<GatheringNewListNotifier, List<GatheringModel>>(() {
+    AsyncNotifierProvider<GatheringNewListNotifier, List<GatheringNewlistDto>>(() {
   return GatheringNewListNotifier();
 });
 
 // 상태 관리 클래스
-class GatheringNewListNotifier extends AsyncNotifier<List<GatheringModel>> {
+class GatheringNewListNotifier extends AsyncNotifier<List<GatheringNewlistDto>> {
   @override
-  FutureOr<List<GatheringModel>> build() async {
+  FutureOr<List<GatheringNewlistDto>> build() async {
     // Repository에서 '새로운 모임' 가져오기
     final repository = ref.watch(gatheringRepositoryProvider);
     return await repository.fetchNewGatherings();

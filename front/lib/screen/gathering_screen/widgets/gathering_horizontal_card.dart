@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:front/screen/gathering_screen/model/gathering_card_model.dart'; //데이터모델
 import 'package:front/theme/app_colors.dart'; //폰트
@@ -13,7 +14,27 @@ class GatheringHorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = meeting.imageUrl;
+    Widget imageWidget;
+
+    if(imageUrl != null && imageUrl.isNotEmpty) {
+      // 1. URL 있을 때
+      imageWidget = CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        // 에러 발생 시 기본 이미지 보여주기
+        errorWidget: (context, url, error) => Image.asset(
+          'asset/img/image.png',
+          fit: BoxFit.cover,
+        ),
+        placeholder: (context, url) => Container(color: Colors.grey[200]),
+      );
+    } else {
+      imageWidget = Image.asset('asset/img/image.png', fit: BoxFit.cover);
+    }
+
     return Container(
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.brown[100]!),
@@ -26,12 +47,13 @@ class GatheringHorizontalCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                (meeting.imageUrl == null || meeting.imageUrl!.isEmpty)
-                    ? 'asset/img/image.png'
-                    : meeting.imageUrl!,
-                fit: BoxFit.cover,
+              SizedBox(
                 height: 130,
+                width: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: imageWidget,
+                ),
               ),
               SizedBox(
                 //height: 15,
