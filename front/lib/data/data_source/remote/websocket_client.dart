@@ -140,7 +140,7 @@ class WebSocketClient {
     }
 
     // 3. WebSocket URL 구성
-    String endpoint = '$baseWSUrl/ws/matching';
+    String endpoint = '$baseWSUrl/ws';
 
     // 4. StompClient 생성 및 이벤트 핸들러 등록
     _stompClient = StompClient(

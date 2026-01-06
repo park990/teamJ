@@ -50,7 +50,8 @@ public class SecurityConfig {
                                   "/api/auth/**",
                                   "/api/post/getList",
                                   "/api/gathering/newList",
-                                  "/api/gathering/hotList"
+                                  "/api/gathering/hotList",
+                                  "/ws/**"  // ← WebSocket HTTP 연결 허용 (STOMP 인증은 JwtChannelInterceptor에서)
                 ).permitAll() 
 
 
