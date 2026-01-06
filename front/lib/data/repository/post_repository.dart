@@ -82,6 +82,8 @@ class PostRepository {
 
         print('서버 토글 응답: ${serverIsliked}');
         return serverIsliked;
+      }else{
+        return null;
       }
     }catch(e){
       print('서버 토글 응답 오류: ${e}');

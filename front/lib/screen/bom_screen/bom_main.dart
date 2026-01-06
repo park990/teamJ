@@ -33,6 +33,21 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
     bool _isLoggedIn = ref.watch(authControllerProvider).isLoggedIn;
     final postListAsync = ref.watch(postListControllerProvider);
 
+    // ref로 관찰할 데이터가 Bool(isloggedin)
+    ref.listen<bool>(
+    authControllerProvider.select((s) => s.isLoggedIn),
+    (previous, next) {
+      // 1. 이전에는 false(비로그인)였는데, 
+      // 2. 현재 next가 true(로그인 완료)가 되었다면?
+      // (토큰 재발급 성공 시점도 포함됨)
+      if (previous == false && next == true) {
+        print('로그인 상태 변경 감지됨');
+        // 리스트 데이터를 '무효화' 시켜서 서버에서 다시
+        // 이때는 이미 토큰이 갱신된 상태라 '내 하트'가 채워진 리스트가 옵니다.
+        ref.invalidate(postListControllerProvider);
+      }
+    },
+  );
     return Scaffold(
       backgroundColor: wazzupBackGround,
       body: _buildBody(postListAsync),
