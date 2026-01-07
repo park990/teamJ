@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
-import 'package:front/data/repository/post_repository.dart';
+import 'package:front/data/repository/bbs/post_repository.dart';
 import 'package:front/screen/bom_screen/controller/post_list_controller.dart';
 import 'package:front/screen/bom_screen/controller/post_write_controller.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';

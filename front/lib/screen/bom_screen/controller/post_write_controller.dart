@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/data/repository/post_repository.dart';
+import 'package:front/data/repository/bbs/post_repository.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
