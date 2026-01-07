@@ -1,10 +1,13 @@
 package com.teamj.jwt;
 
+import java.util.Map;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -105,7 +108,13 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 // 3-7. WebSocket Session Attributes에 사용자 정보 저장
                 //      → 세션 레벨 저장이므로 이후 모든 메시지에서 접근 가능!
                 //      → 스레드가 바뀌어도 동일한 WebSocket 세션이므로 공유됨!
-                accessor.getSessionAttributes().put("userDetails", userDetails);
+                Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+                if (sessionAttributes != null) {
+                    sessionAttributes.put("userDetails", userDetails);
+                    log.debug("✅ 세션 속성에 userDetails 저장 완료 - userIdx: {}", userIdx);
+                } else {
+                    log.error("❌ 세션 속성 맵이 null입니다! - userIdx: {}", userIdx);
+                }
                 
                 // 3-8. StompHeaderAccessor에 Principal 설정 (현재 메시지용)
                 accessor.setUser(userDetails);
@@ -129,12 +138,28 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
             
             // WebSocket Session Attributes에서 사용자 정보 가져오기
             //   → CONNECT에서 저장한 정보 (스레드 무관, 세션 레벨 저장소)
-            CustomUserDetails userDetails = (CustomUserDetails) accessor.getSessionAttributes().get("userDetails");
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            if (sessionAttributes == null) {
+                log.error("❌ SUBSCRIBE 요청: 세션 속성 맵이 null입니다!");
+                return null;
+            }
+            
+            CustomUserDetails userDetails = (CustomUserDetails) sessionAttributes.get("userDetails");
             if (userDetails != null) {
+                // StompHeaderAccessor에 Principal 설정
                 accessor.setUser(userDetails);
+                
+                // SecurityContextHolder에 Authentication 설정 (일관성 유지)
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    "",
+                    userDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
                 log.debug("✅ SUBSCRIBE 메시지에 Principal 설정 - userIdx: {}", userDetails.getUserIdx());
             } else {
-                log.warn("⚠️ SUBSCRIBE 요청이지만 세션에 사용자 정보 없음");
+                log.warn("⚠️ SUBSCRIBE 요청이지만 세션에 사용자 정보 없음 - destination: {}", destination);
                 return null;
             }
             
@@ -150,12 +175,30 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
             
             // WebSocket Session Attributes에서 사용자 정보 가져오기
             //   → CONNECT에서 저장한 정보 (스레드 무관, 세션 레벨 저장소)
-            CustomUserDetails userDetails = (CustomUserDetails) accessor.getSessionAttributes().get("userDetails");
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            if (sessionAttributes == null) {
+                log.error("❌ SEND 요청: 세션 속성 맵이 null입니다! - destination: {}", destination);
+                return null;
+            }
+            
+            CustomUserDetails userDetails = (CustomUserDetails) sessionAttributes.get("userDetails");
             if (userDetails != null) {
+                // StompHeaderAccessor에 Principal 설정 (현재 메시지용)
                 accessor.setUser(userDetails);
-                log.debug("✅ SEND 메시지에 Principal 설정 - userIdx: {}", userDetails.getUserIdx());
+                
+                // SecurityContextHolder에 Authentication 설정 (컨트롤러에서 Principal 사용 가능하게)
+                //   → @MessageMapping 메서드의 Principal 파라미터는 SecurityContextHolder에서 가져옴!
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    "",  // password 없음
+                    userDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                log.info("✅ SEND 메시지에 Principal 설정 완료 - userIdx: {}", userDetails.getUserIdx());
             } else {
-                log.warn("⚠️ SEND 요청이지만 세션에 사용자 정보 없음 - destination: {}", destination);
+                log.warn("⚠️ SEND 요청이지만 세션에 사용자 정보 없음 - destination: {}, 세션 속성 키 목록: {}", 
+                         destination, sessionAttributes.keySet());
                 return null;  // 인증되지 않은 SEND는 차단
             }
             

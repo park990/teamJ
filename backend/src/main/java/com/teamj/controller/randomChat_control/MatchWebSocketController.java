@@ -2,8 +2,7 @@ package com.teamj.controller.randomChat_control;
 
 import java.util.Map;
 
-import java.security.Principal;
-
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -43,22 +42,32 @@ public class MatchWebSocketController {
      * - destination으로 메시지 타입 구분 (/queue/match/ → 매칭)
      * - MatchData 직접 전송 (불필요한 중첩 제거)
      * 
-     * 【 Principal 사용 】
-     * - @AuthenticationPrincipal은 WebSocket에서 제대로 작동하지 않을 수 있음
-     * - Principal을 사용하여 JwtChannelInterceptor에서 설정한 인증 정보 추출
+     * 【 사용자 정보 추출 방법 】
+     * - @Header("simpSessionAttributes")로 세션 속성에서 직접 추출
+     * - 스레드 문제로 인한 Principal 주입 실패 대응
      * 
-     * @param principal JwtChannelInterceptor에서 설정한 Principal (CustomUserDetails 포함)
+     * @param sessionAttributes WebSocket 세션 속성 맵 (JwtChannelInterceptor에서 저장한 userDetails 포함)
      * @param request 클라이언트 요청 { genderOption: 'male' | 'female' | 'random' }
      */
     @MessageMapping("/match/enter")
     public void enterQueue(
-        Principal principal,
+        @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
         @Payload Map<String, String> request
     ) {
-        // 1. 인증 정보 추출 (Principal → CustomUserDetails)
-        //    JwtChannelInterceptor에서 CustomUserDetails를 setUser()로 설정했으므로
-        //    Principal을 직접 CustomUserDetails로 캐스팅 가능!
-        CustomUserDetails user = (CustomUserDetails) principal;
+        // 1. 인증 정보 추출 (세션 속성에서 직접 가져오기)
+        //    → JwtChannelInterceptor에서 CONNECT 시 세션 속성에 저장한 userDetails 사용
+        //    → 스레드 문제 없이 안전하게 접근 가능!
+        if (sessionAttributes == null) {
+            log.error("❌ 매칭 요청 실패: 세션 속성 맵이 null입니다!");
+            return;
+        }
+        
+        CustomUserDetails user = (CustomUserDetails) sessionAttributes.get("userDetails");
+        if (user == null) {
+            log.error("❌ 매칭 요청 실패: 세션에 사용자 정보가 없습니다! 세션 속성 키: {}", sessionAttributes.keySet());
+            return;
+        }
+        
         Long userIdx = user.getUserIdx();
         String genderOption = request.get("genderOption");
         log.info("🎯 매칭 요청 수신 - userIdx: {}, genderOption: {}", userIdx, genderOption);
@@ -107,12 +116,24 @@ public class MatchWebSocketController {
      * 클라이언트 → 서버:
      *   stompClient.send('/app/match/cancel', {}, {})
      * 
-     * @param principal JwtChannelInterceptor에서 설정한 Principal
+     * @param sessionAttributes WebSocket 세션 속성 맵 (JwtChannelInterceptor에서 저장한 userDetails 포함)
      */
     @MessageMapping("/match/cancel")
-    public void cancelQueue(Principal principal) {
-        // 인증 정보 추출 (Principal → CustomUserDetails)
-        CustomUserDetails user = (CustomUserDetails) principal;
+    public void cancelQueue(
+        @Header("simpSessionAttributes") Map<String, Object> sessionAttributes
+    ) {
+        // 인증 정보 추출 (세션 속성에서 직접 가져오기)
+        if (sessionAttributes == null) {
+            log.error("❌ 매칭 취소 실패: 세션 속성 맵이 null입니다!");
+            return;
+        }
+        
+        CustomUserDetails user = (CustomUserDetails) sessionAttributes.get("userDetails");
+        if (user == null) {
+            log.error("❌ 매칭 취소 실패: 세션에 사용자 정보가 없습니다! 세션 속성 키: {}", sessionAttributes.keySet());
+            return;
+        }
+        
         Long userIdx = user.getUserIdx();
         log.info("❌ 매칭 취소 요청 - userIdx: {}", userIdx);
         
