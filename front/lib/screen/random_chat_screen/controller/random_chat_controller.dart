@@ -41,11 +41,19 @@ class RandomChatController extends ChangeNotifier {
   }
 
   /// ==========================
-  /// 랜덤채팅 시작
+  /// WebSocket 연결
   /// ==========================
-  Future<void> startMatching({required String genderOption}) async {
+  Future<void> initialize() async {
+    await matchRepository.connect();
+  }
+
+  /// ==========================
+  /// 매칭 시작
+  /// ==========================
+  void startMatching({required int userIdx, required String genderOption}) {
     debugPrint(
       '▶ startMatching() CALLED '
+      'userIdx=$userIdx, '
       'genderOption=$genderOption',
     );
 
@@ -59,34 +67,20 @@ class RandomChatController extends ChangeNotifier {
     );
 
     try {
-      debugPrint('🌐 enterQueue() REQUEST START');
+      debugPrint('🌐 startMatching() REQUEST START');
 
-      final dto = await matchRepository.enterQueue(
+      matchRepository.startMatching(
+        userIdx: userIdx,
         genderOption: genderOption,
+        onMatchUpdate: (matchData) {
+          // 콜백으로 실시간 응답 받기!
+          if (matchData.isWaiting) {
+            _setState(state.copyWith(status: RandomChatStatus.matching));
+          } else if (matchData.isMatched) {
+            _setState(state.copyWith(status: RandomChatStatus.matched, roomIdx: matchData.roomIdx.toString()));
+          }
+        },
       );
-
-      debugPrint(
-        '✅ enterQueue() RESPONSE '
-        'matched=${dto.matched}, '
-        'roomIdx=${dto.roomIdx}',
-      );
-
-      if (dto.matched && dto.roomIdx != null) {
-        debugPrint('🎯 MATCH SUCCESS');
-
-        _setState(
-          state.copyWith(
-            status: RandomChatStatus.matched,
-            roomIdx: dto.roomIdx,
-          ),
-        );
-      } else {
-        debugPrint('⌛ STILL MATCHING');
-
-        _setState(
-          state.copyWith(status: RandomChatStatus.matching),
-        );
-      }
     } catch (e, s) {
       debugPrint('❌ startMatching ERROR');
       debugPrint('❌ error=$e');
@@ -99,5 +93,23 @@ class RandomChatController extends ChangeNotifier {
         ),
       );
     }
+  }
+
+  /// ==========================
+  /// 매칭 취소
+  /// ==========================
+  void cancelMatching() {
+    debugPrint('▶ cancelMatching() CALLED');
+    matchRepository.cancelMatching();
+  }
+
+  /// ==========================
+  /// 연결 해제
+  /// ==========================
+  @override
+  void dispose() {
+    debugPrint('▶ dispose() CALLED');
+    matchRepository.disconnect();
+    super.dispose();
   }
 }

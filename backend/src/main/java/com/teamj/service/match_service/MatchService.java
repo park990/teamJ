@@ -60,8 +60,8 @@ public class MatchService {
 
         // 2. 매칭조건 생성
         MatchCriteria criteria = MatchCriteria.builder()
-            .desiredGender(genderOption)
-            .build();
+        .desiredGender(genderOption)
+        .build();
 
         // 3. WaitingUser 생성
         WaitingUser waitingUser = new WaitingUser(

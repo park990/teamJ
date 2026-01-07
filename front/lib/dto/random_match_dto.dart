@@ -1,26 +1,23 @@
 class RandomMatchDto {
-  final bool matched;
-  final String? roomIdx;
-
-  final String? opponentUsersIdx;
-  final String? opponentNickname;
-  final String? opponentProfileImage;
-
+  final String status;     // "WAITING" | "MATCHED"
+  final int? roomIdx;
+  final int? partnerIdx;
+  
   RandomMatchDto({
-    required this.matched,
+    required this.status,
     this.roomIdx,
-    this.opponentUsersIdx,
-    this.opponentNickname,
-    this.opponentProfileImage,
+    this.partnerIdx,
   });
-
+  
   factory RandomMatchDto.fromJson(Map<String, dynamic> json) {
     return RandomMatchDto(
-      matched: json['matched'],
-      roomIdx: json['room_idx'],
-      opponentUsersIdx: json['opponent_users_idx'],
-      opponentNickname: json['opponent_nickname'],
-      opponentProfileImage: json['opponent_profile_image'],
+      status: json['status'],
+      roomIdx: json['roomIdx'],
+      partnerIdx: json['partnerIdx'],
     );
   }
+  
+
+  bool get isWaiting => status == 'WAITING';
+  bool get isMatched => status == 'MATCHED';
 }
