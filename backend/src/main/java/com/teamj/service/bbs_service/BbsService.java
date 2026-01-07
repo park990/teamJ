@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.teamj.dto.PostDTO;
+import com.teamj.dto.bbs_dto.PostDTO;
 import com.teamj.entity.bbs_entity.Bbs;
 import com.teamj.entity.bbs_entity.BbsMedia;
 import com.teamj.entity.bbs_entity.BbsReaction;
