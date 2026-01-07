@@ -27,11 +27,15 @@ class GatheringNewlistDto {
   factory GatheringNewlistDto.fromJson(Map<String, dynamic>
   json) {
     return GatheringNewlistDto(
-      roomIdx: json['roomIdx'],
+      roomIdx: json['roomIdx']?.toString(),
       roomName: json['roomName'],
       roomType: json['roomType'],
-      createdAt: json['createdAt'],
-      meetDate: json['meetDate'],
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      meetDate: json['meetDate']
+          ? DateTime.parse(json['meetDate'])
+          : null,
       meetPlace: json['meetPlace'],
       max: json['max'],
       roomImg: json['roomImg'],
