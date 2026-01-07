@@ -15,6 +15,6 @@ public class CommentsService {
     private final CommentsRepository commentsRepository;
 
     public Slice<CommentsDTO> getComments(Long bbsIdx, Pageable pageable){
-        return commentsRepository.findAllByBbsIdxAndIsDeleted(bbsIdx,0, pageable).map(CommentsDTO::new);
+        return commentsRepository.findAllByBbs_BbsIdxAndIsDeleted(bbsIdx,0, pageable).map(CommentsDTO::new);
     }
 }

@@ -8,5 +8,5 @@ import com.teamj.entity.bbs_entity.BbsComments;
 
 @Repository
 public interface CommentsRepository extends JpaRepository<BbsComments,Long> {
-    Slice<BbsComments> findAllByBbsIdxAndIsDeleted(Long bbsIdx,int isDeleted, Pageable Pageable);
+    Slice<BbsComments> findAllByBbs_BbsIdxAndIsDeleted(Long bbsIdx,int isDeleted, Pageable Pageable);
 }
