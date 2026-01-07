@@ -1,4 +1,4 @@
-package com.teamj.dto;
+package com.teamj.dto.bbs_dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

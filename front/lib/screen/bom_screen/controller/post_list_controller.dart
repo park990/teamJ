@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
-import 'package:front/data/repository/post_repository.dart';
+import 'package:front/data/repository/bbs/post_repository.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 
 class PostListController
     extends AutoDisposeAsyncNotifier<List<Post>> {
@@ -13,6 +14,10 @@ class PostListController
 
   @override
   FutureOr<List<Post>> build() async {
+
+    //auth상태가 바뀌면 다시 실행
+    ref.watch(authControllerProvider);
+
     return await _repository.getList();
   }
 
@@ -24,6 +29,11 @@ class PostListController
 
   // 좋아요 토글 기능
   Future<void> toggleLike(int postIdx) async {
+    final auth =ref.read(authControllerProvider);
+    if (!auth.isLoggedIn) {
+      WazzupToast.showError("로그인이 필요합니다.");
+      return;
+    }
     //state.value = List<post>
     final currentState = state.value;
     if (currentState == null) return;
@@ -68,14 +78,19 @@ class PostListController
 
     // 3. 만약 서버 결과가 내 폰이랑 다르면? 서버 기준으로 다시 맞춤 (동기화)
     if (serverResult != changedPost.isLiked) {
-      newList[targetIndex] = changedPost.copyWith(
-        isLiked: serverResult,
-
-        likeCount: serverResult
-            ? changedPost.likeCount + 1
-            : changedPost.likeCount - 1,
-      );
-      state = AsyncData(newList);
+      state = AsyncData([
+        for (final post in state.value!)
+          if (post.bbsIdx == postIdx)
+            post.copyWith(
+              isLiked: serverResult,
+              // 카운트는 초기 '원본' 데이터(targetPost) 기준으로 다시 계산하는 게 안전
+              likeCount: serverResult
+                  ? targetPost.likeCount + 1
+                  : targetPost.likeCount,
+            )
+          else
+            post,
+      ]);
     }
   }
 }
