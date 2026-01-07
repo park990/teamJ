@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
-import com.teamj.dto.PostDTO;
+import com.teamj.dto.bbs_dto.PostDTO;
 import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.bbs_service.BbsService;
 
