@@ -1,57 +1,47 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/data/data_source/remote/websocket_client.dart';
 import 'package:front/dto/random_match_dto.dart';
 
 class RandomMatchRepository {
-  final ApiClient apiClient;
+  final WebSocketClient wsClient;
 
-  RandomMatchRepository(this.apiClient);
+  RandomMatchRepository(this.wsClient);
 
-  Future<RandomMatchDto> enterQueue({
-    required String genderOption,
-  }) async {
-    debugPrint(
-      '🌐 [RandomMatchRepo] POST /api/random-match/enter '
-      'genderOption=$genderOption',
-    );
-
-    final response = await apiClient.post(
-      '/api/random-match/enter',
-      body: {
-        'genderOption': genderOption,
-      },
-    );
-
-    final body = utf8.decode(response.bodyBytes);
-
-    debugPrint(
-      '🌐 [RandomMatchRepo] RESPONSE '
-      'status=${response.statusCode} body=$body',
-    );
-
-    if (response.statusCode != 200) {
-      debugPrint('❌ [RandomMatchRepo] enterQueue FAILED');
-      throw Exception('랜덤 매칭 실패 ${response.statusCode}');
-    }
-
-    final json = jsonDecode(body);
-    return RandomMatchDto.fromJson(json['data']);
+  // 1. 연결
+  Future<void> connect() async {
+    await wsClient.connect();
   }
 
-  Future<void> cancelQueue() async {
-    debugPrint('🌐 [RandomMatchRepo] POST /api/random-match/cancel');
-
-    final response = await apiClient.post('/api/random-match/cancel');
-
-    debugPrint(
-      '🌐 [RandomMatchRepo] cancel RESPONSE '
-      'status=${response.statusCode}',
+  // 2. 매칭 시작 (응답은 Stream으로)
+  void startMatching({
+    required int userIdx,
+    required String genderOption,
+    required Function(RandomMatchDto) onMatchUpdate,
+  }) {
+    // 구독 (응답 받기)
+    wsClient.subscribe(
+      destination: '/queue/match/$userIdx',
+      callback: (frame) {
+        final json = jsonDecode(frame.body ?? '{}');
+        final matchData = RandomMatchDto.fromJson(json);
+        onMatchUpdate(matchData);  // 콜백으로 전달!
+      },
     );
+    
+    // 요청 보내기
+    wsClient.send('/app/match/enter', {
+      'genderOption': genderOption,
+    });
+  }
 
-    if (response.statusCode != 200) {
-      debugPrint('❌ [RandomMatchRepo] cancelQueue FAILED');
-      throw Exception('랜덤 매칭 취소 실패 ${response.statusCode}');
-    }
+  // 3. 매칭 취소
+  void cancelMatching() {
+    wsClient.send('/app/match/cancel', {});
+  }
+  
+  // 4. 연결 해제
+  void disconnect() {
+    wsClient.disconnect();
   }
 }
