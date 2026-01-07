@@ -67,7 +67,7 @@ class RandomChatController extends ChangeNotifier {
     );
 
     try {
-      debugPrint('🌐 enterQueue() REQUEST START');
+      debugPrint('🌐 startMatching() REQUEST START');
 
       matchRepository.startMatching(
         userIdx: userIdx,

@@ -1,5 +1,8 @@
 package com.teamj.dto.randomChat_dto;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,6 +50,7 @@ public class MatchPair {
      * 요청자(매칭 요청한 사람)용 MatchData
      * - 항상 존재 (대기 중이든 매칭 성공이든)
      */
+    @NonNull
     private MatchData requesterData;
     
     /**
@@ -54,6 +58,7 @@ public class MatchPair {
      * - 매칭 성공 시에만 존재
      * - 대기 중일 때는 null
      */
+    @Nullable
     private MatchData partnerData;
     
     // ================================
@@ -67,7 +72,7 @@ public class MatchPair {
      * @param requesterData 요청자용 MatchData (대기 중)
      * @return 대기 중 MatchPair
      */
-    public static MatchPair waiting(MatchData requesterData) {
+    public static MatchPair waiting(@NonNull MatchData requesterData) {
         return new MatchPair(requesterData, null);
     }
     
@@ -79,7 +84,7 @@ public class MatchPair {
      * @param partnerData 상대방용 MatchData
      * @return 매칭 성공 MatchPair
      */
-    public static MatchPair matched(MatchData requesterData, MatchData partnerData) {
+    public static MatchPair matched(@NonNull MatchData requesterData, @NonNull MatchData partnerData) {
         return new MatchPair(requesterData, partnerData);
     }
     

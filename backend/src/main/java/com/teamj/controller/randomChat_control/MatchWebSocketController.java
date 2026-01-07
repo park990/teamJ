@@ -2,10 +2,11 @@ package com.teamj.controller.randomChat_control;
 
 import java.util.Map;
 
+import java.security.Principal;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import com.teamj.dto.randomChat_dto.MatchData;
@@ -42,15 +43,22 @@ public class MatchWebSocketController {
      * - destination으로 메시지 타입 구분 (/queue/match/ → 매칭)
      * - MatchData 직접 전송 (불필요한 중첩 제거)
      * 
-     * @param user 인증된 사용자 정보 (JwtChannelInterceptor에서 설정)
+     * 【 Principal 사용 】
+     * - @AuthenticationPrincipal은 WebSocket에서 제대로 작동하지 않을 수 있음
+     * - Principal을 사용하여 JwtChannelInterceptor에서 설정한 인증 정보 추출
+     * 
+     * @param principal JwtChannelInterceptor에서 설정한 Principal (CustomUserDetails 포함)
      * @param request 클라이언트 요청 { genderOption: 'male' | 'female' | 'random' }
      */
     @MessageMapping("/match/enter")
     public void enterQueue(
-        @AuthenticationPrincipal CustomUserDetails user,
+        Principal principal,
         @Payload Map<String, String> request
     ) {
-        // 1. 인증 정보 추출
+        // 1. 인증 정보 추출 (Principal → CustomUserDetails)
+        //    JwtChannelInterceptor에서 CustomUserDetails를 setUser()로 설정했으므로
+        //    Principal을 직접 CustomUserDetails로 캐스팅 가능!
+        CustomUserDetails user = (CustomUserDetails) principal;
         Long userIdx = user.getUserIdx();
         String genderOption = request.get("genderOption");
         log.info("🎯 매칭 요청 수신 - userIdx: {}, genderOption: {}", userIdx, genderOption);
@@ -73,6 +81,12 @@ public class MatchWebSocketController {
         MatchData requesterData = pair.getRequesterData();
         MatchData partnerData = pair.getPartnerData();
         
+        // Null 체크 (방어적 프로그래밍)
+        if (partnerData == null) {
+            log.error("❌ 매칭 성공 상태인데 partnerData가 null - userIdx: {}", userIdx);
+            return;
+        }
+        
         // 요청자에게 전송
         messagingTemplate.convertAndSend("/queue/match/" + userIdx, requesterData);  // ← MatchData 직접!
         log.info("✅ 요청자에게 매칭 응답 전송 - userIdx: {}, roomIdx: {}, partnerIdx: {}", 
@@ -93,10 +107,12 @@ public class MatchWebSocketController {
      * 클라이언트 → 서버:
      *   stompClient.send('/app/match/cancel', {}, {})
      * 
-     * @param user 인증된 사용자 정보
+     * @param principal JwtChannelInterceptor에서 설정한 Principal
      */
     @MessageMapping("/match/cancel")
-    public void cancelQueue(@AuthenticationPrincipal CustomUserDetails user) {
+    public void cancelQueue(Principal principal) {
+        // 인증 정보 추출 (Principal → CustomUserDetails)
+        CustomUserDetails user = (CustomUserDetails) principal;
         Long userIdx = user.getUserIdx();
         log.info("❌ 매칭 취소 요청 - userIdx: {}", userIdx);
         

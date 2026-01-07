@@ -1,5 +1,6 @@
 package com.teamj.config;
 
+import java.security.Principal;
 import java.util.Collection;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -10,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, Principal {
     
     private final Long userIdx; // 우리가 필요로 하는 핵심 정보
     private final Collection<? extends GrantedAuthority> authorities;
@@ -34,6 +35,12 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return String.valueOf(userIdx); // 기본 username 자리에는 식별자.
+    }
+
+    // Principal 인터페이스 구현 (WebSocket에서 Principal로 사용 가능하게)
+    @Override
+    public String getName() {
+        return String.valueOf(userIdx); // Principal의 이름으로 userIdx 반환
     }
 
     // 아래 계정 상태 체크는 실무에서 특별한 로직이 없다면 모두 true로 
