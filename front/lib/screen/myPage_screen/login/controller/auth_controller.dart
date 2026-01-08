@@ -36,6 +36,7 @@ class AuthState {
       sessionVersion: sessionVersion ?? this.sessionVersion,
     );
   }
+  
 }
 
 class AuthController extends Notifier<AuthState> {
@@ -60,47 +61,69 @@ class AuthController extends Notifier<AuthState> {
     try{
     final token = await _storage.getAccessToken();
 
-    if (token != null) {
-      state = AuthState(isLoggedIn: true, isLoading: false, accessToken: token);
-
+    if (token == null) {
+        state = AuthState(isLoggedIn: false, isLoading: false);
+        return;
+      }
+    
       try{
         final response = await _repository.getUserInfo();
-        if(response!=null){
+        if(response != null){
         print('상태등록된 유저정보: ${response.usersNickname}');
-        state = state.copyWith(
-          isLoading: false,
-          nickName: response.usersNickname,
-          userIdx: response.usersIdx,
-        );
+
+          state = AuthState(
+            isLoggedIn: true,
+            isLoading: false,
+            accessToken: token,
+            nickName: response.usersNickname,
+            userIdx: response.usersIdx,
+          );
+        }else{
+          print('❌ 토큰 무효 - 자동 로그아웃');
+          await _clearAuthState();
         }
       }catch(e){
-
+        // getUserInfo 실패 = 토큰 만료
+        print('❌ 토큰 만료 감지: $e');
+        await _clearAuthState();
       }
-    }else {
-      // 토큰이 없어도 확인은 끝난 것 (isLoading: false)
-      state = AuthState(isLoggedIn: false, isLoading: false);
-    }
     }catch(e){
       print('자동로그인 체크 중 오류 발생');
       state = AuthState(isLoading: false, isLoggedIn: false);
     }
   }
 
+  // 인증 상태 초기화 (토큰 삭제 + 상태 리셋)
+  Future<void> _clearAuthState() async {
+    await _storage.deleteAll();
+    state = AuthState(
+      isLoggedIn: false,
+      isLoading: false,
+      accessToken: null,
+      nickName: null,
+      userIdx: null,
+      sessionVersion: state.sessionVersion + 1,
+    );
+  }
+
+
+
   // 로그아웃
   Future<void> logout() async {
     try {
       await _repository.wazzupLogout();
-
-      try {
-        await UserApi.instance.logout();
-      } catch (e) {
-        print('카카오톡 로그아웃 에러: {e}');
-      }
-      await _storage.deleteAll();
-      state = AuthState(isLoggedIn: false, accessToken: null);
     } catch (e) {
-      print('WAZZUP 로그아웃 에러: ${e}');
+      print('WAZZUP 로그아웃 에러: $e');
     }
+
+    try {
+      await UserApi.instance.logout();
+    } catch (e) {
+      print('카카오톡 로그아웃 에러: $e');
+    }
+
+    // ✅ 한 번만 호출
+    await _clearAuthState();
   }
 
   // 소셜 로그인 서버통신 처리 
@@ -123,17 +146,18 @@ class AuthController extends Notifier<AuthState> {
           print('기존 유저임 와접 토큰 발급: ${tokenData}');
           print('기존 유저임 닉네임 갖고옴: ${tokenData.usersNickname}');
           
-          await _saveTokenAndUpdateState(tokenData);
+          await saveTokenAndUpdateState(tokenData);
           return "success";
         }
       }
     }catch(e){
-
+      print('❌ 소셜 로그인 에러: $e');
+      return null;  // 🔥 에러 시 null 반환
     }
   }
 
     // 로그인 상태로 변경 후 토큰 스토리지에 저장
-    Future<void> _saveTokenAndUpdateState(AuthResponse tokenData) async {
+    Future<void> saveTokenAndUpdateState(AuthResponse tokenData) async {
     await _storage.saveTokensOnly(
       accessToken: tokenData.wazzupToken,
       refreshToken: tokenData.refreshToken,
@@ -153,6 +177,8 @@ class AuthController extends Notifier<AuthState> {
   // 회원가입 완료 후 호출할 함수 회원가입해도 토큰받아와서 저장해줘야함.
   Future<void> completeSignUp(AuthResponse tokenData) async {
     print('${tokenData.usersNickname} ㄹ회원가입회원가입 회원가입회ㄱ원가입한 닉네');
-    await _saveTokenAndUpdateState(tokenData);
+    await saveTokenAndUpdateState(tokenData);
   }
+
+
 }

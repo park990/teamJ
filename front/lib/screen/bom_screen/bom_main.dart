@@ -39,8 +39,8 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          // 로그인 해야지 글쓸 수 있음.
           if (!_isLoggedIn) {
-            WazzupToast.showError('로그인이 필요합니다');
             bool isSuccess = await showLoginBottomSheet(context);
             if (isSuccess && mounted) {
               _navigateToPostWrite();
