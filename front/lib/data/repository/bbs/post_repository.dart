@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/bbs/Slice_response.dart';
 import 'package:front/dto/bbs/post_list_dto.dart';
+import 'package:front/screen/bom_screen/model/like_toggle_response.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -10,87 +12,84 @@ class PostRepository {
   PostRepository(this.apiClient);
 
   // 글 목록 불러오기
-  Future<List<Post>> getList() async {
-    try{
+  Future<SliceResponse<Post>> getList(int page, int size) async {
+    try {
       final response = await apiClient.get(
-        '/api/post/getList',
+        '/api/post/getList?page=$page&size=$size',
         //  나중에 바디에 게시판 타입 넣고 보내주면 게시판 나눌 수 있음
       );
-      if(response.statusCode==200){
-        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
-
-        print('게시판 리스트 가져오기 성공${jsonResponse['message']}');
-
-        final List<PostListDto> dtoList =
-         (jsonResponse['data'] as List).map((e) => PostListDto.fromJson(e)).toList();
-        
-        
-          return dtoList.map((dto) => Post.fromListDto(dto)).toList();
-        
-
-      }else {
+      if (response.statusCode != 200) {
         print('게시판 리스트 가져오기 실패: ${response.statusCode}');
-        return [];
+        return SliceResponse(content: [], isLast: false);
       }
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
 
-    }catch(e){
+
+      return SliceResponse<Post>.fromJson(jsonResponse['data'], (item) {
+      // 여기서 아이템 하나하나의 JSON 구조를 출력해봅니다.
+      print('리스트 BbsIdx: ${item['bbsIdx']}'); 
+      return Post.fromListDto(PostListDto.fromJson(item));
+    });
+      
+    } catch (e) {
       print('글 갖고오기 에러: ${e}');
-      return [];
+      return SliceResponse(content: [], isLast: false);
     }
   }
 
-
-  // 글 작성 
-  Future<bool> submitPost(String content, List<XFile> images) async{
-    try{
+  // 글 작성
+  Future<bool> submitPost(
+    String content,
+    List<XFile> images,
+  ) async {
+    try {
       final response = await apiClient.postMultipart(
         '/api/post/submit',
-        fields:{ 'content': content},
+        fields: {'content': content},
         images: images,
       );
 
-      if(response.statusCode==200){
+      if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(
-          utf8.decode(response.bodyBytes)
+          utf8.decode(response.bodyBytes),
         );
 
-      String message = jsonResponse['message'];
-      print('서버응답: ${message}');
-      return true;
-      }
-      else{
+        String message = jsonResponse['message'];
+        print('서버응답: ${message}');
+        return true;
+      } else {
         print('서버에러 ${response.statusCode}');
         return false;
       }
-    }catch(e){
+    } catch (e) {
       print('연결실패 ${e}');
       return false;
     }
   }
 
   // 좋아요 토글 기능
-  Future<bool?> toggleLike(int postIdx) async{
-    try{
+  Future<LikeToggleResponse?> toggleLike(int postIdx) async {
+    try {
       final response = await apiClient.post(
         '/api/post/likeToggle',
-        body:{'bbsIdx': postIdx},
+        body: {'bbsIdx': postIdx},
       );
 
-      if(response.statusCode==200){
-        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
-        final bool serverIsliked = jsonResponse['data'];
-
-        print('서버 토글 응답: ${serverIsliked}');
-        return serverIsliked;
-      }else{
-        return null;
+      if (response.statusCode != 200) {
+        print('토글 기능 불가: ${response.statusCode}');
       }
-    }catch(e){
+      final jsonResponse = jsonDecode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      print('서버 토글 응답: ${jsonResponse['message']}');
+      print('서버 전체 응답: $jsonResponse'); // 이 줄을 추가해서 직접 확인해보세요!
+      print('데이터 부분: ${jsonResponse['data']}');
+
+      return LikeToggleResponse.fromJson(jsonResponse['data']);
+    } catch (e) {
       print('서버 토글 응답 오류: ${e}');
       return null;
     }
   }
-
-
-
 }

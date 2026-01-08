@@ -36,6 +36,7 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
     return Scaffold(
       backgroundColor: wazzupBackGround,
       body: _buildBody(postListAsync),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (!_isLoggedIn) {
@@ -74,6 +75,16 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
       return SmartRefresher(
         controller: _refreshController,
         enablePullDown: true,
+        enablePullUp: true,
+        footer: ClassicFooter(
+          loadStyle: LoadStyle.ShowAlways,
+          completeDuration: Duration(milliseconds: 500),
+          loadingText: "데이터를 가져오고 있어요...",
+          noDataText: "마지막 게시글입니다 👏", // loadNoData() 호출 시 표시됨
+          idleText: "위로 당겨서 더 보기",
+          canLoadingText: "놓으면 더 불러와요!",
+          failedText: "로딩 실패! 다시 시도해주세요",
+        ),
         header: CustomHeader(
           refreshStyle: RefreshStyle.Follow,
           builder: (context, mode) => SizedBox(
@@ -87,6 +98,22 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
             Future.delayed(const Duration(milliseconds: 1500)),
           ]);
           _refreshController.refreshCompleted();
+          _refreshController.resetNoData();
+        },
+        onLoading:() async{
+           final notifier = ref.read(postListControllerProvider.notifier);
+  
+          // 1. 다음 페이지 데이터 요청
+          await notifier.fetchNextPage();
+
+          // 2. 컨트롤러의 상태 확인 후 SmartRefresher 상태 업데이트
+          if (notifier.isLastPage) {
+            // 더 이상 데이터가 없으면 'NoData' 상태로 변경 (더 이상 안 당겨짐)
+            _refreshController.loadNoData();
+          } else {
+            // 데이터가 더 있으면 로딩 완료 처리
+            _refreshController.loadComplete();
+          }
         },
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 4),

@@ -14,8 +14,9 @@ class AuthState {
   final String? accessToken;
   final String? nickName;
   final int? userIdx;
+  final int sessionVersion;
 
-  AuthState({this.isLoggedIn = false, this.accessToken, this.isLoading = true, this.nickName, this.userIdx});
+  AuthState({this.isLoggedIn = false, this.accessToken, this.isLoading = true, this.nickName, this.userIdx, this.sessionVersion = 0});
 
   // 데이터 보존을 위한 메서드!
   AuthState copyWith({
@@ -24,6 +25,7 @@ class AuthState {
     String? accessToken,
     String? nickName,
     int? userIdx,
+    int? sessionVersion
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
@@ -31,6 +33,7 @@ class AuthState {
       accessToken: accessToken ?? this.accessToken,
       nickName: nickName ?? this.nickName,
       userIdx: userIdx ?? this.userIdx,
+      sessionVersion: sessionVersion ?? this.sessionVersion,
     );
   }
 }
@@ -143,6 +146,7 @@ class AuthController extends Notifier<AuthState> {
       accessToken: tokenData.wazzupToken,
       nickName: tokenData.usersNickname,
       userIdx: tokenData.usersIdx,
+      sessionVersion: state.sessionVersion + 1,
     );
   }
   
