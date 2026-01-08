@@ -18,30 +18,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * WebSocket STOMP 메시지 인터셉터
+ * WebSocket STOMP 메시지 JWT 인증 인터셉터
  * 
- * 【 역할 】
- * - HTTP의 JwtAuthenticationFilter와 동일한 역할을 WebSocket에서 수행
- * - STOMP 메시지가 서버에 도착하기 전에 JWT 토큰 검증
- * - SecurityContext에 인증 정보 저장 → 컨트롤러에서 @AuthenticationPrincipal 사용 가능
+ * HTTP의 JwtAuthenticationFilter와 동일한 역할을 WebSocket에서 수행.
  * 
- * 【 실행 시점 】
- * - 모든 STOMP 메시지 (CONNECT, SEND, SUBSCRIBE 등)가 서버에 도착하기 전
- * - configureClientInboundChannel()에 등록했기 때문에 클라이언트 → 서버 방향만 처리
+ * 【 핵심 차이점 】
+ * - HTTP: SecurityContextHolder만 사용 (같은 스레드)
+ * - WebSocket: 세션 속성 + SecurityContextHolder 사용 (다른 스레드)
  * 
- * 【 HTTP vs WebSocket 인증 비교 】
+ * 【 처리 흐름 】
+ * 1. CONNECT: JWT 검증 → 세션 속성에 userDetails 저장
+ * 2. SEND/SUBSCRIBE: 세션 속성에서 userDetails 복원
+ * 3. Controller: @Header("simpSessionAttributes")로 세션 속성 접근
  * 
- * HTTP:
- *   .addFilterBefore(JwtAuthenticationFilter, ...)
- *   → Servlet Filter Chain
- *   → doFilterInternal() 실행
- *   
- * WebSocket:
- *   configureClientInboundChannel(JwtChannelInterceptor)
- *   → Spring Messaging Channel
- *   → preSend() 실행
- *   
- * 역할은 동일하지만 프로토콜이 다르니 구현 방식도 다름!
+ * 자세한 트러블슈팅: 파일 하단 주석 참고
  */
 @Component
 @RequiredArgsConstructor
@@ -215,67 +205,91 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
 /*
 ====================================================================================================
-🔥 핵심 개념 정리
+🚨 WebSocket의 특성 때문에 생긴 검증 과정 구성
 ====================================================================================================
 
-【 ChannelInterceptor란? 】
-- Spring Messaging의 인터셉터 (HTTP의 Filter와 유사)
-- 메시지가 채널을 통과할 때 전처리/후처리 가능
-- preSend(), postSend(), afterSendCompletion() 등의 메서드 제공
+【 문제 상황 】
 
-【 preSend() 실행 시점 】
-클라이언트가 STOMP 메시지 전송
-  ↓
-WebSocket 연결 (ws://server/ws)
-  ↓
-STOMP 프레임 파싱
-  ↓
-🔥 preSend() 실행 ← 여기서 JWT 검증!
-  ↓
-@MessageMapping("/match/enter") 메서드 실행
-  ↓
-서버 응답 (messagingTemplate.convertAndSend)
+HTTP에서는 JwtAuthenticationFilter가 SecurityContextHolder에만 저장하고,
+컨트롤러에서 @AuthenticationPrincipal로 받으면 정상 작동했지만,
+WebSocket에서는 같은 방식으로 구현했을 때 NullPointerException이 발생했다.
 
-【 SecurityContext 저장 목적 】
-HTTP:
-  @GetMapping("/api/user/me")
-  public ResponseEntity<?> getMe(@AuthenticationPrincipal CustomUserDetails user) {
-      Long userIdx = user.getUserIdx();  // ← SecurityContext에서 가져옴
-  }
+【 원인: WebSocket의 스레드 특성 】
+
+HTTP 요청:
+  ┌─────────────────────────────────────────────────┐
+  │ 같은 스레드 (nio-8080-exec-1)                   │
+  │  ↓ Filter → Controller                         │
+  │  SecurityContextHolder 공유 ✅                  │
+  └─────────────────────────────────────────────────┘
 
 WebSocket:
-  @MessageMapping("/match/enter")
-  public void enterQueue(@AuthenticationPrincipal CustomUserDetails user, ...) {
-      Long userIdx = user.getUserIdx();  // ← SecurityContext에서 가져옴
-  }
+  ┌─────────────────────────────────────────────────┐
+  │ CONNECT (nio-8080-exec-9 스레드)                │
+  │  ↓ Interceptor                                 │
+  │  SecurityContextHolder.setAuthentication()     │
+  └─────────────────────────────────────────────────┘
+                    ↓ (스레드 변경)
+  ┌─────────────────────────────────────────────────┐
+  │ SEND (nboundChannel-7 스레드)                   │
+  │  ↓ Interceptor                                 │
+  │  SecurityContextHolder.getContext() → null ❌   │
+  │  ↓ Controller                                  │
+  │  @AuthenticationPrincipal → null ❌             │
+  └─────────────────────────────────────────────────┘
 
-→ 둘 다 SecurityContext에 인증 정보가 있어야 @AuthenticationPrincipal 사용 가능!
+핵심: SecurityContextHolder는 ThreadLocal이므로 다른 스레드에서 접근 불가!
 
-【 왜 accessor.setUser()와 SecurityContextHolder 둘 다 설정? 】
-accessor.setUser(authentication):
-  - STOMP 세션에 User 정보 저장
-  - @MessageMapping의 Principal 파라미터로 접근 가능
-  
-SecurityContextHolder.getContext().setAuthentication(authentication):
-  - Spring Security의 SecurityContext에 저장
-  - @AuthenticationPrincipal로 접근 가능
-  
-→ 두 가지 방식 모두 지원하기 위해 둘 다 설정!
+【 해결: 세션 속성(Session Attributes) 활용 】
 
-【 HTTP Filter vs WebSocket Interceptor 】
+세션 속성의 특징:
+  - WebSocket 세션 레벨 저장소 (스레드 무관!)
+  - 같은 WebSocket 연결 내 모든 STOMP 메시지에서 접근 가능
+  - 연결이 끊길 때까지 유지됨
+
+구현 흐름:
+
+1. CONNECT 시 (라인 72-131):
+   ├─ JWT 검증
+   ├─ CustomUserDetails 생성
+   └─ sessionAttributes.put("userDetails", userDetails) ⭐ 핵심!
+      → 세션 속성에 저장 (스레드 무관!)
+
+2. SEND/SUBSCRIBE 시 (라인 134-207):
+   ├─ sessionAttributes.get("userDetails") ⭐ 핵심!
+   ├─ 세션 속성에서 복원 (스레드 무관!)
+   └─ SecurityContextHolder에도 설정 (현재 스레드용, 보조)
+
+3. Controller에서 (MatchWebSocketController):
+   ├─ @Header("simpSessionAttributes") Map<String, Object> sessionAttributes
+   └─ sessionAttributes.get("userDetails") ⭐ 핵심!
+      → 세션 속성에서 직접 추출 (스레드 무관!)
+
+【 HTTP vs WebSocket 비교 】
 
 HTTP (JwtAuthenticationFilter):
-  실행 대상: 모든 HTTP 요청 (GET, POST, PUT, DELETE)
-  실행 메서드: doFilterInternal()
-  객체: HttpServletRequest
-  등록: .addFilterBefore()
-  
+  - SecurityContextHolder만 사용
+  - @AuthenticationPrincipal로 받기
+  - 같은 스레드이므로 문제 없음 ✅
+
 WebSocket (JwtChannelInterceptor):
-  실행 대상: 모든 STOMP 메시지 (CONNECT, SEND, SUBSCRIBE)
-  실행 메서드: preSend()
-  객체: Message<?>
-  등록: configureClientInboundChannel()
+  - SecurityContextHolder + 세션 속성 사용
+  - @Header("simpSessionAttributes")로 받기
+  - 다른 스레드이므로 세션 속성 필수! ✅
+
+【 왜 둘 다 저장하나? 】
+
+1. 세션 속성 (핵심, 필수):
+   - 스레드 무관하게 접근 가능
+   - Controller에서 직접 추출
+
+2. SecurityContextHolder (보조, 선택):
+   - 일관성 유지 (HTTP와 동일한 구조)
+   - 다른 Spring Security 기능 활용 가능
+   - 디버깅 용이
+
+→ 세션 속성이 없으면 Controller에서 null!
+→ SecurityContextHolder만 있으면 다른 스레드에서 null!
 
 ====================================================================================================
 */
-
