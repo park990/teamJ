@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class GatheringHotListDto {
+public class GatheringListDto {
     private Long roomIdx;
     private String roomName;
     private String roomType;
