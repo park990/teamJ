@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Bearer 없는 토큰
+    // Bearer 없는 토큰
         String token = resolveToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
