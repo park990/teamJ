@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Table(name = "bbs_reaction")
+@Table(name = "participant")
 public class Participant {
     
     @EmbeddedId

@@ -23,10 +23,12 @@ class PostFooter extends ConsumerWidget {
             count: post.likeCount,
             color: Colors.redAccent,
             isActive: post.isLiked,
-            
-            onTap: () {             
+
+            onTap: () {
               // 여기 컨트롤러 안에 로그인 되어잇지않으면 로그인 해달라는 toast알림 있음
-              ref.read(postListControllerProvider.notifier).toggleLike(post.bbsIdx);
+              ref
+                  .read(postListControllerProvider.notifier)
+                  .toggleLike(post.bbsIdx);
             },
           ),
           const SizedBox(width: 15),
@@ -34,65 +36,72 @@ class PostFooter extends ConsumerWidget {
             icon: LucideIcons.messageCircle,
             count: post.commentCount,
             color: Colors.blueAccent,
-            isActive:  false,
+            isActive: false,
             onTap: () {
-              CommentBottomSheet.show(context,post.bbsIdx);
+              CommentBottomSheet.show(context, post.bbsIdx);
               print("클릭");
             },
           ),
           const Spacer(),
-          Text(post.displayDate, style: const TextStyle(fontSize: 11, color: Color(0xFFADB5BD))),
+          Text(
+            post.displayDate,
+            style: const TextStyle(fontSize: 11, color: Color(0xFFADB5BD)),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBtn({required IconData icon, required int count, required Color color, required VoidCallback onTap, required bool isActive}) {
+  Widget _buildBtn({
+    required IconData icon,
+    required int count,
+    required Color color,
+    required VoidCallback onTap,
+    required bool isActive,
+  }) {
     final bool isZero = count == 0;
     final IconData targetIcon = isActive ? Icons.favorite : icon;
 
     return Stack(
-    clipBehavior: Clip.none,
-    children: [
-      // 실제 보이는 UI (기존과 완전히 동일)
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            targetIcon,
-            size: 20,
-            color: isZero
-                ? const Color(0xFFDEE2E6)
-                : color.withValues(alpha: 0.8),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+      clipBehavior: Clip.none,
+      children: [
+        // 실제 보이는 UI (기존과 완전히 동일)
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              targetIcon,
+              size: 20,
               color: isZero
                   ? const Color(0xFFDEE2E6)
-                  : const Color(0xFF495057),
+                  : color.withValues(alpha: 0.8),
             ),
-          ),
-        ],
-      ),
-
-      // 터치 영역만 확장 (레이아웃 계산에 전혀 관여 안 함)
-      Positioned.fill(
-        left: -14,
-        right: -14,
-        top: -12,
-        bottom: -12,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
+            const SizedBox(width: 5),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isZero
+                    ? const Color(0xFFDEE2E6)
+                    : const Color(0xFF495057),
+              ),
+            ),
+          ],
         ),
-      ),
-    ],
-  );
-}
 
-  
+        // 터치 영역만 확장 (레이아웃 계산에 전혀 관여 안 함)
+        Positioned.fill(
+          left: -14,
+          right: -14,
+          top: -12,
+          bottom: -12,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+          ),
+        ),
+      ],
+    );
+  }
 }

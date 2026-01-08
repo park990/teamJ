@@ -14,9 +14,11 @@ import com.teamj.dto.randomChat_dto.WaitingUser;
 import com.teamj.entity.users_entity.Users;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MatchQueueManager {
 
     private final StringRedisTemplate redisTemplate;
@@ -122,6 +124,12 @@ public class MatchQueueManager {
         // 매칭 실패 → 내 실제 성별 큐에 추가
         String myQueueKey = getQueueKey(myActualGender);
         redisTemplate.opsForList().rightPush(myQueueKey, toJson(me));
+        
+        // Redis 저장 확인 로그
+        Long queueSize = redisTemplate.opsForList().size(myQueueKey);
+        log.info("✅ Redis 큐에 저장 완료 - userIdx: {}, 큐 키: {}, 현재 큐 크기: {}", 
+                 me.getUserIdx(), myQueueKey, queueSize);
+        
         return Optional.empty();
     }
     
