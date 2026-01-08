@@ -33,7 +33,7 @@ class CommentsRepository {
 
     return SliceResponse<Comments>(
       content: comments,
-      hasNext: data['hasNext'],
+      isLast: data['last'],
     );
   } catch (e) {
     throw Exception('getComments error: $e');
