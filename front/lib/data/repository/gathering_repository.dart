@@ -40,7 +40,16 @@ class GatheringRepository {
     final json = jsonDecode(body);
 
     // 데이터 리스트 추출 (data 키값 확인 필요)
-    final List dataList = json['data'];
+    List<dynamic> dataList;
+
+    if(json is List) {
+      // 백엔드 -> list로 줄 경우
+      dataList = json;
+    } else if (json is Map<String, dynamic> && json.containsKey('data')) {
+      dataList = json['data'];
+    } else {
+      dataList = [];
+    }
 
     // 객체 리스트로 변환해서 반환
     return dataList

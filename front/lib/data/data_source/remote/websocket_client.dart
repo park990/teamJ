@@ -68,7 +68,7 @@ class WebSocketClient {
   final WazzupTokenStorage _storage = WazzupTokenStorage();
   final String baseApiUrl = "${dotenv.env["API_URL"]}";
   final String baseWSUrl = "${dotenv.env["WEBSOCKET_URL"]}";
-
+  
   // StompClient: WebSocket 연결을 관리하는 객체
   StompClient? _stompClient;
   bool _isConnected = false;
@@ -133,7 +133,7 @@ class WebSocketClient {
 
     // 2. 스토리지에서 액세스 토큰 가져오기 (api_client와 동일)
     String? accessToken = await _storage.getAccessToken();
-
+    
     if (accessToken == null) {
       debugPrint("[WebSocketClient] 토큰이 없습니다.");
       throw Exception("토큰이 없습니다.");
@@ -268,7 +268,7 @@ class WebSocketClient {
 
     _stompClient!.send(destination: destination, body: jsonEncode(body));
   }
-
+  
   /**
    * subscribe() - 서버 메시지 구독 (받기 등록)
    * 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 import 'package:front/screen/random_chat_screen/models/random_chat_state.dart';
 import 'package:front/screen/random_chat_screen/random_chat_screen.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/theme/app_colors.dart';
 
 class RandomChatMain extends ConsumerWidget {
@@ -11,11 +12,26 @@ class RandomChatMain extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final controller = ref.watch(randomChatControllerProvider);
     final randomChatState = controller.state;
 
+    // ✅ 1. userIdx 가져오기
+    final authState = ref.watch(authControllerProvider);
+    final userIdx = authState.userIdx;
+
     debugPrint('[RandomChatMain] build - status=${randomChatState.status}');
+
+    // ✅ 2. 매칭 성공 시 자동 화면 이동
+    ref.listen(randomChatControllerProvider, (previous, next) {
+      if (next.state.status == RandomChatStatus.matched) {
+        debugPrint('🎉 매칭 성공! 채팅 화면으로 이동 - roomIdx: ${next.state.roomIdx}');
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RandomChatScreen()),
+        );
+      }
+    });
 
     print('randomChatState: ${randomChatState.status}');
     if (randomChatState.status == RandomChatStatus.matching) {
@@ -40,8 +56,7 @@ class RandomChatMain extends ConsumerWidget {
           Text(randomChatState.errorMessage ?? ''),
           ElevatedButton(
             onPressed: () {
-              ref.read(randomChatControllerProvider)
-                .reset(); // idle로
+              ref.read(randomChatControllerProvider).reset(); // idle로
             },
             child: Text('다시 시도'),
           ),
@@ -50,7 +65,7 @@ class RandomChatMain extends ConsumerWidget {
     } else {
       debugPrint('[RandomChatMain] UI = IDLE');
       return Scaffold(
-      backgroundColor: wazzupBackGround, // 배경
+        backgroundColor: wazzupBackGround, // 배경
 
         body: Center(
           child: Column(
@@ -95,9 +110,21 @@ class RandomChatMain extends ConsumerWidget {
                             onPressed: () {
                               Navigator.pop(context); // 다이얼로그 닫기
 
+                              // ✅ 3. userIdx 전달
+                              if (userIdx == null) {
+                                debugPrint('❌ userIdx가 null입니다. 로그인이 필요합니다.');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('로그인이 필요합니다.')),
+                                );
+                                return;
+                              }
+
                               ref
                                   .read(randomChatControllerProvider)
-                                  .startMatching(genderOption: 'random');
+                                  .startMatching(
+                                    userIdx: userIdx,
+                                    genderOption: 'random',
+                                  );
                             },
                             child: Text('랜덤채팅'),
                           ),
