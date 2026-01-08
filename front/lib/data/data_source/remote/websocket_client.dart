@@ -21,6 +21,8 @@ final webSocketClientProvider = Provider<WebSocketClient>((ref) {
  * 
  * 【 SockJS와 http:// 프로토콜 】
  * useSockJS: true이면 반드시 http:// 사용 (ws:// 불가)
+ * -> 물론 백엔드에서도 WebSocketConfig에 설정해 프로토콜을 사용해야 함
+ * = 프론트, 백엔드 다 SockJS 프로토콜로 연결하겠다는 것을 명시
  * - SockJS가 초기 HTTP 요청(/ws/info)을 보낸 후 WebSocket으로 업그레이드
  * - ws://는 HTTP 요청을 보낼 수 없어서 오류 발생
  * 
