@@ -91,16 +91,9 @@ class ApiClient {
 
         // 서버 응답 구조가 기존 AuthResponse와 같다면
         final data = jsonResponse['data'];
+
+        await ref.read(authControllerProvider.notifier).saveTokenAndUpdateState(data);
         
-
-        String newAt = data['wazzupToken'] ?? '';
-        String newRt = data['refreshToken'] ?? '';
-
-        await _storage.saveTokensOnly(
-          accessToken: newAt,
-          refreshToken: newRt
-        );
-       
         return true;
       } else {
         print("[ApiClient] 토큰 재발급 실패: ${response.statusCode}");
