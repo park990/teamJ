@@ -3,18 +3,21 @@ package com.teamj.controller.bbs_control;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.bbs_dto.PostDTO;
+import com.teamj.dto.bbs_dto.LikeToggleDTO;
 import com.teamj.dto.response.ApiResponse;
 import com.teamj.service.bbs_service.BbsService;
 
@@ -31,12 +34,17 @@ public class Bbs_controller {
 
     // 게시글  전부 불러오기(삭제된거 제외)
     @GetMapping("/getList")
-    public ResponseEntity<ApiResponse<List<PostDTO>>> getList(@AuthenticationPrincipal CustomUserDetails userDetails){//@pathVariable Long typeIdx){
+    public ResponseEntity<ApiResponse<Slice<PostDTO>>> getList(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestParam(defaultValue = "0") int page,   // 클라이언트가 보낸 페이지 번호
+        @RequestParam(defaultValue = "10") int size
+    ){//@pathVariable Long typeIdx){
         Long userIdx = (userDetails != null) ? userDetails.getUserIdx() : null;
 
-        List<PostDTO> list = bbsService.findActivePost(userIdx);
+        Slice<PostDTO> sliceList = bbsService.findActivePost(userIdx,page,size);
         
-        return ResponseEntity.ok(ApiResponse.success(list,"조회 성공"));
+        // Slice는 content라는 포장지 안에 쌓여져 있따 data->content 그리고 data->hasNext라든지 존재하고 있음.
+        return ResponseEntity.ok(ApiResponse.success(sliceList, "조회 성공"));
     }
 
 
@@ -58,7 +66,7 @@ public class Bbs_controller {
 
     // 좋아요 토글 기능
     @PostMapping("/likeToggle")
-    public ResponseEntity<ApiResponse<Boolean>> likeToggle(
+    public ResponseEntity<ApiResponse<LikeToggleDTO>> likeToggle(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody Map<String,Long> requestBody
     ){
@@ -69,11 +77,11 @@ public class Bbs_controller {
         Long bbsIdx= requestBody.get("bbsIdx");
         
 
-        boolean isLiked = bbsService.toggleLike(bbsIdx, userDetails.getUserIdx());
+        LikeToggleDTO dto  = bbsService.toggleLike(bbsIdx, userDetails.getUserIdx());
         
-        String message = isLiked ? "좋아요 등록 성공" : "좋아요 취소 성공";
+        String message = dto.isLiked() ? "좋아요 등록 성공" : "좋아요 취소 성공";
 
-        return ResponseEntity.ok(ApiResponse.success(isLiked, message));
+        return ResponseEntity.ok(ApiResponse.success(dto, message));
     }
 
 }
