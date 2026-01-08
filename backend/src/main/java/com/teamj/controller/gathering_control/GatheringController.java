@@ -25,7 +25,6 @@ public class GatheringController {
     @GetMapping("/hotList")
     public ResponseEntity<?> getHotList() {
         List<GatheringListDto> list = gatheringService.getHotGatheringHotList();
-        //return gatheringService.getHotGatheringList();
         return ResponseEntity.ok(ApiResponse.success(list, "핫한 모임 목록 조회 성공"));
     }
     // 새로운 모임 목록
