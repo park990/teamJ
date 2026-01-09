@@ -23,7 +23,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // 1. 모바일 앱은 보통 csrf를 끔
-            .csrf(csrf -> csrf.disable()) 
+            .csrf(csrf -> csrf.disable())
+            
+            // CORS 설정 (다른 컴퓨터에서 접근 허용)
+            // 당장은 앱에서만 접근하는거라 cors 설정 삭제해도 상관 X 걍 이미 쓴거 지우기 아까워서 냅둠ㅁㄴㅇ
+            .cors(cors -> cors.configurationSource(request -> {
+                var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                corsConfig.setAllowedOriginPatterns(java.util.List.of("*"));  // 모든 도메인 허용 (개발용)
+                corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                corsConfig.setAllowedHeaders(java.util.List.of("*"));
+                corsConfig.setAllowCredentials(true);
+                return corsConfig;
+            }))
+            
             // 로그인 안되어있으면 html 던지고 user/me로 이동하는거 막음
             .formLogin(AbstractHttpConfigurer::disable)
             // http basic 인증 비활성화 ( 토큰 방식이랑 규격 안맞음)
