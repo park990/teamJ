@@ -137,4 +137,21 @@ public class MatchService {
         log.info("매칭 완료 roomIdx={}, users=[{}, {}]", room.getRoomIdx(), userIdx1, userIdx2);
         return room.getRoomIdx();
     }
+
+    /**
+     * 매칭 취소 (비즈니스 로직)
+     * 
+     * @param userIdx 취소 요청 사용자 ID
+     */
+    public void cancelQueue(Long userIdx) {
+        // 1. 유저 정보 조회 (성별 필요)
+        Users user = userRepository.findById(userIdx)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userIdx));
+        
+        // 2. MatchQueueManager에서 제거
+        queueManager.cancel(userIdx, user.getUsersGender());
+        
+        log.info("✅ 매칭 취소 완료 - userIdx: {}, actualGender: {}", 
+                userIdx, user.getUsersGender());
+    }
 }

@@ -105,7 +105,21 @@ class RandomChatController extends ChangeNotifier {
   /// ==========================
   void cancelMatching() {
     debugPrint('▶ cancelMatching() CALLED');
-    matchRepository.cancelMatching();
+    try {
+      matchRepository.cancelMatching();
+      // 취소 요청 성공 시 상태를 idle로 변경
+      _setState(state.copyWith(status: RandomChatStatus.idle));
+    } catch (e, s) {
+      debugPrint('❌ cancelMatching ERROR: $e');
+      debugPrintStack(stackTrace: s);
+      // 에러 발생 시에도 idle로 변경
+      _setState(
+        state.copyWith(
+          status: RandomChatStatus.idle,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   /// ==========================
