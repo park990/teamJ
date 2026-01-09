@@ -19,4 +19,8 @@ public class MatchData {
     public static MatchData matched(Long roomIdx, Long partnerIdx) {
         return new MatchData("MATCHED", roomIdx, partnerIdx);
     }
+
+    public static MatchData cancelled() {
+        return new MatchData("CANCELLED", null, null);
+    }
 }
