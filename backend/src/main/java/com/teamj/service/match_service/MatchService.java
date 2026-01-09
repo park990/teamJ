@@ -75,7 +75,8 @@ public class MatchService {
 
         // 5-1. 대기 중 (매칭 상대 없음)
         if (matchedIdx.isEmpty()) {
-            log.info("⏳ 매칭 대기 중 - userIdx: {}, desiredGender: {}", userIdx, genderOption);
+            log.info("⏳ 매칭 대기 중 - userIdx: {}, actualGender: {}, desiredGender: {}", 
+                     userIdx, user.getUsersGender(), genderOption);
             
             // 요청자용 MatchData만 생성 (대기 중)
             MatchData requesterData = MatchData.waiting();

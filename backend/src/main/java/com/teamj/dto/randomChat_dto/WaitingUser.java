@@ -3,8 +3,10 @@ package com.teamj.dto.randomChat_dto;
 import com.teamj.entity.users_entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class WaitingUser {
     private Long userIdx;
