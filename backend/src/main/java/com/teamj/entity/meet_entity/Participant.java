@@ -21,10 +21,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Table(name = "bbs_reaction")
+@Table(name = "participant")
 public class Participant {
     
     @EmbeddedId
+    @Builder.Default
     private ParticipantId id = new ParticipantId();
 
     @MapsId("roomIdx")
@@ -32,9 +33,9 @@ public class Participant {
     @JoinColumn(name="room_idx")
     private MeetRoom room;
 
-    @MapsId("userIdx")
+    @MapsId("usersIdx")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_idx")
+    @JoinColumn(name = "users_idx")
     private Users user;
 
     @Column

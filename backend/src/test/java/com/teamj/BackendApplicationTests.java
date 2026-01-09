@@ -1,5 +1,5 @@
 //asd
-package teamj.backend;
+package com.teamj;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
