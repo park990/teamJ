@@ -70,6 +70,7 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
     WazzupToast.showError("로그인 해주세요");
     return;
    }
+
   final prev = state.value!;
   
   // 1. UI 즉시 반영
