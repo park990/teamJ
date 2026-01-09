@@ -21,14 +21,21 @@ class RandomMatchRepository {
   }
 
   // 2. 매칭 시작 (응답은 Stream으로)
-  void startMatching({
+  Future<void> startMatching({
     required int userIdx,
     required String genderOption,
     required Function(RandomMatchDto) onMatchUpdate,
-  }) {
+  }) async {
     debugPrint(
       '🎯 [RandomMatchRepo] 매칭 시작 - userIdx: $userIdx, genderOption: $genderOption',
     );
+
+    // 연결 상태 확인 (즉시 에러 감지!)
+    if (!wsClient.isConnected) {
+      final error = Exception("WebSocket이 연결되지 않았습니다. 먼저 connect()를 호출해주세요.");
+      debugPrint('❌ [RandomMatchRepo] 연결 상태 확인 실패: $error');
+      throw error;
+    }
 
     try {
       // 구독 (응답 받기)

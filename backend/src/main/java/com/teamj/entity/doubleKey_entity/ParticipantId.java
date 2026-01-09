@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class ParticipantId implements Serializable {
     private Long roomIdx;
-    private Long userIdx;
+    private Long usersIdx;
 }

@@ -5,11 +5,11 @@ import '../models/random_chat_state.dart';
 class RandomChatController extends ChangeNotifier {
   final RandomMatchRepository matchRepository;
 
-  RandomChatController({
-    required this.matchRepository,
-  }) {
-    debugPrint('🔥 RandomChatController CREATED '
-        'hash=$hashCode'); // 메모리 주소 출력
+  RandomChatController({required this.matchRepository}) {
+    debugPrint(
+      '🔥 RandomChatController CREATED '
+      'hash=$hashCode',
+    ); // 메모리 주소 출력
   }
 
   RandomChatState _state = RandomChatState.idle();
@@ -50,26 +50,21 @@ class RandomChatController extends ChangeNotifier {
   /// ==========================
   /// 매칭 시작
   /// ==========================
-  void startMatching({required int userIdx, required String genderOption}) {
+  Future<void> startMatching({
+    required int userIdx,
+    required String genderOption,
+  }) async {
     debugPrint(
       '▶ startMatching() CALLED '
       'userIdx=$userIdx, '
       'genderOption=$genderOption',
     );
 
-    _setState(
-      state.copyWith(status: RandomChatStatus.matching),
-    );
-
-    debugPrint(
-      '⏳ AFTER set matching '
-      'currentState=${state.status}',
-    );
-
     try {
       debugPrint('🌐 startMatching() REQUEST START');
 
-      matchRepository.startMatching(
+      // 요청 보내기 (성공하면 상태 변경)
+      await matchRepository.startMatching(
         userIdx: userIdx,
         genderOption: genderOption,
         onMatchUpdate: (matchData) {
@@ -77,15 +72,25 @@ class RandomChatController extends ChangeNotifier {
           if (matchData.isWaiting) {
             _setState(state.copyWith(status: RandomChatStatus.matching));
           } else if (matchData.isMatched) {
-            _setState(state.copyWith(status: RandomChatStatus.matched, roomIdx: matchData.roomIdx.toString()));
+            _setState(
+              state.copyWith(
+                status: RandomChatStatus.matched,
+                roomIdx: matchData.roomIdx.toString(),
+              ),
+            );
           }
         },
       );
+
+      // 요청 전송 성공 후 상태 변경 (에러 없으면 여기까지 옴)
+      debugPrint('✅ startMatching() REQUEST SUCCESS');
+      _setState(state.copyWith(status: RandomChatStatus.matching));
     } catch (e, s) {
       debugPrint('❌ startMatching ERROR');
       debugPrint('❌ error=$e');
       debugPrintStack(stackTrace: s);
 
+      // 에러 발생 시 error 상태로 변경
       _setState(
         state.copyWith(
           status: RandomChatStatus.error,
