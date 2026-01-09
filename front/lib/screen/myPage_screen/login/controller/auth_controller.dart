@@ -173,6 +173,20 @@ class AuthController extends Notifier<AuthState> {
       sessionVersion: state.sessionVersion + 1,
     );
   }
+
+  // 토큰만 갱신
+  Future<void> updateTokensOnly( String newAt,String newRt) async {
+    // 1. 스토리지에 새 토큰 저장
+    await _storage.saveTokensOnly(accessToken: newAt,refreshToken: newRt);
+
+    // 2. 상태(state) 업데이트: 기존 정보(nickname, idx)는 유지하고 토큰만 교체
+    state = state.copyWith(
+      accessToken: newAt,
+      // sessionVersion을 올려서 리스트 등을 새로고침하게 할 수 있음
+      sessionVersion: state.sessionVersion + 1,
+    );
+    print("🔑 토큰만 갱신 완료 (사용자 정보 유지)");
+  }
   
   // 회원가입 완료 후 호출할 함수 회원가입해도 토큰받아와서 저장해줘야함.
   Future<void> completeSignUp(AuthResponse tokenData) async {
