@@ -19,9 +19,9 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
 
   @override
   FutureOr<List<Post>> build() async {
-  ref.watch(authControllerProvider.select((a) => a.sessionVersion));
+    final version = ref.watch(authControllerProvider.select((a) => a.sessionVersion));
+    print('🚩 PostListController build() 실행됨! (세션버전: $version)');
 
-    print('🚩 PostListController build() 실행됨!');
     _currentPage = 0;
     _isLast = false;
     _isFetching = false;
@@ -65,54 +65,33 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
 
   // 좋아요 토글 기능
   Future<void> toggleLike(int postIdx) async {
-  final auth = ref.read(authControllerProvider);
-  if (!auth.isLoggedIn) {
-    WazzupToast.showError("로그인이 필요합니다.");
+   bool isLoggedIn = ref.read(authControllerProvider).isLoggedIn;
+   if(!isLoggedIn){
+    WazzupToast.showError("로그인 해주세요");
     return;
-  }
-
-
-  final currentState = state.value;
-  if (currentState == null) return;
-
-  final targetIndex = currentState.indexWhere((post) => post.bbsIdx == postIdx);
-  if (targetIndex == -1) return;
-
-  final targetPost = currentState[targetIndex];
-
-  // 1. Optimistic update
-  final optimisticPost = targetPost.copyWith(
-    isLiked: !targetPost.isLiked,
-    likeCount: targetPost.isLiked
-        ? targetPost.likeCount - 1
-        : targetPost.likeCount + 1,
+   }
+  final prev = state.value!;
+  
+  // 1. UI 즉시 반영
+  state = AsyncData(
+    prev.map((p) {
+      if (p.bbsIdx == postIdx) {
+        return p.copyWith(
+          isLiked: !p.isLiked,
+          likeCount: p.isLiked ? p.likeCount - 1 : p.likeCount + 1,
+        );
+      }
+      return p;
+    }).toList(),
   );
 
-  final optimisticList = List<Post>.from(currentState);
-  optimisticList[targetIndex] = optimisticPost;
-  state = AsyncData(optimisticList);
+  // 2. 서버 반영
+  final result = await _repository.toggleLike(postIdx);
 
-  // 2. 서버 요청
-  final serverResult = await _repository.toggleLike(postIdx);
-
-  if (serverResult == null) {
-    // 롤백
-    state = AsyncData(currentState);
-    WazzupToast.showError("세션이 만료되었거나 오류가 발생했습니다.");
-    return;
+  // 3. 실패 시 롤백
+  if (result == null) {
+    state = AsyncData(prev);
+    WazzupToast.showError("좋아요 처리 실패");
   }
-
-  // 3. 서버 기준으로 무조건 동기화
-  state = AsyncData([
-    for (final post in state.value!)
-      if (post.bbsIdx == postIdx)
-        post.copyWith(
-          //서버에서 보내줘야함 이제 
-          isLiked: serverResult.isLiked,
-          likeCount: serverResult.likeCount,
-        )
-      else
-        post,
-  ]);
 }
 }

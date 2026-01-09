@@ -1,11 +1,10 @@
 // screen/bom_screen/widgets/post_footer.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/bom_screen/widget/comment_bottom_sheet.dart';
-import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class PostFooter extends ConsumerWidget {
@@ -88,8 +87,9 @@ class PostFooter extends ConsumerWidget {
               ),
             ),
           ],
-        ),
-
+          ),
+        ],
+      ),
         // 터치 영역만 확장 (레이아웃 계산에 전혀 관여 안 함)
         Positioned.fill(
           left: -14,

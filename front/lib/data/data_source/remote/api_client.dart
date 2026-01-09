@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
+import 'package:front/dto/auth_response.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
@@ -89,18 +90,15 @@ class ApiClient {
           utf8.decode(response.bodyBytes),
         );
 
-        // 서버 응답 구조가 기존 AuthResponse와 같다면
-        final data = jsonResponse['data'];
-        
+        final data = jsonResponse['data']; // 여기서 바로 Map으로 접근
 
+        // AuthResponse 객체를 만들지 않고 토큰 값만 추출
         String newAt = data['wazzupToken'] ?? '';
         String newRt = data['refreshToken'] ?? '';
 
-        await _storage.saveTokensOnly(
-          accessToken: newAt,
-          refreshToken: newRt
-        );
-       
+        // 토큰 전용 업데이트 메서드 호출
+        await ref.read(authControllerProvider.notifier).updateTokensOnly(newAt, newRt);
+        
         return true;
       } else {
         print("[ApiClient] 토큰 재발급 실패: ${response.statusCode}");
