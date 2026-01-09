@@ -69,8 +69,8 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     // 핫한 모임 목록 조회(이미지)
     @Transactional(readOnly = true)
     public List<GatheringListDto> getHotGatheringHotList() {
-        // DB에서 핫한 모임 조건으로 조회(내림차순)
-        List<MeetRoom> entities = meetRoomRepository.findTop5ByOrderByCreatedAtDesc();
+        // DB에서 핫한 모임 조회(RANDOM_1ON1 모임 제외)
+        List<MeetRoom> entities = meetRoomRepository.findTop5ByRoomTypeNotOrderByCreatedAtDesc("RANDOM_1ON1");
 
         // 모든 roomIdx 추출
         List<Long> roomIdxList = entities.stream()
