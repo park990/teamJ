@@ -140,5 +140,18 @@ public class MatchWebSocketController {
         // TODO: 매칭 취소 로직 구현
         // - MatchQueueManager에서 사용자 제거
         // - 취소 응답 전송
+        try {
+            // Service 호출
+            matchService.cancelQueue(userIdx);
+            
+            // 취소 응답 전송 (CANCELLED 상태)
+            MatchData cancelData = MatchData.cancelled();
+            messagingTemplate.convertAndSend("/queue/match/" + userIdx, cancelData);
+            
+            log.info("✅ 매칭 취소 응답 전송 완료 - userIdx: {}", userIdx);
+        } catch (Exception e) {
+            log.error("❌ 매칭 취소 실패 - userIdx: {}, error: {}", userIdx, e.getMessage());
+            // 에러 응답 전송도 고려 (선택)
+        }
     }
 }
