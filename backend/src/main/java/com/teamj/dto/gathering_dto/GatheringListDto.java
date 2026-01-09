@@ -4,10 +4,9 @@ import java.time.LocalDateTime;
 
 import lombok.Builder;
 import lombok.Data;
-
 @Data
 @Builder
-public class GatheringHotListDto {
+public class GatheringListDto {
     private Long roomIdx;
     private String roomName;
     private String roomType;
@@ -17,4 +16,6 @@ public class GatheringHotListDto {
     private int max;
     private String roomImg;
     private String roomDesc;
+    private int participantCount;
+    private Boolean isFull;
 }
