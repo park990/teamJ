@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
-import 'package:front/dto/gathering_newList_dto.dart';
+import 'package:front/dto/gatherings/gathering_newList_dto.dart';
 import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
-import 'package:front/dto/gathering_hotList_dto.dart';
+import 'package:front/dto/gatherings/gathering_hotList_dto.dart';
 
 class GatheringRepository {
   final ApiClient apiClient;

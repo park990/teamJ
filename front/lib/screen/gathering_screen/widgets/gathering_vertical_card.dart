@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:front/dto/gathering_newList_dto.dart';
+import 'package:front/dto/gatherings/gathering_newList_dto.dart';
 
 class GatheringVerticalCard extends StatelessWidget {
   // 새로운 모임 정보 불러오는 변수
