@@ -20,4 +20,5 @@ class RandomMatchDto {
 
   bool get isWaiting => status == 'WAITING';
   bool get isMatched => status == 'MATCHED';
+  bool get isCancelled => status == 'CANCELLED';
 }

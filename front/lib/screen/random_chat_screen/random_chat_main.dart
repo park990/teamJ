@@ -40,10 +40,17 @@ class RandomChatMain extends ConsumerWidget {
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               CircularProgressIndicator(),
               SizedBox(height: 16),
               Text('매칭 중입니다...'),
+              SizedBox(height: 24),
+              OutlinedButton(
+                onPressed: () {
+                  ref.read(randomChatControllerProvider).cancelMatching();
+                },
+                child: Text('매칭 취소'),
+              ),
             ],
           ),
         ),
@@ -122,7 +129,6 @@ class RandomChatMain extends ConsumerWidget {
                               ref
                                   .read(randomChatControllerProvider)
                                   .startMatching(
-                                    userIdx: userIdx,
                                     genderOption: 'random',
                                   );
                             },
