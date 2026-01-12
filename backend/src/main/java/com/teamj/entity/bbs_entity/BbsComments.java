@@ -17,15 +17,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "comments")
 @Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class BbsComments {
 
     @Id
@@ -58,4 +60,18 @@ public class BbsComments {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+
+
+
+    public static BbsComments createComment(String content, Bbs bbs, Users users, BbsComments parent) {
+        return BbsComments.builder()
+                .content(content)
+                .bbs(bbs)
+                .users(users)
+                .parent(parent)
+                .isDeleted(0) // 기본값 강제
+                .createdAt(LocalDateTime.now()) // 생성 시간 강제
+                .build();
+    }
 }

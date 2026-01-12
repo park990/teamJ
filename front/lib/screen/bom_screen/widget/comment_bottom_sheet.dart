@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/screen/bom_screen/provider/comment_provider.dart';
 import 'package:front/screen/bom_screen/widget/comment_card.dart';
 import 'package:front/screen/bom_screen/widget/comment_input_bar.dart';
 import 'package:front/theme/app_colors.dart';
 
 class CommentBottomSheet extends ConsumerStatefulWidget {
-  final int bbsIdx;
-  const CommentBottomSheet({super.key, required this.bbsIdx});
+  final int postIdx;
+  const CommentBottomSheet({super.key, required this.postIdx});
 
-  static void show(BuildContext context, int bbsIdx) {
+  static void show(BuildContext context, int postIdx) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CommentBottomSheet(bbsIdx: bbsIdx),
+      builder: (context) => CommentBottomSheet(postIdx: postIdx),
     );
   }
 
@@ -45,8 +46,9 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final commentsAsync = ref.watch(commentListProvider(widget.postIdx));
 
-    if (keyboardHeight > 0) {
+    if (keyboardHeight > 0 && _sheetController.isAttached) {
       _sheetController.animateTo(
         0.95,
         duration: const Duration(milliseconds: 200),
@@ -72,18 +74,29 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
               _buildHandle(),
               _buildHeader(context),
               Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.only(bottom: 10),
-                  itemCount: 20,
-                  itemBuilder: (context, index) => CommentCard(
-                    index: index,
-                    isExpanded: _expandedComments.contains(index),
-                    onReplyTap: () => _toggleReplies(index),
-                  ),
+                child: commentsAsync.when(
+                  data: (comments){
+                    if(comments.isEmpty) return const Center(child: Text('첫 댓글을 남겨주세요!'));
+
+                  // 댓글들 ...
+                  return ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    
+                    itemCount: comments.length,
+                    itemBuilder: (context, index){
+                      final comment= comments[index];
+                      return CommentCard(comment: comment, isExpanded: _expandedComments.contains(index), onReplyTap: ()=>_toggleReplies(index));
+                    },
+                  );
+                  },
+                  // 데이터 로딩 중일 때
+                loading: () => const Center(child: CircularProgressIndicator()),
+                // 서버 에러 났을 때
+                error: (err, stack) => Center(child: Text("에러 발생: $err")),
                 ),
               ),
-              const CommentInputBar(),
+              CommentInputBar(postIdx: widget.postIdx),
               SizedBox(height: keyboardHeight),
             ],
           ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:front/screen/bom_screen/model/comments_model.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class CommentReply extends StatelessWidget {
-  final int index;
-  const CommentReply({super.key, required this.index});
+  final Comments comment;
+  const CommentReply({super.key, required this.comment});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,7 @@ class CommentReply extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Text(
-                    "답글러 $index",
+                    "유저 닉네임으로 변경해야함: ${comment.usersIdx}",
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,

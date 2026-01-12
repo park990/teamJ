@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/alert/dialog.dart';
+import 'package:front/screen/bom_screen/provider/comment_provider.dart';
 
-class CommentInputBar extends StatefulWidget {
-  const CommentInputBar({super.key});
+class CommentInputBar extends ConsumerStatefulWidget {
+  final int postIdx;
+  const CommentInputBar({super.key, required this.postIdx});
 
   @override
-  State<CommentInputBar> createState() => _CommentInputBarState();
+  ConsumerState<CommentInputBar> createState() => _CommentInputBarState();
 }
 
-class _CommentInputBarState extends State<CommentInputBar> {
+class _CommentInputBarState extends ConsumerState<CommentInputBar> {
   final TextEditingController _textController = TextEditingController();
   bool _isComposing = false;
 
@@ -50,12 +54,28 @@ class _CommentInputBarState extends State<CommentInputBar> {
             ),
           ),
           TextButton(
-            onPressed: _isComposing ? () => print(_textController.text) : null,
+            onPressed: _isComposing ? _handleSubmitted : null,
             child: const Text("등록",
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
-      ),
+      ),     
     );
+  }
+
+  Future<void> _handleSubmitted() async {
+    final text = _textController.text.trim();
+    
+   
+    final success = await ref.read(commentListProvider(widget.postIdx).notifier).createComment(
+      content: text,
+    );
+
+    if (success && mounted) {
+      WazzupToast.showSuccess("댓글 등록 성공");
+      _textController.clear(); // 전송 성공 시 입력창 초기화
+      FocusScope.of(context).unfocus(); // 키보드 닫기 (선택 사항)
+      
+    }
   }
 }

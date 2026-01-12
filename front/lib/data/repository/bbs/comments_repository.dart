@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/dto/api_response.dart';
 import 'package:front/dto/bbs/Slice_response.dart';
-import 'package:front/dto/bbs/comment_dto.dart';
 import 'package:front/screen/bom_screen/model/comments_model.dart';
 
 class CommentsRepository {
@@ -22,26 +21,30 @@ class CommentsRepository {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('댓글 불러오기 실패');
+      throw Exception('댓글 불러오기 실패 (상태코드: ${response.statusCode})');
     }
 
-    final json = jsonDecode(utf8.decode(response.bodyBytes));
-    final data = json['data'];
+    final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+    final data = jsonResponse['data'];
+    print('${data}댓글들이 도착하였다');
 
-    final List<Comments> comments =
-        (data['content'] as List)
-            .map((e) => Comments.fromJson(e))
-            .toList();
+    if(data==null){
+      return SliceResponse<Comments>(content: [], isLast: true);
+    }
+
+    final List<Comments> comments = (data['content'] as List? ?? [])
+        .map((e) => Comments.fromJson(e))
+        .toList();
 
     return SliceResponse<Comments>(
       content: comments,
-      isLast: data['last'],
+      isLast: data['hasNext'],
     );
   } catch (e) {
     throw Exception('getComments error: $e');
   }
 }
-  Future<bool> comments(CommentDto dto) async{
+  Future<bool> saveComments(Comments dto) async{
     try{
       final response = await apiClient.post(
         '/api/comments/submit',

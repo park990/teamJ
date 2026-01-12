@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:front/screen/bom_screen/widget/comment_reply.dart';
+import 'package:front/screen/bom_screen/model/comments_model.dart';
 import 'package:front/screen/bom_screen/widget/post_header.dart';
 import 'package:front/screen/bom_screen/widget/comment_footer.dart';
 import 'package:front/theme/app_colors.dart';
 
 class CommentCard extends StatelessWidget {
-  final int index;
+  final Comments comment;
   final bool isExpanded;
   final VoidCallback onReplyTap;
 
   const CommentCard({
     super.key,
-    required this.index,
+    required this.comment,
     required this.isExpanded,
     required this.onReplyTap,
   });
@@ -25,7 +25,7 @@ class CommentCard extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              PostHeader(customName: "유저 $index", showMore: true),
+              PostHeader(customName: "닉네임으로해야댐 ${comment.usersIdx} ", showMore: true),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -38,9 +38,10 @@ class CommentCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("답글을 누르면 아래로 툭 열립니다!", style: postContentStyle),
+                      
+                      Text("${comment.content}", style: postContentStyle),
                       CommentFooter(
-                        likeCount: index,
+                        likeCount: 0,
                         isLiked: false,
                         displayDate: "3분 전",
                         onLikeTap: () => print("좋아요"),
@@ -52,18 +53,18 @@ class CommentCard extends StatelessWidget {
               ),
             ],
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn,
-            child: isExpanded
-                ? Padding(
-                    padding: const EdgeInsets.only(left: 20, top: 12),
-                    child: Column(
-                      children: List.generate(2, (i) => CommentReply(index: i)),
-                    ),
-                  )
-                : const SizedBox(width: double.infinity, height: 0),
-          ),
+          // AnimatedSize(
+          //   duration: const Duration(milliseconds: 300),
+          //   curve: Curves.fastOutSlowIn,
+          //   child: isExpanded
+          //       ? Padding(
+          //           padding: const EdgeInsets.only(left: 20, top: 12),
+          //           child: Column(
+          //             children: List.generate(2, (i) => CommentReply(index: i)),
+          //           ),
+          //         )
+          //       : const SizedBox(width: double.infinity, height: 0),
+          // ),
         ],
       ),
     );
