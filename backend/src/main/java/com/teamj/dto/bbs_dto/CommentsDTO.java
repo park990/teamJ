@@ -5,15 +5,20 @@ import java.time.LocalDateTime;
 import com.teamj.entity.bbs_entity.BbsComments;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class CommentsDTO {
-    private final Long commentIdx;
-    private final Long parentIdx;
-    private final Long bbsIdx;
-    private final Long usersIdx;
-    private final String content;
-    private final LocalDateTime createdAt;
+    private Long commentIdx;
+    private Long parentIdx;
+    private Long bbsIdx;
+    private Long usersIdx;
+    private String nickName;
+    private String content;
+    private LocalDateTime createdAt;
 
     public CommentsDTO(BbsComments entity){
         this.commentIdx = entity.getCommentIdx();
@@ -23,6 +28,7 @@ public class CommentsDTO {
         this.bbsIdx = entity.getBbs().getBbsIdx();
         this.content = entity.getContent();
         this.usersIdx = entity.getUsers().getUsersIdx();
+        this.nickName = entity.getUsers().getUsersNickname();
         this.createdAt = entity.getCreatedAt();
     }
 }

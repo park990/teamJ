@@ -15,7 +15,7 @@ class SliceResponse<T> {
   ) {
     return SliceResponse<T>(
       content: (json['content'] as List).map(fromJsonT).toList(),
-      isLast: json['last'] ?? true,
+      isLast: json['hasNext'] ?? true,
     );
   }
 }
