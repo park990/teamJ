@@ -11,7 +11,7 @@ final commentsRepositoryProvider = Provider<CommentsRepository>((ref) {
 });
 
 // 3. Controller 프로바이더
-final commentListProvider = AsyncNotifierProvider.family<CommentController, List<Comments>, int>(
+final commentListProvider = AsyncNotifierProvider.family.autoDispose<CommentController, List<Comments>, int>(
   () => CommentController(),
 );
 

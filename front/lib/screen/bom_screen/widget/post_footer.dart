@@ -38,7 +38,7 @@ class PostFooter extends ConsumerWidget {
             isActive: false,
             onTap: () {
               CommentBottomSheet.show(context, post.bbsIdx);
-              print("클릭");
+              print("${post.bbsIdx}게시글 클릭!");
             },
           ),
           const Spacer(),

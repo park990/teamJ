@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/screen/bom_screen/model/comments_model.dart';
 import 'package:front/screen/bom_screen/provider/comment_provider.dart';
 
-class CommentController extends FamilyAsyncNotifier<List<Comments>, int> {
+class CommentController extends AutoDisposeFamilyAsyncNotifier<List<Comments>, int> {
   
   @override
   FutureOr<List<Comments>> build(int arg) async {
