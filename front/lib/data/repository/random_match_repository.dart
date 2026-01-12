@@ -5,66 +5,68 @@ import 'package:front/dto/random_match_dto.dart';
 
 class RandomMatchRepository {
   final WebSocketClient wsClient;
+  bool _isSubscribed = false;  // 구독 중복 방지 플래그
 
   RandomMatchRepository(this.wsClient);
 
-  // 1. 연결
-  Future<void> connect() async {
-    debugPrint('🔌 [RandomMatchRepo] WebSocket 연결 시작...');
+    // 1. 연결 + 구독 (한 번만!)
+  Future<void> connectAndSubscribe({
+    required int userIdx,
+    required Function(RandomMatchDto) onMatchUpdate,
+  }) async {
+    debugPrint('🔌 [RandomMatchRepo] WebSocket 연결 시작 + 구독...');
     try {
-      await wsClient.connect();
-      debugPrint('✅ [RandomMatchRepo] WebSocket 연결 완료!');
+      debugPrint('🔌 [RandomMatchRepo] WebSocket 연결 상태 확인: ${wsClient.isConnected}');
+      if (!wsClient.isConnected) {
+        await wsClient.connect();
+        debugPrint('✅ [RandomMatchRepo] WebSocket 연결 완료!');
+      }
+      // 구독은 한 번만 등록!
+      if (!_isSubscribed) {
+        _subscribeToMatchUpdates(userIdx, onMatchUpdate);
+        _isSubscribed = true;
+        debugPrint('✅ [RandomMatchRepo] 구독 등록 완료!');
+      }
     } catch (e) {
       debugPrint('❌ [RandomMatchRepo] WebSocket 연결 실패: $e');
       rethrow;
-    }
+    } 
+  }
+
+  // 구독 로직 분리 (응답 처리 전용)
+  void _subscribeToMatchUpdates(
+    int userIdx,
+    Function(RandomMatchDto) onMatchUpdate,
+  ) {
+    wsClient.subscribe(
+      destination: '/queue/match/$userIdx',
+      callback: (frame) {
+        try {
+          final json = jsonDecode(frame.body ?? '{}');
+          final matchData = RandomMatchDto.fromJson(json);
+          onMatchUpdate(matchData);
+          debugPrint('✅ [RandomMatchRepo] 구독 응답 처리 완료!');
+        } catch (e) {
+          debugPrint('❌ [RandomMatchRepo] 응답 파싱 실패: $e');
+        }
+      },
+    );
   }
 
   // 2. 매칭 시작 (응답은 Stream으로)
-  Future<void> startMatching({
-    required int userIdx,
-    required String genderOption,
-    required Function(RandomMatchDto) onMatchUpdate,
-  }) async {
+  Future<void> startMatching({required String genderOption}) async {
     debugPrint(
-      '🎯 [RandomMatchRepo] 매칭 시작 - userIdx: $userIdx, genderOption: $genderOption',
+      '🎯 [RandomMatchRepo] 매칭 시작 - genderOption: $genderOption',
     );
 
     // 연결 상태 확인 (즉시 에러 감지!)
     if (!wsClient.isConnected) {
-      final error = Exception("WebSocket이 연결되지 않았습니다. 먼저 connect()를 호출해주세요.");
+      final error = Exception("WebSocket이 연결되지 않았습니다. 먼저 connectAndSubscribe()를 호출해주세요.");
       debugPrint('❌ [RandomMatchRepo] 연결 상태 확인 실패: $error');
       throw error;
     }
 
     try {
-      // 구독 (응답 받기)
-      debugPrint('📢 [RandomMatchRepo] 구독 등록 - /queue/match/$userIdx');
-      wsClient.subscribe(
-        destination: '/queue/match/$userIdx',
-        callback: (frame) {
-          debugPrint('📨 [RandomMatchRepo] 서버 응답 수신!');
-          debugPrint('   body: ${frame.body}');
-
-          try {
-            final json = jsonDecode(frame.body ?? '{}');
-            debugPrint('   parsed: $json');
-
-            final matchData = RandomMatchDto.fromJson(json);
-            debugPrint(
-              '   status: ${matchData.status}, roomIdx: ${matchData.roomIdx}, partnerIdx: ${matchData.partnerIdx}',
-            );
-
-            onMatchUpdate(matchData); // 콜백으로 전달!
-            debugPrint('✅ [RandomMatchRepo] onMatchUpdate 콜백 호출 완료');
-          } catch (e, s) {
-            debugPrint('❌ [RandomMatchRepo] 응답 파싱 실패: $e');
-            debugPrintStack(stackTrace: s);
-          }
-        },
-      );
-      debugPrint('✅ [RandomMatchRepo] 구독 등록 완료');
-
       // 요청 보내기
       debugPrint('📤 [RandomMatchRepo] 매칭 요청 전송 - /app/match/enter');
       wsClient.send('/app/match/enter', {'genderOption': genderOption});

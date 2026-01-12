@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/data/repository/gathering_repository.dart';
-import 'package:front/dto/gathering_hotList_dto.dart';
-import 'package:front/dto/gathering_newList_dto.dart';
+import 'package:front/dto/gatherings/gathering_hotList_dto.dart';
+import 'package:front/dto/gatherings/gathering_newList_dto.dart';
 //******** 기본 인프라 Provider (ApiClient, Repository) ********/
 // ApiClient 인스턴스를 제공하는 Provider
 final apiClientProvider = Provider<ApiClient>((ref) {

@@ -41,4 +41,6 @@ public class Participant {
     @Column
     private String usersRole;
     
+    @Column
+    private String isOuted;
 }

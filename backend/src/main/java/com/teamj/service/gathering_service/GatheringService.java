@@ -12,6 +12,7 @@ import com.teamj.dto.gathering_dto.GatheringListDto;
 import com.teamj.entity.meet_entity.MeetRoom;
 import com.teamj.repository.meet_repository.MeetRoomRepository;
 import com.teamj.repository.meet_repository.ParticipantRepository;
+import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
 import com.teamj.util.S3Uploader;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class GatheringService {
+    // UserRepository 주입
+    private final UserRepository userRepository;
+
     // ParticipantRepository 주입
     private final ParticipantRepository participantRepository;
     // S3 Uploader 주입(모임 생성시 필요)
@@ -69,8 +73,8 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     // 핫한 모임 목록 조회(이미지)
     @Transactional(readOnly = true)
     public List<GatheringListDto> getHotGatheringHotList() {
-        // DB에서 핫한 모임 조건으로 조회(내림차순)
-        List<MeetRoom> entities = meetRoomRepository.findTop5ByOrderByCreatedAtDesc();
+        // DB에서 핫한 모임 조회(RANDOM_1ON1 모임 제외)
+        List<MeetRoom> entities = meetRoomRepository.findTop5ByRoomTypeNotOrderByCreatedAtDesc("RANDOM_1ON1");
 
         // 모든 roomIdx 추출
         List<Long> roomIdxList = entities.stream()
@@ -135,4 +139,12 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .isFull(participantCount >= meetRoom.getMax())
             .build();
     }
+
+    // @Transactional(readOnly = true)
+    // public GatheringListDto getGatheringDetail(Long roomIdx, Long userIdx) {
+    //     meetRoomRepository.findById(roomIdx)
+    //         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다."));
+    //     participantRepository.countByRoom_RoomIdx(roomIdx);
+        
+    // }
 }
