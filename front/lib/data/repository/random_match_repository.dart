@@ -19,7 +19,6 @@ class RandomMatchRepository {
       debugPrint('🔌 [RandomMatchRepo] WebSocket 연결 상태 확인: ${wsClient.isConnected}');
       if (!wsClient.isConnected) {
         await wsClient.connect();
-        debugPrint('✅ [RandomMatchRepo] WebSocket 연결 완료!');
       }
       // 구독은 한 번만 등록!
       if (!_isSubscribed) {
@@ -30,7 +29,8 @@ class RandomMatchRepository {
     } catch (e) {
       debugPrint('❌ [RandomMatchRepo] WebSocket 연결 실패: $e');
       rethrow;
-    } 
+    }
+    debugPrint('✅ [RandomMatchRepo] WebSocket 연결 완료!');
   }
 
   // 구독 로직 분리 (응답 처리 전용)

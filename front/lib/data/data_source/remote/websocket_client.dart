@@ -1,5 +1,6 @@
 // front/lib/data/data_source/remote/web_socket_client.dart
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -47,8 +48,28 @@ class WebSocketClient {
   /**
    * connect() - WebSocket 연결 시작
    * 
-   * HTTP와 다르게 connect()는 연결 준비만 하고 즉시 리턴함
-   * 실제 연결 완료는 onConnect 콜백에서 알림!
+   * 【 문제 상황 】
+   * WebSocket은 콜백 기반이라 activate() 호출 후 즉시 리턴됨.
+   * 실제 연결 완료는 나중에 onConnect 콜백에서 알려줌.
+   * 
+   * ❌ 문제: connect()가 완료 전에 리턴 → subscribe() 호출 시 연결 안 됨
+   * 
+   * 【 해결: Completer 사용 】
+   * Completer는 "콜백 기반 비동기 작업을 Future로 변환"하는 도구.
+   * - completer.future: 완료 신호를 기다리는 Future
+   * - completer.complete(): 완료 신호 전송 → future가 완료됨
+   * - completer.completeError(): 에러 전송 → future가 에러로 완료됨
+   * 
+   * 이렇게 하면 connect()가 연결 완료를 기다린 후 리턴하므로,
+   * 호출하는 쪽에서 await connect() 후 바로 subscribe() 호출 가능!
+   * 
+   * 【 왜 Completer를 써야 하나? 】
+   * 1. 효율적: Polling(반복 체크)보다 CPU 낭비 없음
+   * 2. 정확: 콜백이 호출되는 정확한 시점에 완료 신호
+   * 3. 표준: Dart에서 콜백→Future 변환의 표준 패턴
+   * 4. 간단: StreamController보다 코드가 단순
+   * 
+   * 
    * 
    * 이벤트 핸들러:
    * - onConnect: 서버가 "CONNECTED" 메시지 보내면 실행
@@ -77,7 +98,11 @@ class WebSocketClient {
     // 3. WebSocket URL 구성
     String endpoint = '$baseWSUrl/ws';
 
-    // 4. StompClient 생성 및 이벤트 핸들러 등록
+    // 4. Completer 생성: 연결 완료 신호를 기다리기 위한 도구
+    // Completer<void>: 완료 신호만 보내면 되는 경우 (반환값 없음)
+    final Completer<void> connectionCompleter = Completer<void>();
+
+    // 5. StompClient 생성 및 이벤트 핸들러 등록
     _stompClient = StompClient(
       config: StompConfig(
         url: endpoint,
@@ -87,6 +112,13 @@ class WebSocketClient {
         onConnect: (frame) {
           _isConnected = true;
           debugPrint("[WebSocketClient] 연결 성공");
+
+          // ✅ 연결 완료 신호 전송: completer.future가 완료됨
+          if (!connectionCompleter.isCompleted) {
+            connectionCompleter.complete();
+          }
+
+          // 사용자가 전달한 콜백도 호출
           onConnect?.call(frame);
         },
 
@@ -94,6 +126,12 @@ class WebSocketClient {
         onWebSocketError: (dynamic error) {
           debugPrint("[WebSocketClient] 연결 오류: $error");
           _isConnected = false;
+
+          // ✅ 에러 신호 전송: completer.future가 에러로 완료됨
+          if (!connectionCompleter.isCompleted) {
+            connectionCompleter.completeError(error);
+          }
+
           onError?.call(StompFrame(command: 'ERROR', body: error.toString()));
         },
 
@@ -101,6 +139,12 @@ class WebSocketClient {
         // frame.body에 "401" 또는 "403" 있으면 자동으로 토큰 재발급 시도
         onStompError: (frame) {
           debugPrint("[WebSocketClient] STOMP 오류: ${frame.body}");
+
+          // ✅ 에러 신호 전송: completer.future가 에러로 완료됨
+          if (!connectionCompleter.isCompleted) {
+            connectionCompleter.completeError(frame);
+          }
+
           _handleStompError(frame);
           onError?.call(frame);
         },
@@ -119,8 +163,27 @@ class WebSocketClient {
       ),
     );
 
-    // 연결 활성화 (백그라운드 연결 시작, 완료는 onConnect에서 알림)
+    // 6. 연결 활성화 (백그라운드 연결 시작)
     _stompClient?.activate();
+
+    // 7. 연결 완료까지 대기 (최대 10초 타임아웃)
+    // await connectionCompleter.future: onConnect 콜백이 호출될 때까지 대기
+    // → 이제 connect()가 완전히 연결된 후에 리턴됨! ✅
+    try {
+      await connectionCompleter.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException("WebSocket 연결 타임아웃 (10초 초과)");
+        },
+      );
+    } catch (e) {
+      debugPrint("[WebSocketClient] 연결 대기 중 에러: $e");
+      // 에러 발생 시 정리
+      _stompClient?.deactivate();
+      _stompClient = null;
+      _isConnected = false;
+      rethrow;
+    }
   }
 
   /**
