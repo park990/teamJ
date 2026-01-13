@@ -36,8 +36,8 @@ public class Bbs_controller {
     @GetMapping("/getList")
     public ResponseEntity<ApiResponse<Slice<PostDTO>>> getList(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestParam(defaultValue = "0") int page,   // 클라이언트가 보낸 페이지 번호
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(value = "page", defaultValue = "0") int page,   // 클라이언트가 보낸 페이지 번호
+        @RequestParam(value = "size", defaultValue = "10") int size
     ){//@pathVariable Long typeIdx){
         Long userIdx = (userDetails != null) ? userDetails.getUserIdx() : null;
 
