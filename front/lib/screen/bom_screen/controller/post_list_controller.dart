@@ -19,6 +19,13 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
 
   @override
   FutureOr<List<Post>> build() async {
+    // 1. Auth 전체 상태를 지켜봅니다.
+  final authState = ref.watch(authControllerProvider);
+
+  if (authState.isLoading) {
+  return [];
+}
+
     final version = ref.watch(authControllerProvider.select((a) => a.sessionVersion));
     print('🚩 PostListController build() 실행됨! (세션버전: $version)');
 
