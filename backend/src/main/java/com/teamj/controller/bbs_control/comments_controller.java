@@ -32,8 +32,8 @@ public class comments_controller {
 
     @GetMapping("/{bbsIdx}")
     public ResponseEntity<ApiResponse<SliceResponseDTO<CommentsDTO>>> getComments(
-        @PathVariable Long bbsIdx,
-        @RequestParam(value = "page", defaultValue ="0") int page,    
+        @PathVariable(value = "bbsIdx") Long bbsIdx,
+        @RequestParam(value = "page", defaultValue ="0") int page,
         @RequestParam(value = "size", defaultValue = "15") int size
     ){
         PageRequest pageRequest = PageRequest.of(page,size,Sort.by("commentIdx").descending());

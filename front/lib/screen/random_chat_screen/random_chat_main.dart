@@ -7,11 +7,26 @@ import 'package:front/screen/random_chat_screen/random_chat_screen.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/theme/app_colors.dart';
 
-class RandomChatMain extends ConsumerWidget {
-  RandomChatMain({super.key});
+class RandomChatMain extends ConsumerStatefulWidget {
+  const RandomChatMain({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RandomChatMain> createState() => _RandomChatMainState();
+}
+
+class _RandomChatMainState extends ConsumerState<RandomChatMain> {
+  @override
+  void initState() {
+    super.initState();
+
+    // 다른 화면들과 동일하게 authController 초기화
+    Future.microtask(() {
+      ref.read(authControllerProvider.notifier).init();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.watch(randomChatControllerProvider);
     final randomChatState = controller.state;
 
@@ -128,9 +143,7 @@ class RandomChatMain extends ConsumerWidget {
 
                               ref
                                   .read(randomChatControllerProvider)
-                                  .startMatching(
-                                    genderOption: 'random',
-                                  );
+                                  .startMatching(genderOption: 'random');
                             },
                             child: Text('랜덤채팅'),
                           ),
