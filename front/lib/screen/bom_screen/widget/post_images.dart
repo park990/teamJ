@@ -7,7 +7,11 @@ class PostImages extends StatelessWidget {
   final Post post;
   final List<String> images;
 
-  const PostImages({super.key, required this.post, required this.images});
+  const PostImages({
+    super.key,
+    required this.post,
+    required this.images,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,61 +19,125 @@ class PostImages extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // -----------------------------------------------------------
-    // Case 1: 이미지가 1개일 때 (크게, 스크롤 없이 보여줌)
-    // -----------------------------------------------------------
     if (images.length == 1) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 7),
-        child: GestureDetector(
-          onTap: () => _openViewer(context, 0),
+      return _singleImage(context);
+    }
+
+    if (images.length == 2) {
+      return _twoImages(context);
+    }
+
+    return _multiImages(context);
+  }
+
+  // -----------------------------------------------------------
+  // Case 1: 이미지 1장 (집중형)
+  // -----------------------------------------------------------
+Widget _singleImage(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 7),
+    child: GestureDetector(
+      onTap: () => _openViewer(context, 0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 260,
+        ),
+        child: AspectRatio(
+          aspectRatio: 4 / 5,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: CachedNetworkImage(
-              imageUrl: images[0],
-              height: 280, // 1장일 땐 시원하게 280
-              width: double.infinity, // 가로 꽉 차게
+              imageUrl: images.first,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
-                height: 280,
                 color: Colors.grey.shade200,
-                child: const Center(child: CircularProgressIndicator()),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
               ),
-              errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.broken_image),
             ),
           ),
         ),
-      );
-    }
+      ),
+    ),
+  );
+}
 
-    // -----------------------------------------------------------
-    // Case 2: 이미지가 여러 개일 때 (작게, 가로 스크롤)
-    // -----------------------------------------------------------
+  // -----------------------------------------------------------
+  // Case 2: 이미지 2장 (2열 고정)
+  // -----------------------------------------------------------
+  Widget _twoImages(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 7),
+      child: Row(
+        children: List.generate(images.length, (index) {
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: index == 0 ? 0 : 4,
+                right: index == 1 ? 0 : 4,
+              ),
+              child: GestureDetector(
+                onTap: () => _openViewer(context, index),
+                child: AspectRatio(
+                  aspectRatio: 3 / 4,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: CachedNetworkImage(
+                      imageUrl: images[index],
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey.shade200,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.broken_image),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // -----------------------------------------------------------
+  // Case 3: 이미지 3장 이상 (가로 스크롤)
+  // -----------------------------------------------------------
+  Widget _multiImages(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 7),
       child: SizedBox(
-        height: 180, // 여러 장일 땐 180
+        height: 180,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: images.length,
-          
-          separatorBuilder: (context, index) => const SizedBox(width: 10),
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () => _openViewer(context, index),
               child: AspectRatio(
-                aspectRatio: 3 / 4, // 3:4 비율 유지
+                aspectRatio: 3 / 4,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: CachedNetworkImage(
                     imageUrl: images[index],
                     fit: BoxFit.cover,
-                    memCacheWidth:300,
+                    memCacheWidth: 300,
                     placeholder: (context, url) => Container(
                       color: Colors.grey.shade200,
-                      child: const Center(child: CircularProgressIndicator()),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
-                    errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.broken_image),
                   ),
                 ),
               ),
@@ -80,7 +148,9 @@ class PostImages extends StatelessWidget {
     );
   }
 
-  // 뷰어 여는 함수 따로 빼둠 (중복 제거)
+  // -----------------------------------------------------------
+  // 이미지 뷰어
+  // -----------------------------------------------------------
   void _openViewer(BuildContext context, int index) {
     Navigator.push(
       context,

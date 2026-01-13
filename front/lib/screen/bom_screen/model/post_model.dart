@@ -2,6 +2,7 @@ import 'package:front/dto/bbs/post_list_dto.dart';
 
 class Post {
   final int bbsIdx;
+  final int userIdx;
   final String author; // nickname을 author로 명칭 변경 (직관적)
   final int viewCount;
   final int likeCount;
@@ -14,6 +15,7 @@ class Post {
 
   Post({
     required this.bbsIdx,
+    required this.userIdx,
     required this.author,
     required this.viewCount,
     required this.likeCount,
@@ -29,6 +31,7 @@ class Post {
   Post copyWith({
     int? bbsIdx,
     String? author,
+    int? userIdx,
     int? viewCount,
     int? likeCount,
     bool? isLiked,
@@ -40,6 +43,7 @@ class Post {
     return Post(
       bbsIdx: bbsIdx ?? this.bbsIdx,
       author: author ?? this.author,
+      userIdx: userIdx ?? this.userIdx,
       viewCount: viewCount ?? this.viewCount,
       likeCount: likeCount ?? this.likeCount, // 이게 있어야 좋아요 숫자 변경 가능
       isLiked: isLiked ?? this.isLiked,       // 이게 있어야 하트 색 변경 가능
@@ -56,6 +60,7 @@ class Post {
   factory Post.fromListDto(PostListDto dto) {
     return Post(
       bbsIdx: dto.bbsIdx!,
+      userIdx: dto.usersIdx!,
       author: dto.nickname!,
       viewCount: dto.viewCount!,
 
