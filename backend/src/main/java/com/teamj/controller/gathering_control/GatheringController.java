@@ -42,7 +42,7 @@ public class GatheringController {
     // 모임 상세 조회
     @GetMapping("/{roomIdx}")
     public ResponseEntity<?> getGatheringDetail(
-        @PathVariable Long roomIdx,
+        @PathVariable("roomIdx") Long roomIdx,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long userIdx = userDetails.getUserIdx();
@@ -52,7 +52,7 @@ public class GatheringController {
     // 모임 참가
     @PostMapping("/{roomIdx}/join")
     public ResponseEntity<?> joinGathering(
-        @PathVariable Long roomIdx,
+        @PathVariable("roomIdx") Long roomIdx,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long userIdx = userDetails.getUserIdx();
