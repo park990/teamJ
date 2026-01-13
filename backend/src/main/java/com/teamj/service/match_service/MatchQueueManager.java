@@ -25,10 +25,15 @@ public class MatchQueueManager {
     private final ObjectMapper objectMapper;
 
     private static final String QUEUE_KEY_PREFIX = "match:queue:";
+    private static final String USER_SET_KEY_PREFIX = "match:queue:users:"; // 중복 체크용
 
     private String getQueueKey(Users.Gender actualGender) {
         // actualGender가 null일 수 없어야 함 (필수 정보)
         return QUEUE_KEY_PREFIX + actualGender.name();  // "MALE" 또는 "FEMALE"
+    }
+
+    private String getUserSetKey(Users.Gender actualGender) {
+        return USER_SET_KEY_PREFIX + actualGender.name();
     }
 
     /**
@@ -123,6 +128,16 @@ public class MatchQueueManager {
         
         // 매칭 실패 → 내 실제 성별 큐에 추가
         String myQueueKey = getQueueKey(myActualGender);
+        String userSetKey = getUserSetKey(myActualGender);
+
+        // 중복 체크: O(1)
+        Boolean exists = redisTemplate.opsForSet().isMember(userSetKey, me.getUserIdx().toString());
+        if (Boolean.TRUE.equals(exists)) {
+            log.warn("⚠️ 이미 큐에 있는 사용자 - userIdx: {}", me.getUserIdx());
+            return Optional.empty();
+        }
+
+        redisTemplate.opsForSet().add(userSetKey, me.getUserIdx().toString());
         redisTemplate.opsForList().rightPush(myQueueKey, toJson(me));
         
         // Redis 저장 확인 로그
@@ -223,6 +238,7 @@ public class MatchQueueManager {
 
         // 매칭조건에 맞는 큐 키 생성
         String queueKey = getQueueKey(actualGender);
+        String userSetKey = getUserSetKey(actualGender);
         
         // 큐에 있는 모든 사람 리스트
         List<WaitingUser> allUsers = new ArrayList<>();
@@ -242,5 +258,7 @@ public class MatchQueueManager {
                 redisTemplate.opsForList().rightPush(queueKey, toJson(user));
             }
         }
+        // 중복 체크용 set에서 제거
+        redisTemplate.opsForSet().remove(userSetKey, userIdx.toString());
     }
 }

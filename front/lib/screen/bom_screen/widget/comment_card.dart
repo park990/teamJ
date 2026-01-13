@@ -17,16 +17,28 @@ class CommentCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(45, 38, 21, 12),
-      child: Column(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              PostHeader(customName: "닉네임으로해야댐 ${comment.usersIdx} ", showMore: true),
-              Container(
+Widget build(BuildContext context) {
+  return Padding(
+    
+
+    padding: const EdgeInsets.fromLTRB(12, 5, 21, 12),
+    child: Column(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 1. 헤더: 이제 PostHeader 내부가 0,0 이므로 Stack의 시작점에 딱 붙습니다.
+            // 결과적으로 화면 전체 기준으로는 (12, 5) 위치에 그려집니다.
+            PostHeader(
+              customName: comment.nickName, 
+              authorIdx: comment.usersIdx,
+              showMore: true
+            ),
+
+
+            Padding(
+              padding: const EdgeInsets.only(left: 33, top: 33), 
+              child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -38,7 +50,6 @@ class CommentCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      
                       Text("${comment.content}", style: postContentStyle),
                       CommentFooter(
                         likeCount: 0,
@@ -51,22 +62,11 @@ class CommentCard extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-          // AnimatedSize(
-          //   duration: const Duration(milliseconds: 300),
-          //   curve: Curves.fastOutSlowIn,
-          //   child: isExpanded
-          //       ? Padding(
-          //           padding: const EdgeInsets.only(left: 20, top: 12),
-          //           child: Column(
-          //             children: List.generate(2, (i) => CommentReply(index: i)),
-          //           ),
-          //         )
-          //       : const SizedBox(width: double.infinity, height: 0),
-          // ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 }
