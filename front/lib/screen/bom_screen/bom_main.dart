@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/const/spinning_flower.dart';
 import 'package:front/screen/bom_screen/post_write_screen.dart';
 import 'package:front/screen/bom_screen/provider/post_provider.dart';
@@ -30,17 +29,10 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
 
   @override
   Widget build(BuildContext context) {
-    final _isLoading = ref.watch(authControllerProvider.select((s) => s.isLoading));
     final _isLoggedIn = ref.watch(authControllerProvider.select((s) => s.isLoggedIn));
     final postListAsync = ref.watch(postListControllerProvider);
 
-    // authState의 isLoading중일 때는 봄 메인스크린을 잠시 기다리자 
-    if (_isLoading) {
-    return const Scaffold(
-      backgroundColor: wazzupBackGround,
-      body: SizedBox.shrink(), 
-    );
-  }
+
 
     return Scaffold(
       backgroundColor: wazzupBackGround,

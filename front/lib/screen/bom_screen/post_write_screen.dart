@@ -59,29 +59,36 @@ class _PostWriteState extends ConsumerState<PostWriteScreen> {
           ),
         ],
       ),
-      body: Form(
-        key: notifier.formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(45, 38, 21, 20),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    PostHeader(customName: user.nickName), // 프로필 헤더
+     body: Form(
+      key: notifier.formKey,
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              // 🚩 1. 바깥 패딩을 (12, 5)로 수정 (45-33=12, 38-33=5)
+              padding: const EdgeInsets.fromLTRB(12, 5, 21, 20),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // 🚩 2. 헤더는 (0,0) 위치에 먼저 배치
+                  PostHeader(customName: user.nickName,
+                  showMore: false,),
 
-                    _buildWritingCard(state, notifier), // 카드 본체
-                  ],
-                ),
+                  // 🚩 3. 카드 몸통을 (33, 33)만큼 밀어서 헤더가 보이게 함
+                  Padding(
+                    padding: const EdgeInsets.only(left: 33, top: 33),
+                    child: _buildWritingCard(state, notifier),
+                  ),
+                ],
               ),
             ),
-            _bottomBar(state.imageCount, notifier), // 하단 바
-          ],
-        ),
+          ),
+          _bottomBar(state.imageCount, notifier),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildWritingCard(PostWriteState state, PostWriteController notifier) {
     return Container(
