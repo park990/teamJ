@@ -2,14 +2,21 @@ package com.teamj.service.gathering_service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.teamj.dto.gathering_dto.GatheringActionResponseDto;
+import com.teamj.dto.gathering_dto.GatheringDetailDto;
 import com.teamj.dto.gathering_dto.GatheringListDto;
+import com.teamj.entity.doubleKey_entity.ParticipantId;
 import com.teamj.entity.meet_entity.MeetRoom;
+import com.teamj.entity.meet_entity.Participant;
+import com.teamj.entity.users_entity.Users;
 import com.teamj.repository.meet_repository.MeetRoomRepository;
 import com.teamj.repository.meet_repository.ParticipantRepository;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
@@ -140,11 +147,112 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .build();
     }
 
-    // @Transactional(readOnly = true)
-    // public GatheringListDto getGatheringDetail(Long roomIdx, Long userIdx) {
-    //     meetRoomRepository.findById(roomIdx)
-    //         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모임입니다."));
-    //     participantRepository.countByRoom_RoomIdx(roomIdx);
+    // *** 모임 세부사항 조회 ***
+    @Transactional(readOnly = true)
+    public GatheringDetailDto getGatheringDetail(Long roomIdx, Long userIdx) {
+        //모임 조회
+        Optional<MeetRoom> meetRoomOptional = meetRoomRepository
+            .findById(roomIdx);
+
+        if (meetRoomOptional.isEmpty()) {
+            throw new IllegalArgumentException(
+                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
+        }
+        MeetRoom meetRoom = meetRoomOptional.get();
+
+        // 참여자 수 조회
+        int participantCount = participantRepository
+            .countByRoom_RoomIdx(roomIdx);
+        log.debug("현재 참가자 수: {}/{}", participantCount, meetRoom.getMax());
+
+        // 현재 사용자의 참가 여부 확인
+        boolean isParticipating = participantRepository
+            .existsByRoom_RoomIdxAndUser_UsersIdx(roomIdx, userIdx);
+        log.debug("사용자 참가 여부: {}", isParticipating);
+
+        // 정원 초과 여부 계산
+        boolean isFull = participantCount >= meetRoom.getMax();
+
+        return GatheringDetailDto.builder()
+            .roomIdx(meetRoom.getRoomIdx())
+            .roomName(meetRoom.getRoomName())
+            .roomType(meetRoom.getRoomType())
+            .roomDesc(meetRoom.getRoomDesc())
+            .roomImg(meetRoom.getRoomImg())
+            .meetDate(meetRoom.getMeetDate())
+            .meetPlace(meetRoom.getMeetPlace())
+            .max(meetRoom.getMax())
+            .participantCount(participantCount)
+            .isFull(isFull)
+            .isParticipating(isParticipating)
+            .createdAt(meetRoom.getCreatedAt())
+            .build();
+    }
+
+    // *** 모임 참가 ***
+    @Transactional
+    @CacheEvict(value = "participantCount", allEntries = true)
+    public GatheringActionResponseDto joinGathering(Long roomIdx, Long userIdx) {
+        // 모임 존재 확인
+        Optional<MeetRoom> meetRoomOptional = meetRoomRepository.findById(roomIdx);
+
+        if(meetRoomOptional.isEmpty()) {
+            throw new IllegalArgumentException(
+                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
+        }
+        MeetRoom meetRoom = meetRoomOptional.get();
+
+        boolean alreadyParticipating = participantRepository.existsByRoom_RoomIdxAndUser_UsersIdx(roomIdx, userIdx);
         
-    // }
+        if(alreadyParticipating) {
+            log.warn("이미 참가한 모임입니다 - roomIdx: {}, userIdx: {}", roomIdx, userIdx);
+            throw new IllegalArgumentException(
+                "이미 참가한 모임입니다.");
+        }
+
+        // 정원 초과 확인
+        int currentCount = participantRepository.countByRoom_RoomIdx(roomIdx);
+        if(currentCount >= meetRoom.getMax()) {
+            log.warn("정원 초과 - 현재: {}, 최대: {}", currentCount, meetRoom.getMax());
+            throw new IllegalArgumentException("모임 정원이 초과되었습니다.");
+        }
+
+        // 사용자 조회
+        Optional<Users> userOptional = userRepository.findById(userIdx);
+        if(userOptional.isEmpty()) {
+            throw new IllegalArgumentException(
+                "사용자를 찾을 수 없습니다. userIdx: " + userIdx
+            );
+        }
+        // 사용자 꺼내기
+        Users user = userOptional.get();
+
+        // 복합키 생성
+        ParticipantId participantId = new ParticipantId(roomIdx, userIdx);
+
+        // Participant 빌드
+        Participant participant = Participant.builder()
+            .id(participantId)
+            .room(meetRoom)
+            .user(user)
+            .usersRole("GUEST")
+            .build();
+
+        // 참여자 저장
+        participantRepository.save(participant);
+
+        // 업데이트된 정보 조회
+        int newCount = participantRepository.countByRoom_RoomIdx(roomIdx);
+        boolean isFull = newCount >= meetRoom.getMax();
+
+        // 결과 반환
+        log.info("모임 참가 완료 - roomIdx: {}, 참가자: {}/{}", roomIdx, newCount);
+        return GatheringActionResponseDto.builder()
+            .success(true)
+            .message("모임에 참가되었습니다.")
+            .participantCount(newCount)
+            .isFull(isFull)
+            .isParticipating(true)
+            .build();
+    }
 }
