@@ -116,7 +116,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: SizedBox.shrink()),
                   error: (err, stack) => Center(child: Text("에러 발생: $err")),
                 ),
               ),
