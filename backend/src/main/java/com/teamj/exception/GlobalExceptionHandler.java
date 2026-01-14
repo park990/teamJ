@@ -17,20 +17,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(500)
             .body(ApiResponse.error("서버 오류가 발생했습니다."));
     }
-
-    // IllegalArgumentException 처리
-    // @ExceptionHandler(IllegalArgumentException.class)
-    // public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(IllegalArgumentException e) {
-    //     log.warn("잘못된 요청: {}", e.getMessage());
-    //     return ResponseEntity.status(400)
-    //         .body(ApiResponse.error(e.getMessage()));
-    // }
-
-    // // IllegalStateException 처리
-    // @ExceptionHandler(IllegalStateException.class)
-    // public ResponseEntity<ApiResponse<Object>> handleIllegalState(IllegalStateException e) {
-    //     log.warn("잘못된 상태: {}", e.getMessage());
-    //     return ResponseEntity.status(400)
-    //         .body(ApiResponse.error(e.getMessage()));
-    // }
 }
