@@ -71,7 +71,7 @@ List<GatheringKeywordModel> keywords = [
     ),
     GatheringKeywordModel(
       title: '연애/결혼',
-      slug: 'sports'
+      slug: 'Love'
     ),
     GatheringKeywordModel(
       title: '영화',
