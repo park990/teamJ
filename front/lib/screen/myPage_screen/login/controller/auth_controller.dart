@@ -71,13 +71,13 @@ class AuthController extends Notifier<AuthState> {
         if(response != null){
         print('상태등록된 유저정보: ${response.usersNickname}');
 
-          state = AuthState(
-            isLoggedIn: true,
-            isLoading: false,
-            accessToken: token,
-            nickName: response.usersNickname,
-            userIdx: response.usersIdx,
-          );
+          state = state.copyWith(
+          isLoggedIn: true,
+          isLoading: false,
+          accessToken: token,
+          nickName: response.usersNickname,
+          userIdx: response.usersIdx,
+        );
         }else{
           print('❌ 토큰 무효 - 자동 로그아웃');
           await _clearAuthState();

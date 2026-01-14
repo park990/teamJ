@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
-import 'package:front/dto/auth_response.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
