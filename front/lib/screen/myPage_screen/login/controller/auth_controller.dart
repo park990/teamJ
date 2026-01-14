@@ -10,33 +10,38 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class AuthState {
   final bool isLoggedIn;
-  final bool isLoading;
+  final bool authResolved;
   final String? accessToken;
   final String? nickName;
   final int? userIdx;
   final int sessionVersion;
 
-  AuthState({this.isLoggedIn = false, this.accessToken, this.isLoading = true, this.nickName, this.userIdx, this.sessionVersion = 0});
+  AuthState({
+    this.authResolved = false,
+    this.isLoggedIn = false,
+    this.accessToken,
+    this.nickName,
+    this.userIdx,
+    this.sessionVersion = 0,
+  });
 
-  // 데이터 보존을 위한 메서드!
   AuthState copyWith({
     bool? isLoggedIn,
-    bool? isLoading,
+    bool? authResolved,
     String? accessToken,
     String? nickName,
     int? userIdx,
-    int? sessionVersion
+    int? sessionVersion,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
-      isLoading: isLoading ?? this.isLoading,
+      authResolved: authResolved ?? this.authResolved,
       accessToken: accessToken ?? this.accessToken,
       nickName: nickName ?? this.nickName,
       userIdx: userIdx ?? this.userIdx,
       sessionVersion: sessionVersion ?? this.sessionVersion,
     );
   }
-  
 }
 
 class AuthController extends Notifier<AuthState> {
@@ -48,65 +53,62 @@ class AuthController extends Notifier<AuthState> {
     _repository = ref.read(authRepositoryProvider);
     _storage = ref.read(tokenStorageProvider);
 
-    return AuthState(isLoading: true);
+    return AuthState();
   }
 
   // 자동로그인
   Future<void> init() async {
-  await _checkAutoLogin();
+    await _checkAutoLogin();
   }
 
-  // 자동 로그인 처리(억섹스 토큰으로만 구현함)
+  // 자동 로그인 처리
   Future<void> _checkAutoLogin() async {
-    try{
-    final token = await _storage.getAccessToken();
+    try {
+      final token = await _storage.getAccessToken();
 
-    if (token == null) {
-        state = AuthState(isLoggedIn: false, isLoading: false);
+      if (token == null) {
+        state = AuthState(isLoggedIn: false, authResolved: true);
         return;
       }
-    
-      try{
+
+      try {
         final response = await _repository.getUserInfo();
-        if(response != null){
-        print('상태등록된 유저정보: ${response.usersNickname}');
+        if (response != null) {
+          print('상태등록된 유저정보: ${response.usersNickname}');
 
           state = state.copyWith(
-          isLoggedIn: true,
-          isLoading: false,
-          accessToken: token,
-          nickName: response.usersNickname,
-          userIdx: response.usersIdx,
-        );
-        }else{
+            isLoggedIn: true,
+            authResolved: true,
+            accessToken: token,
+            nickName: response.usersNickname,
+            userIdx: response.usersIdx,
+          );
+        } else {
           print('❌ 토큰 무효 - 자동 로그아웃');
           await _clearAuthState();
         }
-      }catch(e){
-        // getUserInfo 실패 = 토큰 만료
+      } catch (e) {
         print('❌ 토큰 만료 감지: $e');
         await _clearAuthState();
       }
-    }catch(e){
+    } catch (e) {
       print('자동로그인 체크 중 오류 발생');
-      state = AuthState(isLoading: false, isLoggedIn: false);
+      state = AuthState(isLoggedIn: false, authResolved: true);
     }
   }
 
-  // 인증 상태 초기화 (토큰 삭제 + 상태 리셋)
+  // 인증 상태 초기화
   Future<void> _clearAuthState() async {
     await _storage.deleteAll();
     state = AuthState(
       isLoggedIn: false,
-      isLoading: false,
+      authResolved: true,
       accessToken: null,
       nickName: null,
       userIdx: null,
       sessionVersion: state.sessionVersion + 1,
     );
   }
-
-
 
   // 로그아웃
   Future<void> logout() async {
@@ -122,51 +124,41 @@ class AuthController extends Notifier<AuthState> {
       print('카카오톡 로그아웃 에러: $e');
     }
 
-    // ✅ 한 번만 호출
     await _clearAuthState();
   }
 
-  // 소셜 로그인 서버통신 처리 
+  // 소셜 로그인 서버통신 처리
   Future<dynamic> handleSocialLogin(SocialTokenAndProviderDto dto) async {
-    try{
+    try {
       final responseData = await _repository.sendSocialLogin(dto);
-      
-      if(responseData!=null){
+
+      if (responseData != null) {
         String serverResult = responseData['result'];
 
-        // 신규유저
-        if(serverResult=='register'){
-          print('신규유저임 소셜 토큰으로 받아온 유저정보:${responseData['data']}를 들고 signUpScreen으로 보내줘야함');
+        if (serverResult == 'register') {
           return SocialUserDto.fromJson(responseData['data']);
-        }
-
-        // 기존유저
-        else if(serverResult=='success'){
+        } else if (serverResult == 'success') {
           AuthResponse tokenData = AuthResponse.fromJson(responseData['data']);
-          print('기존 유저임 와접 토큰 발급: ${tokenData}');
-          print('기존 유저임 닉네임 갖고옴: ${tokenData.usersNickname}');
-          
           await saveTokenAndUpdateState(tokenData);
           return "success";
         }
       }
-    }catch(e){
+    } catch (e) {
       print('❌ 소셜 로그인 에러: $e');
-      return null;  // 🔥 에러 시 null 반환
+      return null;
     }
   }
 
-    // 로그인 상태로 변경 후 토큰 스토리지에 저장
-    Future<void> saveTokenAndUpdateState(AuthResponse tokenData) async {
+  // 로그인 상태로 변경 후 토큰 저장
+  Future<void> saveTokenAndUpdateState(AuthResponse tokenData) async {
     await _storage.saveTokensOnly(
       accessToken: tokenData.wazzupToken,
       refreshToken: tokenData.refreshToken,
     );
 
-    // 상태 업데이트
     state = state.copyWith(
       isLoggedIn: true,
-      isLoading: false,
+      authResolved: true,
       accessToken: tokenData.wazzupToken,
       nickName: tokenData.usersNickname,
       userIdx: tokenData.usersIdx,
@@ -175,24 +167,18 @@ class AuthController extends Notifier<AuthState> {
   }
 
   // 토큰만 갱신
-  Future<void> updateTokensOnly( String newAt,String newRt) async {
-    // 1. 스토리지에 새 토큰 저장
-    await _storage.saveTokensOnly(accessToken: newAt,refreshToken: newRt);
+  Future<void> updateTokensOnly(String newAt, String newRt) async {
+    await _storage.saveTokensOnly(accessToken: newAt, refreshToken: newRt);
 
-    // 2. 상태(state) 업데이트: 기존 정보(nickname, idx)는 유지하고 토큰만 교체
     state = state.copyWith(
       accessToken: newAt,
-      // sessionVersion을 올려서 리스트 등을 새로고침하게 할 수 있음
       sessionVersion: state.sessionVersion + 1,
     );
     print("🔑 토큰만 갱신 완료 (사용자 정보 유지)");
   }
-  
-  // 회원가입 완료 후 호출할 함수 회원가입해도 토큰받아와서 저장해줘야함.
+
+  // 회원가입 완료 후 호출
   Future<void> completeSignUp(AuthResponse tokenData) async {
-    print('${tokenData.usersNickname} ㄹ회원가입회원가입 회원가입회ㄱ원가입한 닉네');
     await saveTokenAndUpdateState(tokenData);
   }
-
-
 }

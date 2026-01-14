@@ -12,7 +12,7 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
   int _currentPage = 0;
   bool _isLast = false;      // 백엔드의 Slice.hasNext와 동기화
   bool _isFetching = false;  // 중복 요청 방지 (스크롤 중복 호출 방어)
-  PostRepository get _repository => ref.read(postRepositoryProvider);
+  PostRepository get _repository =>ref.read(postRepositoryProvider);
 
   // notifier를 통해서 갖고오기 위해 _isLast를 갖고옴
   bool get isLastPage => _isLast;
@@ -20,13 +20,14 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
   @override
   FutureOr<List<Post>> build() async {
     // 1. Auth 전체 상태를 지켜봅니다.
-  final isLoading = ref.watch(authControllerProvider.select((a) => a.isLoading));
-  if (isLoading) {
-    return [];
-  }
+  final authResolved = ref.watch(authControllerProvider.select((s) => s.authResolved)
+);
 
-    final version = ref.watch(authControllerProvider.select((a) => a.sessionVersion));
-    print('🚩 PostListController build() 실행됨! (세션버전: $version)');
+  if (!authResolved) {
+  return [];
+}
+
+    print('🚩 PostListController build() 실행됨');
 
     _currentPage = 0;
     _isLast = false;
