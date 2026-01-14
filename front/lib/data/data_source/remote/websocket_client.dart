@@ -42,6 +42,9 @@ class WebSocketClient {
   StompClient? _stompClient;
   bool _isConnected = false;
 
+  // 구독 관리: destination key에 대한 구독 해제 함수 실행하기 위한 map
+  final Map<String, Function()> _subscriptions = {};
+
   // 연결 상태 확인
   bool get isConnected => _isConnected;
 
@@ -220,13 +223,41 @@ class WebSocketClient {
       throw Exception("WebSocket이 연결되지 않았습니다.");
     }
 
-    _stompClient!.subscribe(destination: destination, callback: callback);
+    // subscribe()는 구독 해제 함수를 반환 → 저장해둠
+    final unsubscribeFn = _stompClient!.subscribe(
+      destination: destination,
+      callback: callback,
+    );
+
+    _subscriptions[destination] = unsubscribeFn;
+    debugPrint("[WebSocketClient] 구독 등록: $destination");
+  }
+
+  /**
+   * unsubscribe() - 구독 해제
+   * 
+   * 특정 destination의 구독을 해제합니다.
+   * 예: unsubscribe('/queue/match/123')
+   */
+  void unsubscribe(String destination) {
+    final unsubscribeFn = _subscriptions[destination];
+    if (unsubscribeFn == null) {
+      debugPrint("[WebSocketClient] 구독이 없음: $destination");
+      return;
+    }
+
+    unsubscribeFn(); // 구독 해제 실행
+    _subscriptions.remove(destination); // Map에서 제거
+    debugPrint("[WebSocketClient] 구독 해제 완료: $destination");
   }
 
   /**
    * disconnect() - WebSocket 연결 종료
    */
   void disconnect() {
+    // 모든 구독 해제
+    _subscriptions.clear();
+
     _stompClient?.deactivate();
     _stompClient = null;
     _isConnected = false;
