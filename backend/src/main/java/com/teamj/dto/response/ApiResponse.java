@@ -27,10 +27,6 @@ public class ApiResponse<T> {
         return new ApiResponse<>("fail", message, null);
     }
 
-    // 4. 실패했을 때 쓸 메서드(에러코드 포함)
-    public static <T> ApiResponse<T> error(String message, String errorCode) {
-        return new ApiResponse<>("fail", message, null);
-    }
     // 처음 회원가입을 했을 때
     public static <T> ApiResponse<T> register(T data) {
         return new ApiResponse<>("register", "회원가입이 필요한 유저입니다.", data);
