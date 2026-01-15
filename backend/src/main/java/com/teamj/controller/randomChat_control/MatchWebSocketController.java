@@ -2,6 +2,7 @@ package com.teamj.controller.randomChat_control;
 
 import java.util.Map;
 
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -73,41 +74,52 @@ public class MatchWebSocketController {
         log.info("🎯 매칭 요청 수신 - userIdx: {}, genderOption: {}", userIdx, genderOption);
         
         // 2. Service 호출 (비즈니스 로직)
-        MatchPair pair = matchService.enterQueue(userIdx, genderOption);
-        
-        // 3-1. 대기 중인 경우
-        if (!pair.isMatched()) {
-            // 요청자에게만 전송
-            MatchData requesterData = pair.getRequesterData();
-            messagingTemplate.convertAndSend("/queue/match/" + userIdx, requesterData);  // ← MatchData 직접!
+        try {
+            MatchPair pair = matchService.enterQueue(userIdx, genderOption);
             
-            log.info("⏳ 대기 응답 전송 완료 - userIdx: {}", userIdx);
-            return;
+            // 3-1. 대기 중인 경우
+            if (!pair.isMatched()) {
+                // 요청자에게만 전송
+                MatchData requesterData = pair.getRequesterData();
+                messagingTemplate.convertAndSend("/queue/match/" + userIdx, requesterData);  // ← MatchData 직접!
+                
+                log.info("⏳ 대기 응답 전송 완료 - userIdx: {}", userIdx);
+                return;
+            }
+            
+            // 3-2. 매칭 성공인 경우 (양쪽 모두에게 전송)
+            
+            MatchData requesterData = pair.getRequesterData();
+            MatchData partnerData = pair.getPartnerData();
+            
+            // Null 체크 (방어적 프로그래밍)
+            if (partnerData == null) {
+                log.error("❌ 매칭 성공 상태인데 partnerData가 null - userIdx: {}", userIdx);
+                return;
+            }
+            
+            // 요청자에게 전송
+            messagingTemplate.convertAndSend("/queue/match/" + userIdx, requesterData);  // ← MatchData 직접!
+            log.info("✅ 요청자에게 매칭 응답 전송 - userIdx: {}, roomIdx: {}, partnerIdx: {}", 
+                     userIdx, requesterData.getRoomIdx(), requesterData.getPartnerIdx());
+            
+            // 상대방에게 전송 (partnerIdx는 MatchData에서 추출)
+            Long partnerIdx = requesterData.getPartnerIdx();  // 요청자 입장에서 partnerIdx
+            messagingTemplate.convertAndSend("/queue/match/" + partnerIdx, partnerData);  // ← MatchData 직접!
+            log.info("✅ 상대방에게 매칭 응답 전송 - partnerIdx: {}, roomIdx: {}, partnerIdx: {}", 
+                     partnerIdx, partnerData.getRoomIdx(), partnerData.getPartnerIdx());
+            
+            log.info("🎉 양쪽 모두에게 매칭 알림 전송 완료!");
+        } catch (Exception e) {
+            // 예외 발생 시 에러 로그 기록
+            log.error("❌ 매칭 요청 처리 실패 - userIdx: {}, genderOption: {}, error: {}", 
+                userIdx, genderOption, e.getMessage(), e);
+                // 클라이언트에 에러 응답 전송 (무한 대기 방지)
+            MatchData errorData = MatchData.error();
+            messagingTemplate.convertAndSend("/queue/match/" + userIdx, errorData);
+            
+            log.info("✅ 에러 응답 전송 완료 - userIdx: {}", userIdx);
         }
-        
-        // 3-2. 매칭 성공인 경우 (양쪽 모두에게 전송)
-        
-        MatchData requesterData = pair.getRequesterData();
-        MatchData partnerData = pair.getPartnerData();
-        
-        // Null 체크 (방어적 프로그래밍)
-        if (partnerData == null) {
-            log.error("❌ 매칭 성공 상태인데 partnerData가 null - userIdx: {}", userIdx);
-            return;
-        }
-        
-        // 요청자에게 전송
-        messagingTemplate.convertAndSend("/queue/match/" + userIdx, requesterData);  // ← MatchData 직접!
-        log.info("✅ 요청자에게 매칭 응답 전송 - userIdx: {}, roomIdx: {}, partnerIdx: {}", 
-                 userIdx, requesterData.getRoomIdx(), requesterData.getPartnerIdx());
-        
-        // 상대방에게 전송 (partnerIdx는 MatchData에서 추출)
-        Long partnerIdx = requesterData.getPartnerIdx();  // 요청자 입장에서 partnerIdx
-        messagingTemplate.convertAndSend("/queue/match/" + partnerIdx, partnerData);  // ← MatchData 직접!
-        log.info("✅ 상대방에게 매칭 응답 전송 - partnerIdx: {}, roomIdx: {}, partnerIdx: {}", 
-                 partnerIdx, partnerData.getRoomIdx(), partnerData.getPartnerIdx());
-        
-        log.info("🎉 양쪽 모두에게 매칭 알림 전송 완료!");
     }
 
     /**
