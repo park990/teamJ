@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/gatherings/gathering_detail_dto.dart';
 import 'package:front/dto/gatherings/gathering_newList_dto.dart';
 import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
 import 'package:front/dto/gatherings/gathering_hotList_dto.dart';
@@ -8,6 +9,23 @@ class GatheringRepository {
   final ApiClient apiClient;
   // 생성자
   GatheringRepository(this.apiClient);
+
+  //******** 모임 참가 요청 ********/
+  Future<void> joinGathering(int roomIdx) async {
+    final response = await apiClient.post('/api/gathering/join?roomIdx=${roomIdx}');
+    if(response.statusCode != 200) {
+      throw Exception(utf8.decode(response.bodyBytes));
+    }
+  }
+
+  //******** 모임 상세정보 조회 ********/
+  Future<GatheringDetailDto> getGatheringDetail(int roomIdx) async {
+    final response = await apiClient.get('/api/gathering/detail?roomIdx=${roomIdx}');
+    return _parseSingleResponse<GatheringDetailDto>(
+      response,
+      (json) => GatheringDetailDto.fromJson(json)
+    );
+  }
 
   //******** 핫한 모임 불러오기 ********/
   Future<List<GatheringHotlistDto>> fetchHotGatherings() async {
@@ -56,7 +74,27 @@ class GatheringRepository {
         .map((e) => fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  //******** 단일 객체 파싱 함수 ********/
+  T _parseSingleResponse<T>(dynamic response, T Function(Map<String, dynamic>) fromJson) {
+    final body = utf8.decode(response.bodyBytes);
+    if(response.statusCode != 200) {
+      throw Exception('데이터 조회 실패: ${response.statusCode}');
+    }
+
+    final json = jsonDecode(body);
+    // ApiResponse { result, message, data: { ... } } 구조에서 data만 꺼냄
+    dynamic data;
+    if (json is Map<String, dynamic> && json.containsKey('data')) {
+      data = json['data'];
+    } else {
+      data = json;
+    }
+
+    return fromJson(data as Map<String, dynamic>);
+  }
 }
+
 
 // === 더미데이터 ===
 List<GatheringKeywordModel> keywords = [
@@ -86,37 +124,3 @@ List<GatheringKeywordModel> keywords = [
       slug: 'dubaiCookie'
     ),
   ];
-
-// List<GatheringMeetingModel> meetings = [
-//     //더미데이터
-//     GatheringMeetingModel(
-//       title: '96년생 모여라~!',
-//       content: '동갑 친구들끼리 허심탄회하게 얘기해봐용',
-//       imageUrl: 'asset/img/image.png',
-//       currentParticipants: 1,
-//     ),
-//     GatheringMeetingModel(
-//       title: '여미새 남미새 다 모여라~~',
-//       content: '매력발산 시작~',
-//       imageUrl: 'asset/img/image.png',
-//       currentParticipants: 3,
-//     ),
-//     GatheringMeetingModel(
-//       title: 'TeamJ',
-//       content: '코딩 쌉고수 모임',
-//       imageUrl: 'asset/img/image.png',
-//       currentParticipants: 3,
-//     ),
-//     GatheringMeetingModel(
-//       title: '감기퇴치',
-//       content: '코감기, 목감기 환자들 모여라!',
-//       imageUrl: 'asset/img/image.png',
-//       currentParticipants: 2,
-//     ),
-//     GatheringMeetingModel(
-//       title: '당근중독',
-//       content: '당근 말기환자들 모임',
-//       imageUrl: 'asset/img/image.png',
-//       currentParticipants: 1,
-//     ),
-//   ];
