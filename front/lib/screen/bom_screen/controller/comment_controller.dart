@@ -25,8 +25,8 @@ class CommentController extends AutoDisposeFamilyAsyncNotifier<List<Comments>, i
   }
 
   // 댓글 등록 로직 (UI에서 호출)
-  Future<bool> createComment({required String content, int? parentIdx}) async {
-    if (content.trim().isEmpty) return false;
+  Future<void> createComment({required String content, int? parentIdx}) async {
+    if (content.trim().isEmpty) return ;
 
     final repo = ref.read(commentsRepositoryProvider);
     final commentModel = Comments(
@@ -35,12 +35,9 @@ class CommentController extends AutoDisposeFamilyAsyncNotifier<List<Comments>, i
       parentIdx: parentIdx,
     );
 
-    final success = await repo.saveComments(commentModel);
+    await repo.saveComments(commentModel);
     
-    if (success) {
-      // 성공 시 상태를 무효화하여 리스트를 새로고침
-      ref.invalidateSelf(); 
-    }
-    return success;
+    ref.invalidateSelf(); 
+    
   }
 }

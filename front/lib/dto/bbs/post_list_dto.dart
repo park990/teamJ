@@ -1,7 +1,7 @@
 // lib/data/dto/post_list_dto.dart
 
 class PostListDto {
-  final int? bbsIdx;        // 게시글 식별자
+  final int? postIdx;        // 게시글 식별자
   final int? bbsTypeIdx;    // 게시판 타입 (자유, 운동 등)
   final int? usersIdx;      // 작성자 식별자
   final String? nickname;   // 작성자 닉네임 (보통 DB Join으로 가져옴)
@@ -18,7 +18,7 @@ class PostListDto {
 
 
   PostListDto({
-    this.bbsIdx,
+    this.postIdx,
     this.bbsTypeIdx,
     this.usersIdx,
     this.nickname,
@@ -35,7 +35,7 @@ class PostListDto {
   // 서버의 snake_case 응답을 Dart의 camelCase 필드에 매핑
   factory PostListDto.fromJson(Map<String, dynamic> json) {
     return PostListDto(
-      bbsIdx: json['bbsIdx'],
+      postIdx: json['bbsIdx'],
       bbsTypeIdx: json['bbsTypeIdx'],
       usersIdx: json['usersIdx'],
       nickname: json['usersNickname'], // 서버 API에서 JOIN해서 준다고 가정

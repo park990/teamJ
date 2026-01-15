@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/api_response.dart';
 import 'package:front/dto/bbs/Slice_response.dart';
 import 'package:front/dto/bbs/post_list_dto.dart';
 import 'package:front/screen/bom_screen/model/like_toggle_response.dart';
@@ -77,19 +78,47 @@ class PostRepository {
 
       if (response.statusCode != 200) {
         print('토글 기능 불가: ${response.statusCode}');
+        return null;
       }
       final jsonResponse = jsonDecode(
         utf8.decode(response.bodyBytes),
       );
 
       print('서버 토글 응답: ${jsonResponse['message']}');
-      print('서버 전체 응답: $jsonResponse'); // 이 줄을 추가해서 직접 확인해보세요!
+      print('서버 전체 응답: $jsonResponse'); // 
       print('데이터 부분: ${jsonResponse['data']}');
 
       return LikeToggleResponse.fromJson(jsonResponse['data']);
     } catch (e) {
       print('서버 토글 응답 오류: ${e}');
       return null;
+    }
+  }
+  // 게시글 삭제
+  Future<bool>deletePost(int postIdx) async{
+    try{
+      final response = await apiClient.post(
+        '/api/post/delete',
+        body: {'postIdx': postIdx},
+      );
+      if(response.statusCode != 200){
+        print('삭제 실패: ${response.statusCode}');
+        return false;
+      }
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+      final apiRes = ApiResponse.fromJson(jsonResponse, null);
+      if(apiRes.result=="success"){
+        print("글 삭제 성공 메시지: ${apiRes.message}");
+        return true;
+      }else{
+        print(("글 삭제 실패 메시지: ${apiRes.message} 그리고 ${response.statusCode}"));
+        return false;
+      }
+
+    }catch(e){
+      print('게시글 삭제 에러: ${e}');
+      return false;
     }
   }
 }

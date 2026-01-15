@@ -1,7 +1,4 @@
 package com.teamj.controller.bbs_control;
-
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -14,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.bbs_dto.CommentsDTO;
 import com.teamj.dto.bbs_dto.SliceResponseDTO;

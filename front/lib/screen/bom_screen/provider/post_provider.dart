@@ -20,6 +20,7 @@ final postListControllerProvider = AsyncNotifierProvider.autoDispose<PostListCon
   return PostListController();
 });
 
+
 // PostWriteScreen에서 PostWriteController를 사용하기 위함.
 final postWriteControllerProvider =NotifierProvider.autoDispose<PostWriteController, PostWriteState>(() {
       return PostWriteController();

@@ -1,8 +1,13 @@
 // lib/screen/bom_screen/widget/comment_bottom_sheet.dart
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/alert/dialog.dart';
+import 'package:front/data/repository/bbs/exception/post_delete_exception.dart';
 import 'package:front/screen/bom_screen/provider/comment_provider.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/bom_screen/widget/comment_card.dart';
 import 'package:front/screen/bom_screen/widget/comment_input_bar.dart';
 import 'package:front/theme/app_colors.dart';
@@ -50,6 +55,21 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+
+    ref.listen(commentListProvider(widget.postIdx),(previous,next){
+      if(next is AsyncError){
+        final error = next.error;
+
+        if(error is PostDeletedException){
+          WazzupToast.showError(error.toString());
+        if(mounted){
+          Navigator.of(context).pop();
+        } 
+        ref.invalidate(postListControllerProvider);
+        }
+      }
+    });
+
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final commentsAsync = ref.watch(commentListProvider(widget.postIdx));
 
@@ -117,7 +137,13 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                     );
                   },
                   loading: () => const Center(child: SizedBox.shrink()),
-                  error: (err, stack) => Center(child: Text("에러 발생: $err")),
+                  error: (err, stack) {
+                    // 삭제된 글이면 어차피 창이 닫힐 테니 빈 공간 보여줌
+                    if (err is PostDeletedException) {
+                      return const SizedBox();
+                    }
+                    return Center(child: Text("에러 발생: $err"));
+                  },
                 ),
               ),
               // 입력바
