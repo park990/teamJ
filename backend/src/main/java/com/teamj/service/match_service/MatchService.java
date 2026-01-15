@@ -52,7 +52,8 @@ public class MatchService {
      * @param genderOption 희망 성별 ("male" | "female" | "random")
      * @return MatchPair (요청자용, 상대방용 MatchData 포함)
      */
-    @Transactional
+    @Transactional // 이 메서드에서 실행되는 jpa쿼리들은 모두 하나의 트랜잭션으로 처리된다.
+    // = jpa 이외의 작업(예: Redis)은 트랜잭션을 달아준다고 롤백 처리되지 않음
     public MatchPair enterQueue(Long userIdx, String genderOption) {
         // 1. 유저 정보 조회
         Users user = userRepository.findById(userIdx)
@@ -74,34 +75,53 @@ public class MatchService {
         Optional<Long> matchedIdx = queueManager.tryMatch(waitingUser);
 
         // 5-1. 대기 중 (매칭 상대 없음)
-        if (matchedIdx.isEmpty()) {
-            log.info("⏳ 매칭 대기 중 - userIdx: {}, actualGender: {}, desiredGender: {}", 
-                     userIdx, user.getUsersGender(), genderOption);
+        try {
+            if (matchedIdx.isEmpty()) {
+                log.info("⏳ 매칭 대기 중 - userIdx: {}, actualGender: {}, desiredGender: {}", 
+                    userIdx, user.getUsersGender(), genderOption);
+                
+                // 요청자용 MatchData만 생성 (대기 중)
+                MatchData requesterData = MatchData.waiting();
+                
+                // MatchPair 반환 (상대방 없음)
+                return MatchPair.waiting(requesterData);
+            }
+
+            // 5-2. 매칭 성공 → 방 생성
+            Long partnerIdx = matchedIdx.get();
+            Long roomIdx = createRoom(userIdx, partnerIdx);
+
+            log.info("🎉 매칭 성공! requestUser: {}, partner: {}, roomIdx: {}", 
+                userIdx, partnerIdx, roomIdx);
+
+            // 6. 양쪽 MatchData 생성
             
-            // 요청자용 MatchData만 생성 (대기 중)
-            MatchData requesterData = MatchData.waiting();
+            // 요청자 입장: 나는 userIdx, 상대는 partnerIdx
+            MatchData requesterData = MatchData.matched(roomIdx, partnerIdx);
             
-            // MatchPair 반환 (상대방 없음)
-            return MatchPair.waiting(requesterData);
+            // 상대방 입장: 나는 partnerIdx, 상대는 userIdx
+            MatchData partnerData = MatchData.matched(roomIdx, userIdx);
+            
+            // 7. MatchPair로 묶어서 반환 (Controller가 각각 전송!)
+            return MatchPair.matched(requesterData, partnerData);
+        } catch (Exception e) {
+            // 예외 발생 시 Redis 정리
+            // 대기 중이었다면 (matchedIdx.isEmpty()) Redis에 추가된 상태
+            if (matchedIdx.isEmpty()) {
+                log.warn("⚠️ 예외 발생으로 인한 Redis 정리 - userIdx: {}, actualGender: {}", 
+                        userIdx, user.getUsersGender());
+
+                // 매칭 취소 시도
+                try {
+                    queueManager.cancel(userIdx, user.getUsersGender());
+                } catch (Exception cleanupException) {
+                    log.error("❌ Redis 정리 실패 - userIdx: {}, error: {}", 
+                        userIdx, cleanupException.getMessage());
+                }
+            }
+            // 예외를 다시 던져서 Controller에서 처리하도록
+            throw e;
         }
-
-        // 5-2. 매칭 성공 → 방 생성
-        Long partnerIdx = matchedIdx.get();
-        Long roomIdx = createRoom(userIdx, partnerIdx);
-
-        log.info("🎉 매칭 성공! requestUser: {}, partner: {}, roomIdx: {}", 
-                 userIdx, partnerIdx, roomIdx);
-
-        // 6. 양쪽 MatchData 생성
-        
-        // 요청자 입장: 나는 userIdx, 상대는 partnerIdx
-        MatchData requesterData = MatchData.matched(roomIdx, partnerIdx);
-        
-        // 상대방 입장: 나는 partnerIdx, 상대는 userIdx
-        MatchData partnerData = MatchData.matched(roomIdx, userIdx);
-        
-        // 7. MatchPair로 묶어서 반환 (Controller가 각각 전송!)
-        return MatchPair.matched(requesterData, partnerData);
     }
 
     private Long createRoom(Long userIdx1, Long userIdx2) {

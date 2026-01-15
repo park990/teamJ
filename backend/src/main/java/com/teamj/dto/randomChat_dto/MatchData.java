@@ -23,4 +23,8 @@ public class MatchData {
     public static MatchData cancelled() {
         return new MatchData("CANCELLED", null, null);
     }
+    
+    public static MatchData error() {
+        return new MatchData("ERROR", null, null);
+    }
 }
