@@ -27,7 +27,7 @@ class PostFooter extends ConsumerWidget {
               // 여기 컨트롤러 안에 로그인 되어잇지않으면 로그인 해달라는 toast알림 있음
               ref
                   .read(postListControllerProvider.notifier)
-                  .toggleLike(post.bbsIdx);
+                  .toggleLike(post.postIdx);
             },
           ),
           const SizedBox(width: 15),
@@ -37,8 +37,8 @@ class PostFooter extends ConsumerWidget {
             color: Colors.blueAccent,
             isActive: false,
             onTap: () {
-              CommentBottomSheet.show(context, post.bbsIdx);
-              print("${post.bbsIdx}게시글 클릭!");
+              CommentBottomSheet.show(context, post.postIdx);
+              print("${post.postIdx}게시글 클릭!");
             },
           ),
           const Spacer(),

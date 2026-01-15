@@ -122,4 +122,18 @@ public class BbsService {
                 isLiked,
                 bbs.getLikeCount());
     }
+
+    @Transactional
+    public boolean deletePost(Long postIdx, Long userIdx){
+        Bbs bbs = bbsRepository.findById(postIdx)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        
+        // 2. 권한 확인 (작성자와 요청자가 같은지)
+        if(!bbs.getUsersIdx().equals(userIdx)){
+            // 권한이 없으면 false 반환하거나 예외를 던짐
+            throw new IllegalArgumentException("본인의 게시글만 삭제할 수 있습니다.");
+        }
+        bbs.changeDeletionState();
+        return true;
+    }
 }

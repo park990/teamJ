@@ -12,7 +12,7 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
   int _currentPage = 0;
   bool _isLast = false;      // 백엔드의 Slice.hasNext와 동기화
   bool _isFetching = false;  // 중복 요청 방지 (스크롤 중복 호출 방어)
-  PostRepository get _repository =>ref.read(postRepositoryProvider);
+  PostRepository get _repository => ref.read(postRepositoryProvider);
 
   // notifier를 통해서 갖고오기 위해 _isLast를 갖고옴
   bool get isLastPage => _isLast;
@@ -83,7 +83,7 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
   // 1. UI 즉시 반영
   state = AsyncData(
     prev.map((p) {
-      if (p.bbsIdx == postIdx) {
+      if (p.postIdx == postIdx) {
         return p.copyWith(
           isLiked: !p.isLiked,
           likeCount: p.isLiked ? p.likeCount - 1 : p.likeCount + 1,
@@ -102,4 +102,15 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
     WazzupToast.showError("좋아요 처리 실패");
   }
 }
+
+  Future<bool> deletePost(int postIdx) async{
+    final success = await _repository.deletePost(postIdx);
+    if(success){
+      final prevState = state.value ?? [];
+        state = AsyncData(prevState.where((post)=>post.postIdx != postIdx).toList());
+      return true;
+    }else{
+      return false;
+    }
+  }
 }

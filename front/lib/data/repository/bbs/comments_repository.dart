@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/data/repository/bbs/exception/post_delete_exception.dart';
 import 'package:front/dto/api_response.dart';
 import 'package:front/dto/bbs/Slice_response.dart';
 import 'package:front/screen/bom_screen/model/comments_model.dart';
@@ -21,11 +22,25 @@ class CommentsRepository {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('댓글 불러오기 실패 (상태코드: ${response.statusCode})');
-    }
+        // 1. 에러 응답 본문을 엽니다.
+        final errorBody = jsonDecode(utf8.decode(response.bodyBytes));
+        
+        // 2. 백엔드가 보낸 bbsErrorExcption을 받음. 
+        String errorMessage = errorBody['message'];
+        String errorCode = errorBody['result'];
+
+        print('댓글 불러오기 에러: ${response.statusCode}');
+
+        if (errorCode == 'P001') {
+          throw PostDeletedException(errorMessage); 
+        } else {
+          throw Exception(errorMessage);
+        }
+      }
 
     final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
     final data = jsonResponse['data'];
+
     print('${data}댓글들이 도착하였다');
 
     if(data==null){
@@ -41,7 +56,7 @@ class CommentsRepository {
       isLast: data['hasNext'],
     );
   } catch (e) {
-    throw Exception('getComments error: $e');
+    rethrow;
   }
 }
   Future<bool> saveComments(Comments dto) async{
@@ -50,9 +65,21 @@ class CommentsRepository {
         '/api/comments/submit',
         body: dto.toJson(),
       );
-      if(response.statusCode != 200){
-        print('댓글 등록 실패: ${response.statusCode}');
-        return false;
+    if (response.statusCode != 200) {
+        // 1. 에러 응답 본문을 엽니다.
+        final errorBody = jsonDecode(utf8.decode(response.bodyBytes));
+        
+        // 2. 백엔드가 보낸 bbsErrorExcption을 받음. 
+        String errorMessage = errorBody['message'];
+        String errorCode = errorBody['result'];
+
+        print('댓글 저장하기 에러: ${response.statusCode}');
+
+        if (errorCode == 'P001') {
+          throw PostDeletedException(errorMessage); 
+        } else {
+          throw Exception(errorMessage);
+        }
       }
 
       final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
@@ -69,7 +96,7 @@ class CommentsRepository {
 
     }catch(e){
       print('댓글 등록 에러: ${e}');
-      return false;
+      rethrow;
     }
   }
   

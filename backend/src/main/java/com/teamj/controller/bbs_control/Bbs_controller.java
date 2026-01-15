@@ -64,6 +64,24 @@ public class Bbs_controller {
         
     }
 
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse<Boolean>> deletePost(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody Map<String,Long> requestBody
+    ){
+         if(userDetails == null){
+            return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요함."));
+        }
+        Long userIdx = userDetails.getUserIdx();
+        Long postIdx= requestBody.get("postIdx");
+        System.out.println("userIdx = "+userIdx + "입니다. 삭제할 게시글은 "+postIdx+"번 게시글");
+        
+        // 여기서 에러가 터지면 -> GlobalExceptionHandler의 handleIllegalArgument가 잡아서 처리해줌
+        bbsService.deletePost(Long.valueOf(postIdx), userIdx); 
+
+        return ResponseEntity.ok(ApiResponse.success(true, "게시글 삭제 성공"));
+    }
+
     // 좋아요 토글 기능
     @PostMapping("/likeToggle")
     public ResponseEntity<ApiResponse<LikeToggleDTO>> likeToggle(
