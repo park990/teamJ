@@ -6,6 +6,7 @@ import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/data/data_source/local/wazzup_token_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref);
@@ -18,14 +19,22 @@ class ApiClient {
   final String baseUrl = "${dotenv.env["API_URL"]}";
   final WazzupTokenStorage _storage = WazzupTokenStorage();
 
+  // 토큰을 미리 받아서 메모리에 넣어두자
+  String? _cachedAccessToken;
+  
+  Future<void> loadTokenToMemory() async {
+    _cachedAccessToken = await _storage.getAccessToken();
+  }
+
   Map<String, String> get _baseHeaders => {
     'Content-Type': 'application/json; charset=UTF-8',
   };
 
+  // POST 요청*************************************************************************
   Future<http.Response> post(String path, {Object? body}) async {
     String url = '$baseUrl$path';
-    String? accessToken = await _storage.getAccessToken();
-
+    String? accessToken = await _getValidToken();
+  
     var response = await http.post(
       Uri.parse(url),
       headers: {
@@ -48,7 +57,7 @@ class ApiClient {
       bool refreshed = await _refreshAccessToken();
 
       if (refreshed) {
-        String? newAccessToken = await _storage.getAccessToken();
+        String? newAccessToken = _cachedAccessToken;
         print("[ApiClient] 재발급 성공. 원래 요청 재시도: $url");
 
         return await http.post(
@@ -95,6 +104,8 @@ class ApiClient {
         String newAt = data['wazzupToken'] ?? '';
         String newRt = data['refreshToken'] ?? '';
 
+        _cachedAccessToken = newAt;
+
         // 토큰 전용 업데이트 메서드 호출
         await ref.read(authControllerProvider.notifier).updateTokensOnly(newAt, newRt);
         
@@ -122,16 +133,18 @@ class ApiClient {
 
 
 
-  // 겟 은 거의 안쓰니 까 내려둠 거의 안봐도 된다.
+  // GET 요청*************************************************************************
   Future<http.Response> get(String path) async {
     String url = '$baseUrl$path';
-    String? token = await _storage.getAccessToken();
+
+    String? accessToken = await _getValidToken();
+
 
     var response = await http.get(
       Uri.parse(url),
       headers: {
         ..._baseHeaders,
-        if (token != null) 'Authorization': 'Bearer $token',
+        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
       },
     );
 
@@ -140,7 +153,7 @@ class ApiClient {
       bool refreshed = await _refreshAccessToken();
 
       if (refreshed) {
-        String? newToken = await _storage.getAccessToken();
+        String? newToken = _cachedAccessToken;
         print("[ApiClient] 재발급 성공. 원래 요청 재시도: $url");
 
         return await http.get(
@@ -159,13 +172,14 @@ class ApiClient {
     return response;
   }
   
-Future<http.Response> postMultipart(
+  // multipart요청**********************************************************************************
+  Future<http.Response> postMultipart(
     String path, {
     required Map<String, String> fields,
     required List<XFile> images,
   }) async {
     String url = '$baseUrl$path';
-    String? accessToken = await _storage.getAccessToken();
+    String? accessToken = await _getValidToken();
 
     Future<http.MultipartRequest> createRequest(String? token) async {
       var request = http.MultipartRequest('POST', Uri.parse(url));
@@ -201,7 +215,7 @@ Future<http.Response> postMultipart(
       bool refreshed = await _refreshAccessToken();
 
       if (refreshed) {
-        String? newAccessToken = await _storage.getAccessToken();
+        String? newAccessToken = _cachedAccessToken;
         // 재발급 성공 시 새로운 토큰으로 다시 요청 생성 및 전송
         var retryRequest = await createRequest(newAccessToken);
         var retryStreamedResponse = await retryRequest.send();
@@ -210,6 +224,39 @@ Future<http.Response> postMultipart(
     }
 
     return response;
+  }
+
+  // 만료 먼저 검사**********************************************************
+  Future<String?> _getValidToken() async {
+
+    // 1. 토큰이 없으면 그냥 null 리턴 (비회원 요청)
+    if (_cachedAccessToken == null) {
+        // 혹시 모르니 없으면 스토리지 한번 확인
+        _cachedAccessToken = await _storage.getAccessToken();
+        if (_cachedAccessToken == null) return null;
+    }
+
+    // 2. 토큰이 만료되었는지 확인 (JwtDecoder 사용)
+    // isExpired()는 토큰의 'exp' 클레임을 확인해서 현재 시간과 비교합니다.
+    bool isExpired = JwtDecoder.isExpired(_cachedAccessToken!);
+
+    if (isExpired) {
+      print("[ApiClient] 요청 전 토큰 만료 감지! 갱신 시도...");
+      
+      // 3. 만료됐으면 서버에 찌르기 전에 미리 갱신 시도
+      bool refreshed = await _refreshAccessToken();
+      
+      if (refreshed) {
+        // 갱신 성공했으면 새 토큰 리턴
+        return _cachedAccessToken;
+      } else {
+        // 갱신 실패했으면 (리프레시 토큰도 만료 등) -> 로그아웃 처리 될 것임
+        return null; 
+      }
+    }
+
+    // 3. 만료 안 됐으면 기존 토큰 리턴
+    return _cachedAccessToken;
   }
 
   

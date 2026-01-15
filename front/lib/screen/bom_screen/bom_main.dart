@@ -22,9 +22,21 @@ class _BomMainState extends ConsumerState<BomMain> with LoginHandlerMixin {
   @override
   void initState() {
     super.initState();
+    
     Future.microtask(() {
-      ref.read(authControllerProvider.notifier).init();
+      // 1. 현재 Auth 상태를 읽어옵니다.
+      final authState = ref.read(authControllerProvider);
+
+      // 2. 이미 인증 체크가 완료된 상태(authResolved == true)라면
+      // 불필요하게 다시 init()을 호출하지 않습니다.
+      if (!authState.authResolved) {
+         print("🔒 인증 정보 없음 - 자동 로그인 체크 시작");
+         ref.read(authControllerProvider.notifier).init();
+      } else {
+         print("✅ 이미 인증 완료됨 - 자동 로그인 체크 생략");
+      }
     });
+  
   }
 
   @override

@@ -21,11 +21,11 @@ class PostListController extends AutoDisposeAsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build() async {
     // 1. Auth 전체 상태를 지켜봅니다.
   final authResolved = ref.watch(authControllerProvider.select((s) => s.authResolved)
-);
+  );
 
   if (!authResolved) {
-  return [];
-}
+    return [];
+  }
 
     print('🚩 PostListController build() 실행됨');
 
