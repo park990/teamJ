@@ -51,6 +51,7 @@ dependencies:
   cached_network_image: ^3.4.1 # S3에서 이미지를 갖고오기 위함
   stomp_dart_client: ^3.0.1  # STOMP 클라이언트
   vibration: ^2.0.1
+  jwt_decoder: ^2.0.1
 
 
 dev_dependencies:
