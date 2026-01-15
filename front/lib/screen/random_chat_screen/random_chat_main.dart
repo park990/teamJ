@@ -13,8 +13,8 @@ class RandomChatMain extends ConsumerStatefulWidget {
   @override
   ConsumerState<RandomChatMain> createState() => _RandomChatMainState();
 }
-
-class _RandomChatMainState extends ConsumerState<RandomChatMain> {
+// 앱 라이프사이클 관찰자 추가 : 앱이 백그라운드로 이동할 때 매칭 취소 요청을 보낼 수 있게 하기 위해
+class _RandomChatMainState extends ConsumerState<RandomChatMain> with WidgetsBindingObserver{
   @override
   void initState() {
     super.initState();
@@ -23,6 +23,36 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain> {
     Future.microtask(() {
       ref.read(authControllerProvider.notifier).init();
     });
+
+    // 앱 라이프사이클 관찰자 등록
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  // 앱 라이프사이클 상태 변경 감지
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    debugPrint('[RandomChatMain] didChangeAppLifecycleState - $state');
+
+    // paused 상태: 앱이 백그라운드로 이동
+    if (state == AppLifecycleState.paused) {
+      final controller = ref.read(randomChatControllerProvider);
+      final currentStatus = controller.state.status;
+
+      // 매칭 중일 때만 취소 요청
+      if (currentStatus == RandomChatStatus.matching) {
+        debugPrint('[RandomChatMain] ⏸️ 백그라운드 이동 감지 → 매칭 취소 요청');
+        controller.cancelMatching();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    // 앱 라이프사이클 관찰자 해제
+    debugPrint('[RandomChatMain] dispose - 앱 라이프사이클 관찰자 해제');
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
