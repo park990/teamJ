@@ -140,4 +140,9 @@ public class Bbs {
         medias.add(media);
         media.setBbs(this);
     }
+
+    // 삭제 요청
+    public void changeDeletionState() {
+        this.isDeleted = 1;
+    }
 }

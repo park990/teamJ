@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
+import 'package:front/data/repository/bbs/exception/post_delete_exception.dart';
 import 'package:front/screen/bom_screen/provider/comment_provider.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 
 class CommentInputBar extends ConsumerStatefulWidget {
   final int postIdx;
@@ -66,16 +68,36 @@ class _CommentInputBarState extends ConsumerState<CommentInputBar> {
   Future<void> _handleSubmitted() async {
     final text = _textController.text.trim();
     
-   
-    final success = await ref.read(commentListProvider(widget.postIdx).notifier).createComment(
-      content: text,
-    );
+    try {
+      // 1. 컨트롤러 호출 (이제 bool을 리턴하지 않습니다)
+      // 만약 "삭제된 게시글"이라면 여기서 에러(Exception)가 터져서 -> catch로 넘어갑니다.
+      await ref.read(commentListProvider(widget.postIdx).notifier).createComment(
+        content: text,
+      );
 
-    if (success && mounted) {
-      WazzupToast.showSuccess("댓글 등록 성공");
-      _textController.clear(); // 전송 성공 시 입력창 초기화
-      FocusScope.of(context).unfocus(); // 키보드 닫기 (선택 사항)
-      
+      // 2. 여기까지 코드가 내려왔다는 건 "성공"했다는 뜻입니다!
+      if (mounted) {
+        WazzupToast.showSuccess("댓글 등록 성공");
+        _textController.clear(); // 입력창 초기화
+        FocusScope.of(context).unfocus(); // 키보드 닫기
+      }
+
+    } catch (e) {
+      // 3. 에러 발생! (삭제된 게시글, 서버 오류 등)
+      if (mounted) {
+
+        if(e is PostDeletedException){
+          WazzupToast.showError(e.toString());
+          Navigator.of(context).pop(); 
+          ref.invalidate(postListControllerProvider);
+        }
+        else {
+          // 일반 에러(와이파이, 서버오류 등) -> 메시지만 띄움 (창 닫지 않음!)
+          // e.toString()에서 "Exception: " 글자 제거
+          String msg = e.toString().replaceAll('Exception: ', '');
+          WazzupToast.showError(msg);
+        }
+      }
     }
   }
 }

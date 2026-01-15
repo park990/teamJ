@@ -1,7 +1,7 @@
 import 'package:front/dto/bbs/post_list_dto.dart';
 
 class Post {
-  final int bbsIdx;
+  final int postIdx;
   final int userIdx;
   final String author; // nickname을 author로 명칭 변경 (직관적)
   final int viewCount;
@@ -14,7 +14,7 @@ class Post {
   final String content;
 
   Post({
-    required this.bbsIdx,
+    required this.postIdx,
     required this.userIdx,
     required this.author,
     required this.viewCount,
@@ -41,7 +41,7 @@ class Post {
     String? content,
   }) {
     return Post(
-      bbsIdx: bbsIdx ?? this.bbsIdx,
+      postIdx: bbsIdx ?? this.postIdx,
       author: author ?? this.author,
       userIdx: userIdx ?? this.userIdx,
       viewCount: viewCount ?? this.viewCount,
@@ -59,7 +59,7 @@ class Post {
   //  DTO를 받아서 Model로 변환
   factory Post.fromListDto(PostListDto dto) {
     return Post(
-      bbsIdx: dto.bbsIdx!,
+      postIdx: dto.postIdx!,
       userIdx: dto.usersIdx!,
       author: dto.nickname!,
       viewCount: dto.viewCount!,

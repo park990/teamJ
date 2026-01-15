@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/alert/dialog.dart';
 import 'package:front/screen/bom_screen/model/post_model.dart';
+import 'package:front/screen/bom_screen/provider/post_provider.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -24,6 +25,7 @@ class PostHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final int postIdx = post?.postIdx ?? 0 ;
     final authState = ref.watch(authControllerProvider);
     final myIdx = authState.userIdx;
     final writerIdx = post?.userIdx ?? authorIdx;
@@ -51,7 +53,7 @@ class PostHeader extends ConsumerWidget {
                 if (showMore)
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => _showModernActionSheet(context,isMe,authorName),
+                    onTap: () => _showModernActionSheet(context,isMe,authorName,ref, postIdx),
                     child: const Padding(
                       padding: EdgeInsets.all(8.0), // 클릭 영역을 더 넉넉히
                       child: Icon(
@@ -85,7 +87,7 @@ class PostHeader extends ConsumerWidget {
   }
 
   // 모던 액션 시트 (신고하기, 차단하기)
-  void _showModernActionSheet(BuildContext context, bool isMe, String authorName) {
+  void _showModernActionSheet(BuildContext context, bool isMe, String authorName,WidgetRef ref,int postIdx) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -115,6 +117,7 @@ class PostHeader extends ConsumerWidget {
               color: Colors.redAccent,
               onTap: () {
                 Navigator.pop(context);
+                _showDeleteConfirmDialog(context, ref ,postIdx);
               },
             ),
           ] else ...[
@@ -150,6 +153,45 @@ class PostHeader extends ConsumerWidget {
       title: Center(
         child: Text(title, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w600)),
       ),
+    );
+  }
+
+
+  Future<void> _showDeleteConfirmDialog(BuildContext context, WidgetRef ref, int postIdx) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // 바깥 터치해도 안 닫히게 (선택사항)
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("게시글 삭제", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text("정말로 이 게시글을 삭제하시겠습니까?\n삭제된 글은 복구할 수 없습니다."),
+          actions: [
+            // 취소 버튼
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("취소", style: TextStyle(color: Colors.grey)),
+            ),
+            // 진짜 삭제 버튼
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // 팝업 닫기
+                
+                bool success = await ref
+                    .read(postListControllerProvider.notifier)
+                    .deletePost(postIdx);
+
+                if (success) {
+                  WazzupToast.showSuccess("게시글이 삭제되었습니다.");
+                } else {
+                  WazzupToast.showError("삭제 실패. 다시 시도해주세요.");
+                }
+              },
+              child: const Text("삭제", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

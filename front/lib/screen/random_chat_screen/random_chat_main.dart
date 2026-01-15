@@ -13,8 +13,10 @@ class RandomChatMain extends ConsumerStatefulWidget {
   @override
   ConsumerState<RandomChatMain> createState() => _RandomChatMainState();
 }
-// 앱 라이프사이클 관찰자 추가 : 앱이 백그라운드로 이동할 때 매칭 취소 요청을 보낼 수 있게 하기 위해
-class _RandomChatMainState extends ConsumerState<RandomChatMain> with WidgetsBindingObserver{
+
+class _RandomChatMainState extends ConsumerState<RandomChatMain>
+    with WidgetsBindingObserver {
+  // 클래스에 앱 라이프사이클 관찰자 추가 : 앱이 백그라운드로 이동할 때 매칭 취소 요청을 보낼 수 있게 하기 위해
   @override
   void initState() {
     super.initState();
@@ -82,6 +84,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain> with WidgetsBin
     if (randomChatState.status == RandomChatStatus.matching) {
       debugPrint('[RandomChatMain] UI = MATCHING');
       return Scaffold(
+        backgroundColor: wazzupBackGround, // 배경색 통일
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -1,4 +1,6 @@
 package com.teamj.dto.response;
+import com.teamj.exception.bbs_error.CommentsErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,6 +33,14 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> register(T data) {
         return new ApiResponse<>("register", "회원가입이 필요한 유저입니다.", data);
 
+    }
+
+    public static <T> ApiResponse<T> fail(CommentsErrorCode errorCode) {
+        return new ApiResponse<>(
+            errorCode.getCode(),    // results
+            errorCode.getMessage(), // message
+            null
+        );
     }
 
 
