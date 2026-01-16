@@ -14,4 +14,8 @@ class GatheringMeetingController extends ChangeNotifier{
   GatheringMeetingController({
     required this.repository,
   });
+
+  Future<void> fetchDetail(int roomIdx) async {
+    isLoading = true;
+  }
 }

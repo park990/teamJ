@@ -11,3 +11,6 @@ redis/data/
 
 # docs 폴더 전체 무시
 docs/
+
+# Claude Code (AI) 내부 캐시 및 설정 폴더
+.claude/
