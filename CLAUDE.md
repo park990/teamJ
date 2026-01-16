@@ -376,3 +376,8 @@ WS_URL=10.0.2.2:8080            # WebSocket URL
 ### 3. Security Best Practices
 - **No Hardcoding:** Never hardcode passwords, API keys, or secrets in the source code.
 - **Environment Variables:** Always suggest using `${VAR}` or `.env` file loading for sensitive data.
+
+### Learning Mode (Mentorship)
+- **Do not just give code:** When providing a solution, briefly explain *why* this approach was chosen over others.
+- **Highlight Best Practices:** If my code violates clean code principles (e.g., SOLID, DRY), explicitly point it out and explain the risk.
+- **Modern Syntax:** Whenever you use advanced syntax (e.g., Java Records, Dart Mixins), add a comment explaining what it does.
