@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.gathering_dto.GatheringActionResponseDto;
+import com.teamj.dto.gathering_dto.GatheringCreateRequestDto;
 import com.teamj.dto.gathering_dto.GatheringDetailDto;
 import com.teamj.dto.gathering_dto.GatheringListDto;
 import com.teamj.dto.response.ApiResponse;
@@ -75,7 +76,7 @@ public class GatheringController {
     // 모임(채팅방 X) 생성
     @PostMapping("/create")
     public ResponseEntity<?> createGathering(
-        @RequestPart("data") GatheringActionResponseDto request,
+        @RequestPart("data") GatheringCreateRequestDto request,
         @RequestPart(value = "image", required = false) MultipartFile image,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
