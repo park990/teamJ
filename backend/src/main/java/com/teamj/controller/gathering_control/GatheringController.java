@@ -1,7 +1,9 @@
 package com.teamj.controller.gathering_control;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.config.CustomUserDetails;
 import com.teamj.dto.gathering_dto.GatheringActionResponseDto;
@@ -68,5 +70,16 @@ public class GatheringController {
         Long userIdx = userDetails.getUserIdx();
         GatheringActionResponseDto result = gatheringService.leaveGathering(roomIdx, userIdx);
         return ResponseEntity.ok(ApiResponse.success(result, "모임 나가기 성공"));
+    }
+
+    // 모임(채팅방 X) 생성
+    @PostMapping("/create")
+    public ResponseEntity<?> createGathering(
+        @RequestPart("data") GatheringActionResponseDto request,
+        @RequestPart(value = "image", required = false) MultipartFile image,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        GatheringActionResponseDto result = gatheringService.createGathering(request, image, userDetails.getUserIdx());
+        return ResponseEntity.ok(ApiResponse.success(result, "모임 생성 성공"));
     }
 }
