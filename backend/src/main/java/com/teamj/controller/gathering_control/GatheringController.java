@@ -59,15 +59,14 @@ public class GatheringController {
         GatheringActionResponseDto result = gatheringService.joinGathering(roomIdx, userIdx);
         return ResponseEntity.ok(ApiResponse.success(result, "모임 참가 성공"));
     }
-    // 모임 취소
-    // @PostMapping("{roomIdx}/leave")
-    // public ResponseEntity<?> leaveGathering(
-    //     @PathVariable Long roomIdx,
-    //     @AuthenticationPrincipal CustomUserDetails userDetails
-    // ) {
-    //     Long userIdx = userDetails.getUserIdx();
-    //     GatheringActionResponseDto result = gatheringService.leaveGathering(roomIdx, userIdx);
-    //     return ResponseEntity.ok(ApiResponse.success(result, "모임 취소 성공"));
-    // }
-    
+    // 모임 나가기
+    @PostMapping("{roomIdx}/leave")
+    public ResponseEntity<?> leaveGathering(
+        @PathVariable Long roomIdx,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long userIdx = userDetails.getUserIdx();
+        GatheringActionResponseDto result = gatheringService.leaveGathering(roomIdx, userIdx);
+        return ResponseEntity.ok(ApiResponse.success(result, "모임 나가기 성공"));
+    }
 }
