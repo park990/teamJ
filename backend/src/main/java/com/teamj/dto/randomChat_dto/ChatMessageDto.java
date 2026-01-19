@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * 
  * 【 역할 】
  * - 채팅 메시지를 WebSocket으로 브로드캐스트할 때 사용
- * - Users 테이블에서 최신 nickname, profileImageUrl 조회 후 포함
+ * - Users 테이블에서 최신 nickname, profileImgUrl 조회 후 포함
  * 
  * 【 확장성 】
  * - 나중에 MongoDB 저장 시 ChatMessage 엔티티 → DTO 변환 메서드 추가 가능
@@ -73,7 +73,7 @@ public class ChatMessageDto {
     /**
      * 메시지 작성자 프로필 이미지 URL (Users 테이블에서 조회)
      * - 항상 최신 정보 반영
-     * - 현재 Users 엔티티에 없지만, 나중에 추가 가능하도록 nullable
+     * - Users.profileImgUrl 필드와 매핑
      */
-    private String profileImageUrl;
+    private String profileImgUrl;
 }

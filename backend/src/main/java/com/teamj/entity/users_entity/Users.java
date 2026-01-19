@@ -50,6 +50,9 @@ public class Users {
     @Column
     private String usersName;
 
+    @Column
+    private String profileImgUrl;
+
     @Column(unique = true, nullable = false)
     private String usersNickname;
 
