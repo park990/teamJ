@@ -17,6 +17,7 @@ import com.teamj.entity.doubleKey_entity.ParticipantId;
 import com.teamj.entity.meet_entity.MeetRoom;
 import com.teamj.entity.meet_entity.Participant;
 import com.teamj.entity.users_entity.Users;
+import com.teamj.enums.ParticipantRole;
 import com.teamj.repository.meet_repository.MeetRoomRepository;
 import com.teamj.repository.meet_repository.ParticipantRepository;
 import com.teamj.repository.myPage_repository.signUp_repository.UserRepository;
@@ -30,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 public class GatheringService {
     // UserRepository 주입
     private final UserRepository userRepository;
-
     // ParticipantRepository 주입
     private final ParticipantRepository participantRepository;
     // S3 Uploader 주입(모임 생성시 필요)
@@ -235,7 +235,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .id(participantId)
             .room(meetRoom)
             .user(user)
-            .usersRole("GUEST")
+            .usersRole(ParticipantRole.GUEST.getValue())
             .build();
 
         // 참여자 저장
@@ -253,6 +253,59 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .participantCount(newCount)
             .isFull(isFull)
             .isParticipating(true)
+            .build();
+    }
+
+    // *** 모임 나가기 ***
+    @Transactional
+    @CacheEvict(value = "participantCount", allEntries = true)
+    public GatheringActionResponseDto leaveGathering(Long roomIdx, Long userIdx) {
+        // 모임 존재 확인
+        Optional<MeetRoom> meetRoomOptional = meetRoomRepository.findById(roomIdx);
+
+        if(meetRoomOptional.isEmpty()) {
+            throw new IllegalArgumentException(
+                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
+        }
+        MeetRoom meetRoom = meetRoomOptional.get();
+
+        // 복합키로 참여자 조회
+        ParticipantId participantId = new ParticipantId(roomIdx, userIdx);
+        Optional<Participant> participantOptional = participantRepository.findById(participantId);
+
+        if(participantOptional.isEmpty()) {
+            log.warn("참가하지 않은 모임입니다 - roomIdx: {}, userIdx: {}", roomIdx, userIdx);
+            throw new IllegalArgumentException(
+                "참가하지 않은 모임입니다."
+            );
+        }
+
+        Participant participant = participantOptional.get();
+
+        // HOST 검증 - 방장은 나갈 수 없음 (모임/채팅방 삭제만 가능)
+        if(ParticipantRole.HOST.getValue().equals(participant.getUsersRole())) {
+            log.warn("HOST는 나가기 불가 - roomIdx: {}, userIdx: {}", roomIdx, userIdx);
+            throw new IllegalArgumentException(
+                "방장은 모임을 나갈 수 없습니다. 모임을 삭제해주세요."
+            );
+        }
+
+        // 참여자 삭제 (GUEST만 가능)
+        participantRepository.delete(participant);
+        log.info("참가자 삭제 완료 - roomIdx: {}, userIdx: {}", roomIdx, userIdx);
+
+        // 업데이트된 정보 조회
+        int newCount = participantRepository.countByRoom_RoomIdx(roomIdx);
+        boolean isFull = newCount >= meetRoom.getMax();
+
+        // 결과 반환
+        log.info("모임 나가기 완료 - roomIdx: {}, 남은 참가자: {}/{}", roomIdx, newCount, meetRoom.getMax());
+        return GatheringActionResponseDto.builder()
+            .success(true)
+            .message("모임에서 나갔습니다.")
+            .participantCount(newCount)
+            .isFull(isFull)
+            .isParticipating(false)
             .build();
     }
 }
