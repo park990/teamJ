@@ -298,14 +298,14 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
         Long userIdx
     ) {
         
-        // 사용자 검증
+        // 사용자 검증 - 존재하는 사용자인지 확인
         Users user = findUserOrThrow(userIdx);
-        // 이미지 업로드
+        // 이미지 업로드 - S3에 저장하고 URL 받기
         String imageUrl = null;
         if(image != null && !image.isEmpty()) {
             imageUrl = s3Uploader.upload(image, imageUrl);
         }
-        // MeetRoom 생성 및 저장
+        // 모임 정보 저장 - 사용자 입력 -> DB 저장
         MeetRoom meetRoom = MeetRoom.builder()
             .roomName(request.getRoomName())
             .roomType(request.getRoomType())
@@ -313,7 +313,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .meetDate(request.getMeetDate())
             .meetPlace(request.getMeetPlace())
             .max(request.getMax())
-            .roomImg(imageUrl)
+            .roomImg(imageUrl) //S3 업로드 후 URL
             .createdAt(LocalDateTime.now())
             .build();
         MeetRoom savedRoom = meetRoomRepository.save(meetRoom);
