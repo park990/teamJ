@@ -1,5 +1,6 @@
 package com.teamj.service.gathering_service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,8 +10,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.dto.gathering_dto.GatheringActionResponseDto;
+import com.teamj.dto.gathering_dto.GatheringCreateRequestDto;
 import com.teamj.dto.gathering_dto.GatheringDetailDto;
 import com.teamj.dto.gathering_dto.GatheringListDto;
 import com.teamj.entity.doubleKey_entity.ParticipantId;
@@ -38,6 +41,7 @@ public class GatheringService {
     // repository 연결
     private final MeetRoomRepository meetRoomRepository;
 
+// 캐시 저장
 @Cacheable(
     value = "participantCount", // 캐시 이름
     key = "#roomIdxList.toString()", // [1,2,3,4,5] 형태
@@ -78,6 +82,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
 
     /**
      * 핫한 모임 목록 조회 (최신 5개)
+     * todo: 핫한 모임 기준 잡기 - 활발히 활동하는 모임을 어떻게 판단할지?
      */
     @Transactional(readOnly = true)
     public List<GatheringListDto> getHotGatheringList() {
@@ -121,6 +126,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
                 .map(meetRoom -> buildGatheringListDto(meetRoom, countMap))
                 .collect(Collectors.toList());
     }
+
 
     private GatheringListDto buildGatheringListDto(
         MeetRoom meetRoom,
@@ -279,6 +285,59 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .participantCount(newCount)
             .isFull(isFull)
             .isParticipating(false)
+            .build();
+    }
+
+    // *** 모임 생성 ***
+    @Transactional
+    // 캐시 삭제 - 참여자 변경 시
+    @CacheEvict(value = "participantCount", allEntries = true)
+    public GatheringActionResponseDto createGathering(
+        GatheringCreateRequestDto request,
+        MultipartFile image,
+        Long userIdx
+    ) {
+        
+        // 사용자 검증
+        Users user = findUserOrThrow(userIdx);
+        // 이미지 업로드
+        String imageUrl = null;
+        if(image != null && !image.isEmpty()) {
+            imageUrl = s3Uploader.upload(image, imageUrl);
+        }
+        // MeetRoom 생성 및 저장
+        MeetRoom meetRoom = MeetRoom.builder()
+            .roomName(request.getRoomName())
+            .roomType(request.getRoomType())
+            .roomDesc(request.getRoomDesc())
+            .meetDate(request.getMeetDate())
+            .meetPlace(request.getMeetPlace())
+            .max(request.getMax())
+            .roomImg(imageUrl)
+            .createdAt(LocalDateTime.now())
+            .build();
+        MeetRoom savedRoom = meetRoomRepository.save(meetRoom);
+
+        // 모임 생성자를 HOST로 저장
+        ParticipantId participantId = new ParticipantId(
+            savedRoom.getRoomIdx(),
+            userIdx
+        );
+        Participant participant = Participant.builder()
+            .id(participantId)
+            .room(savedRoom)
+            .user(user)
+            .usersRole(ParticipantRole.HOST.getValue())
+            .build();
+        
+        participantRepository.save(participant);
+        // 결과 반환
+        return GatheringActionResponseDto.builder()
+            .success(true)
+            .message("모임이 생성되었습니다.")
+            .participantCount(1) // 생성자 1명
+            .isFull(false)
+            .isParticipating(true)
             .build();
     }
 
