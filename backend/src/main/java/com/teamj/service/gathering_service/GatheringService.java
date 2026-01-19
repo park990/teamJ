@@ -1,5 +1,6 @@
 package com.teamj.service.gathering_service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,8 +10,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.teamj.dto.gathering_dto.GatheringActionResponseDto;
+import com.teamj.dto.gathering_dto.GatheringCreateRequestDto;
 import com.teamj.dto.gathering_dto.GatheringDetailDto;
 import com.teamj.dto.gathering_dto.GatheringListDto;
 import com.teamj.entity.doubleKey_entity.ParticipantId;
@@ -38,6 +41,7 @@ public class GatheringService {
     // repository 연결
     private final MeetRoomRepository meetRoomRepository;
 
+// 캐시 저장
 @Cacheable(
     value = "participantCount", // 캐시 이름
     key = "#roomIdxList.toString()", // [1,2,3,4,5] 형태
@@ -76,52 +80,53 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     // 모임 생성 시 이미지를 업로드 및 URL을 DB에 저장하는 로직
     //todo: 로직 추가
 
-    // 목록 조회 시 DB에서 URL을 꺼내 DTO에 담기
-    // 핫한 모임 목록 조회(이미지)
+    /**
+     * 핫한 모임 목록 조회 (최신 5개)
+     * todo: 핫한 모임 기준 잡기 - 활발히 활동하는 모임을 어떻게 판단할지?
+     */
     @Transactional(readOnly = true)
-    public List<GatheringListDto> getHotGatheringHotList() {
-        // DB에서 핫한 모임 조회(RANDOM_1ON1 모임 제외)
-        List<MeetRoom> entities = meetRoomRepository.findTop5ByRoomTypeNotOrderByCreatedAtDesc("RANDOM_1ON1");
+    public List<GatheringListDto> getHotGatheringList() {
+        // 1. 모임 목록 조회 (랜덤채팅 제외)
+        List<MeetRoom> entities = meetRoomRepository
+            .findTop5ByRoomTypeNotOrderByCreatedAtDesc("RANDOM_1ON1");
 
-        // 모든 roomIdx 추출
+        // 2. roomIdx 추출 → 참여자 수 일괄 조회용
         List<Long> roomIdxList = entities.stream()
             .map(MeetRoom::getRoomIdx)
             .collect(Collectors.toList());
-        // 엔티티 -> DTO 변환
-        // 이때 DB에 저장된 URL을 그대로 DTO에 넣어줌
+
+        // 3. 참여자 수 Map 조회 (DB 쿼리 1번으로 전체 조회)
+        Map<Long, Integer> countMap = getParticipantCountMap(roomIdxList);
+
+        // 4. Entity → DTO 변환
         return entities.stream()
-                .map(meetRoom -> GatheringListDto.builder()
-                    .roomIdx(meetRoom.getRoomIdx())
-                    .roomName(meetRoom.getRoomName())
-                    .roomType(meetRoom.getRoomType())
-                    .createdAt(meetRoom.getCreatedAt())
-                    .meetDate(meetRoom.getMeetDate())
-                    .max(meetRoom.getMax())
-                    .roomImg(meetRoom.getRoomImg())
-                    .roomDesc(meetRoom.getRoomDesc())
-                    .build())
+                .map(meetRoom -> buildGatheringListDto(meetRoom, countMap))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 새로운 모임 목록 조회 (전체, 최신순)
+     */
     @Transactional(readOnly = true)
     public List<GatheringListDto> getNewGatheringList() {
-        // DB 조회
-        List<MeetRoom> newList = meetRoomRepository.findAllByOrderByCreatedAtDesc();
+        // 1. 모임 목록 조회 (랜덤채팅 제외)
+        List<MeetRoom> newList = meetRoomRepository
+            .findAllByRoomTypeNotOrderByCreatedAtDesc("RANDOM_1ON1");
 
-        // Entity -> DTO 변환
+        // 2. roomIdx 추출 → 참여자 수 일괄 조회용
+        List<Long> roomIdxList = newList.stream()
+            .map(MeetRoom::getRoomIdx)
+            .collect(Collectors.toList());
+
+        // 3. 참여자 수 Map 조회 (DB 쿼리 1번으로 전체 조회)
+        Map<Long, Integer> countMap = getParticipantCountMap(roomIdxList);
+
+        // 4. Entity → DTO 변환
         return newList.stream()
-                .map(meetRoom -> GatheringListDto.builder()
-                    .roomIdx(meetRoom.getRoomIdx())
-                    .roomName(meetRoom.getRoomName())
-                    .roomType(meetRoom.getRoomType())
-                    .createdAt(meetRoom.getCreatedAt())
-                    .meetDate(meetRoom.getMeetDate())
-                    .max(meetRoom.getMax())
-                    .roomImg(meetRoom.getRoomImg())
-                    .roomDesc(meetRoom.getRoomDesc())
-                    .build())
+                .map(meetRoom -> buildGatheringListDto(meetRoom, countMap))
                 .collect(Collectors.toList());
     }
+
 
     private GatheringListDto buildGatheringListDto(
         MeetRoom meetRoom,
@@ -151,14 +156,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     @Transactional(readOnly = true)
     public GatheringDetailDto getGatheringDetail(Long roomIdx, Long userIdx) {
         //모임 조회
-        Optional<MeetRoom> meetRoomOptional = meetRoomRepository
-            .findById(roomIdx);
-
-        if (meetRoomOptional.isEmpty()) {
-            throw new IllegalArgumentException(
-                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
-        }
-        MeetRoom meetRoom = meetRoomOptional.get();
+        MeetRoom meetRoom = findMeetRoomOrThrow(roomIdx);
 
         // 참여자 수 조회
         int participantCount = participantRepository
@@ -194,13 +192,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     @CacheEvict(value = "participantCount", allEntries = true)
     public GatheringActionResponseDto joinGathering(Long roomIdx, Long userIdx) {
         // 모임 존재 확인
-        Optional<MeetRoom> meetRoomOptional = meetRoomRepository.findById(roomIdx);
-
-        if(meetRoomOptional.isEmpty()) {
-            throw new IllegalArgumentException(
-                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
-        }
-        MeetRoom meetRoom = meetRoomOptional.get();
+        MeetRoom meetRoom = findMeetRoomOrThrow(roomIdx);
 
         boolean alreadyParticipating = participantRepository.existsByRoom_RoomIdxAndUser_UsersIdx(roomIdx, userIdx);
         
@@ -218,14 +210,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
         }
 
         // 사용자 조회
-        Optional<Users> userOptional = userRepository.findById(userIdx);
-        if(userOptional.isEmpty()) {
-            throw new IllegalArgumentException(
-                "사용자를 찾을 수 없습니다. userIdx: " + userIdx
-            );
-        }
-        // 사용자 꺼내기
-        Users user = userOptional.get();
+        Users user = findUserOrThrow(userIdx);
 
         // 복합키 생성
         ParticipantId participantId = new ParticipantId(roomIdx, userIdx);
@@ -261,13 +246,7 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
     @CacheEvict(value = "participantCount", allEntries = true)
     public GatheringActionResponseDto leaveGathering(Long roomIdx, Long userIdx) {
         // 모임 존재 확인
-        Optional<MeetRoom> meetRoomOptional = meetRoomRepository.findById(roomIdx);
-
-        if(meetRoomOptional.isEmpty()) {
-            throw new IllegalArgumentException(
-                "존재하지 않는 모임입니다. roomIdx: " + roomIdx);
-        }
-        MeetRoom meetRoom = meetRoomOptional.get();
+        MeetRoom meetRoom = findMeetRoomOrThrow(roomIdx);
 
         // 복합키로 참여자 조회
         ParticipantId participantId = new ParticipantId(roomIdx, userIdx);
@@ -307,5 +286,82 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
             .isFull(isFull)
             .isParticipating(false)
             .build();
+    }
+
+    // *** 모임 생성 ***
+    @Transactional
+    // 캐시 삭제 - 참여자 변경 시
+    @CacheEvict(value = "participantCount", allEntries = true)
+    public GatheringActionResponseDto createGathering(
+        GatheringCreateRequestDto request,
+        MultipartFile image,
+        Long userIdx
+    ) {
+        
+        // 사용자 검증 - 존재하는 사용자인지 확인
+        Users user = findUserOrThrow(userIdx);
+        // 이미지 업로드 - S3에 저장하고 URL 받기
+        String imageUrl = null;
+        if(image != null && !image.isEmpty()) {
+            imageUrl = s3Uploader.upload(image, imageUrl);
+        }
+        // 모임 정보 저장 - 사용자 입력 -> DB 저장
+        MeetRoom meetRoom = MeetRoom.builder()
+            .roomName(request.getRoomName())
+            .roomType(request.getRoomType())
+            .roomDesc(request.getRoomDesc())
+            .meetDate(request.getMeetDate())
+            .meetPlace(request.getMeetPlace())
+            .max(request.getMax())
+            .roomImg(imageUrl) //S3 업로드 후 URL
+            .createdAt(LocalDateTime.now())
+            .build();
+        MeetRoom savedRoom = meetRoomRepository.save(meetRoom);
+
+        // 모임 생성자를 HOST로 저장
+        ParticipantId participantId = new ParticipantId(
+            savedRoom.getRoomIdx(),
+            userIdx
+        );
+        Participant participant = Participant.builder()
+            .id(participantId)
+            .room(savedRoom)
+            .user(user)
+            .usersRole(ParticipantRole.HOST.getValue())
+            .build();
+        
+        participantRepository.save(participant);
+        // 결과 반환
+        return GatheringActionResponseDto.builder()
+            .success(true)
+            .message("모임이 생성되었습니다.")
+            .participantCount(1) // 생성자 1명
+            .isFull(false)
+            .isParticipating(true)
+            .build();
+    }
+
+    /**
+    * 모임 조회 헬퍼 - 없으면 예외 발생
+    * (Helper Method: 반복되는 조회+예외처리를 한 곳에서 관리)
+    */
+    private MeetRoom findMeetRoomOrThrow(Long roomIdx) {
+        return meetRoomRepository.findById(roomIdx)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "존재하지 않는 모임입니다. roomIdx: " + roomIdx
+            )
+        );
+    }
+
+    /**
+    * 사용자 조회 헬퍼 - 없으면 예외 발생
+    * (Helper Method: 반복되는 조회+예외처리를 한 곳에서 관리)
+    */
+    private Users findUserOrThrow(Long userIdx) {
+        return userRepository.findById(userIdx)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "존재하지 않는 사용자입니다. userIdx: " + userIdx
+            )
+        );
     }
 }
