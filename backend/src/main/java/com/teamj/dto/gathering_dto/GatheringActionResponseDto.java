@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class GatheringActionResponseDto {
+    private Long roomIdx;
     private Boolean success;
     private String message;
     private int participantCount;
