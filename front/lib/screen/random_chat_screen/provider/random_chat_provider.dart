@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/data/data_source/remote/api_client.dart';
 import 'package:front/data/data_source/remote/websocket_client.dart';
 import 'package:front/data/repository/random_match_repository.dart';
+import 'package:front/data/repository/chat_repository.dart';
 import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/random_chat_screen/controller/random_match_controller.dart';
 import 'package:front/screen/random_chat_screen/controller/random_chat_controller.dart';
@@ -14,6 +16,13 @@ final randomChatRoomIdxProvider = StateProvider<String?>((ref) => null);
 /// 1. Repository Provider
 final randomMatchRepositoryProvider = Provider<RandomMatchRepository>((ref) {
   return RandomMatchRepository(ref.read(webSocketClientProvider));
+});
+
+final chatRepositoryProvider = Provider<ChatRepository>((ref) {
+  return ChatRepository(
+    wsClient: ref.read(webSocketClientProvider),
+    apiClient: ref.read(apiClientProvider),
+  );
 });
 
 /// 2. RandomMatchController Provider (매칭 전용)
