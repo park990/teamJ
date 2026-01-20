@@ -1,44 +1,59 @@
-import 'package:image_picker/image_picker.dart';
-
-
+/// WebSocket 메시지 수신용 DTO
+/// - 백엔드 ChatMessageDto와 필드명 일치 (camelCase)
+/// - RandomMatchDto와 유사한 패턴
 class ChatDto {
   final String chatIdx;
-  final String roomIdx;
-  final String usersIdx;
+  final int roomIdx;
+  final int userIdx;
   final String nickname;
   final String content;
-  final String imageUrl;
+  final String? imageUrl; // nullable (이미지 메시지가 아닐 수 있음)
   final String type;
   final DateTime createdAt;
-  final String profileImageUrl;
+  final String? profileImgUrl; // nullable (프로필 이미지가 없을 수 있음)
 
   ChatDto({
     required this.chatIdx,
     required this.roomIdx,
-    required this.usersIdx,
+    required this.userIdx,
     required this.nickname,
     required this.content,
-    required this.imageUrl,
+    this.imageUrl,
     required this.type,
     required this.createdAt,
-    required this.profileImageUrl,
+    this.profileImgUrl,
   });
 
+  /// 백엔드 ChatMessageDto (camelCase) 파싱
   factory ChatDto.fromJson(Map<String, dynamic> json) {
     return ChatDto(
-      chatIdx: json['chat_idx'],
-      roomIdx: json['room_idx'],
-      usersIdx: json['users_idx'],
-      nickname: json['nickname'],
-      content: json['content'],
-      type: json['type'],
-      imageUrl: json['image_url'],
-      createdAt: DateTime.parse(json['created_at']),
-      profileImageUrl: json['profile_image_url'],
+      chatIdx: json['chatIdx'] as String,
+      roomIdx: json['roomIdx'] as int,
+      userIdx: json['userIdx'] as int,
+      nickname: json['nickname'] as String,
+      content: json['content'] as String,
+      imageUrl: json['imageUrl'] as String?,
+      type: json['type'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      profileImgUrl: json['profileImgUrl'] as String?,
     );
   }
-}
 
+  /// ==========================
+  /// UI 표시용 헬퍼 메서드
+  /// ==========================
+
+  /// 내가 보낸 메시지인지 확인
+  bool isMine(int myUserIdx) {
+    return userIdx == myUserIdx;
+  }
+
+  /// 텍스트 메시지인지 확인
+  bool get isText => type == 'TEXT';
+
+  /// 이미지 메시지인지 확인
+  bool get isImage => type == 'IMAGE';
+}
 
 class Chat {
   final String room_id;
@@ -46,7 +61,7 @@ class Chat {
   final String message;
   final String time;
   final String profileImage;
-  final XFile? Img;
+  final String? Img;
   bool isOpponent;
 
   Chat({
@@ -54,7 +69,7 @@ class Chat {
     required this.name,
     required this.message,
     required this.time,
-    required this.  profileImage,
+    required this.profileImage,
     this.Img,
     this.isOpponent = false,
   });
