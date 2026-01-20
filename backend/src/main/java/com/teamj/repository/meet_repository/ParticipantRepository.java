@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.teamj.entity.doubleKey_entity.ParticipantId;
 import com.teamj.entity.meet_entity.Participant;
 
-import io.lettuce.core.dynamic.annotation.Param;
+//import io.lettuce.core.dynamic.annotation.Param;
 
 public interface ParticipantRepository extends JpaRepository<Participant, ParticipantId>{
     // 이미 참가 중인지 체크

@@ -24,6 +24,8 @@ class KakaoOauthDataSource {
       } // else 마지막
 
       var token = await TokenManagerProvider.instance.manager.getToken();
+      // print('🔑 카카오 액세스 토큰: ${token?.accessToken}');
+      // print('🔄 카카오 리프레쉬 토큰: ${token?.refreshToken}');
       return token?.accessToken;
     } catch (error) {
       print('로그인 에러: ${error}');

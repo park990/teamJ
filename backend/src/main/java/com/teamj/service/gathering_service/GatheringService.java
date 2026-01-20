@@ -297,13 +297,23 @@ public Map<Long, Integer> getParticipantCountMap(List<Long> roomIdxList) {
         MultipartFile image,
         Long userIdx
     ) {
-        
+        log.info(">>>> 이미지 수신 확인: {}", image);
+        if (image != null) {
+            log.info(">>>> 이미지 이름: {}, 사이즈: {}", image.getOriginalFilename(), image.getSize());
+        }
+
         // 사용자 검증 - 존재하는 사용자인지 확인
         Users user = findUserOrThrow(userIdx);
         // 이미지 업로드 - S3에 저장하고 URL 받기
         String imageUrl = null;
         if(image != null && !image.isEmpty()) {
-            imageUrl = s3Uploader.upload(image, imageUrl);
+            try {
+                imageUrl = s3Uploader.upload(image, "gathering");
+            } catch (Exception e) {
+                // 업로드 실패 처리
+                log.error("이미지 업로드 실패: {}", e.getMessage());
+                throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.");
+            }
         }
         // 모임 정보 저장 - 사용자 입력 -> DB 저장
         MeetRoom meetRoom = MeetRoom.builder()
