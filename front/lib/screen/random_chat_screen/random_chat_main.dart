@@ -38,7 +38,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
 
     // paused 상태: 앱이 백그라운드로 이동
     if (state == AppLifecycleState.paused) {
-      final controller = ref.read(randomChatControllerProvider);
+      final controller = ref.read(randomMatchControllerProvider);
       final currentStatus = controller.state.status;
 
       // 매칭 중일 때만 취소 요청
@@ -59,7 +59,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
 
   @override
   Widget build(BuildContext context) {
-    final controller = ref.watch(randomChatControllerProvider);
+    final controller = ref.watch(randomMatchControllerProvider);
     final randomChatState = controller.state;
 
     // ✅ 1. userIdx 가져오기
@@ -69,7 +69,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
     debugPrint('[RandomChatMain] build - status=${randomChatState.status}');
 
     // ✅ 2. 매칭 성공 시 자동 화면 이동
-    ref.listen(randomChatControllerProvider, (previous, next) {
+    ref.listen(randomMatchControllerProvider, (previous, next) {
       if (next.state.status == RandomChatStatus.matched) {
         debugPrint('🎉 매칭 성공! 채팅 화면으로 이동 - roomIdx: ${next.state.roomIdx}');
 
@@ -95,7 +95,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
               SizedBox(height: 24),
               OutlinedButton(
                 onPressed: () {
-                  ref.read(randomChatControllerProvider).cancelMatching();
+                  ref.read(randomMatchControllerProvider).cancelMatching();
                 },
                 child: Text('매칭 취소'),
               ),
@@ -111,7 +111,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
           Text(randomChatState.errorMessage ?? ''),
           ElevatedButton(
             onPressed: () {
-              ref.read(randomChatControllerProvider).reset(); // idle로
+              ref.read(randomMatchControllerProvider).reset(); // idle로
             },
             child: Text('다시 시도'),
           ),
@@ -175,7 +175,7 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
                               }
 
                               ref
-                                  .read(randomChatControllerProvider)
+                                  .read(randomMatchControllerProvider)
                                   .startMatching(genderOption: 'random');
                             },
                             child: Text('랜덤채팅'),
