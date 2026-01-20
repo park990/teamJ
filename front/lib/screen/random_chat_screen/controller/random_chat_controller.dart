@@ -1,153 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:front/data/repository/random_match_repository.dart';
-import '../models/random_chat_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 
+/// 채팅 전용 Controller
+/// - 채팅 메시지 관리
+/// - randomChatRoomIdxProvider에서 roomIdx 읽기 (Controller 간 직접 의존성 없음)
+/// - 나중에 ChatRepository 주입 예정
 class RandomChatController extends ChangeNotifier {
-  final RandomMatchRepository matchRepository;
-  int? _userIdx;  // ← nullable로 변경
-  bool _isInitialized = false;  // 초기화 중복 방지
+  final Ref ref; // Provider 접근용 (roomIdx 읽기)
 
-  RandomChatController({required this.matchRepository}) {
-    debugPrint(
-      '🔥 RandomChatController CREATED hash=$hashCode',
-    ); // 메모리 주소 출력
-  }
+  // TODO: 나중에 ChatRepository 주입 필요
+  // final ChatRepository chatRepository;
 
-  RandomChatState _state = RandomChatState.idle();
-
-  RandomChatState get state => _state;
-  
-  // userIdx 설정
-  void setUserIdx(int? userIdx) {
-    _userIdx = userIdx;
-    debugPrint('[RandomChatController] 🔄 userIdx 설정: $userIdx');
-
-    // userIdx가 null이 되면 연결 해제 (로그아웃 시)
-    if (userIdx == null && _isInitialized) {
-      matchRepository.disconnect();
-      _isInitialized = false;
-      _userIdx = null;
-    }
+  RandomChatController({
+    required this.ref,
+    // required this.chatRepository,  // 나중에 추가
+  }) {
+    debugPrint('🔥 RandomChatController CREATED hash=$hashCode');
   }
 
   /// ==========================
-  /// 상태 변경 전용 함수
+  /// roomIdx 읽기 (randomChatRoomIdxProvider에서)
   /// ==========================
-  void _setState(RandomChatState newState) {
-    debugPrint(
-      '[RandomChatController] 🔄 STATE CHANGE '
-      '[${_state.status} → ${newState.status}] '
-      'roomIdx: ${newState.roomIdx}',
-    );
-
-    _state = newState;
-    notifyListeners(); // 상태 변경 알림 = ref.watch() 호출
-
-    debugPrint('[RandomChatController] 📢 notifyListeners() called');
+  String? get roomIdx {
+    return ref.read(randomChatRoomIdxProvider);
   }
 
   /// ==========================
-  /// 상태 초기화
+  /// 채팅 메시지 리스트 (나중에 추가)
   /// ==========================
-  void reset() {
-    debugPrint('[RandomChatController] ♻️ reset() called');
-    _setState(RandomChatState.idle());
-  }
+  // List<ChatMessage> _messages = [];
+  // List<ChatMessage> get messages => _messages;
 
   /// ==========================
-  /// WebSocket 연결
+  /// 초기화 (나중에 ChatRepository 연동 시 구현)
   /// ==========================
-  Future<void> connect() async {
-
-    if (_userIdx == null) {
-      debugPrint('[RandomChatController] ❌ userIdx가 null입니다. 초기화할 수 없습니다.');
-      throw Exception('로그인이 필요합니다.');
-    }
-    
-    if (_isInitialized) {
-      debugPrint('[RandomChatController] ⚠️ 이미 초기화되었습니다.');
-      return;
-    }
-
-    try {
-      await matchRepository.connectAndSubscribe(
-        userIdx: _userIdx!,
-        onMatchUpdate: (matchData) {
-          // 콜백으로 실시간 응답 받기!
-          // 모든 응답 처리 (시작, 취소, 성공 등)
-          if (matchData.isWaiting) {
-            _setState(state.copyWith(status: RandomChatStatus.matching));
-          } else if (matchData.isMatched) {
-            _setState(state.copyWith(status: RandomChatStatus.matched, roomIdx: matchData.roomIdx.toString()));
-          } else if (matchData.isCancelled) {
-            _setState(state.copyWith(status: RandomChatStatus.idle));
-          }
-        },
-      );
-      _isInitialized = true;
-      debugPrint('[RandomChatController] ✅ connect() 완료');
-    } catch (e, s) {
-      debugPrint('[RandomChatController] ❌ connect() 실패: $e');
-      debugPrintStack(stackTrace: s);
-      _isInitialized = false;  // 재시도 가능하도록
-      rethrow;  // startMatching()에서 처리하도록
-    }
-  }
+  // Future<void> connectAndSubscribe() async {
+  //   final currentRoomIdx = roomIdx;
+  //   if (currentRoomIdx == null) {
+  //     debugPrint('[RandomChatController] ❌ roomIdx가 null입니다.');
+  //     return;
+  //   }
+  //
+  //   // TODO: ChatRepository로 WebSocket 연결 및 구독
+  //   // await chatRepository.connectAndSubscribe(currentRoomIdx);
+  // }
 
   /// ==========================
-  /// 매칭 시작
+  /// 메시지 전송 (나중에 ChatRepository 연동 시 구현)
   /// ==========================
-  Future<void> startMatching({required String genderOption}) async {
-    debugPrint('[RandomChatController] ▶ startMatching() CALLED genderOption: $genderOption');
-    try {
-      // 연결 안 되어있으면 먼저 연결
-      if (!_isInitialized) {
-        debugPrint('[RandomChatController] 🔌 WebSocket 연결 시작...');
-        await connect();
-      }
-
-
-      debugPrint('[RandomChatController] 🌐 startMatching() REQUEST START');
-
-      // 요청 보내기 (성공하면 상태 변경)
-      await matchRepository.startMatching(genderOption: genderOption);
-
-      // 요청 전송 성공 후 상태 변경 (에러 없으면 여기까지 옴)
-      debugPrint('[RandomChatController] ✅ startMatching() REQUEST SUCCESS');
-      _setState(state.copyWith(status: RandomChatStatus.matching));
-    } catch (e, s) {
-      debugPrint('[RandomChatController] ❌ startMatching ERROR = $e');
-      debugPrintStack(stackTrace: s);
-
-      // 에러 발생 시 error 상태로 변경
-      _setState(
-        state.copyWith(
-          status: RandomChatStatus.error,
-          errorMessage: e.toString(),
-        ),
-      );
-    }
-  }
-
-  /// ==========================
-  /// 매칭 취소
-  /// ==========================
-  void cancelMatching() {
-    debugPrint('[RandomChatController] ▶ cancelMatching() CALLED');
-    try {
-      matchRepository.cancelMatching();
-    } catch (e, s) {
-      debugPrint('[RandomChatController] ❌ cancelMatching ERROR: $e');
-      debugPrintStack(stackTrace: s);
-      // 에러 발생 시에도 idle로 변경
-      _setState(
-        state.copyWith(
-          status: RandomChatStatus.idle,
-          errorMessage: e.toString(),
-        ),
-      );
-    }
-  }
+  // Future<void> sendMessage(String content) async {
+  //   final currentRoomIdx = roomIdx;
+  //   if (currentRoomIdx == null) {
+  //     debugPrint('[RandomChatController] ❌ roomIdx가 null입니다.');
+  //     return;
+  //   }
+  //
+  //   // TODO: ChatRepository로 메시지 전송
+  //   // await chatRepository.sendMessage(currentRoomIdx, content);
+  // }
 
   /// ==========================
   /// 연결 해제
@@ -155,7 +66,7 @@ class RandomChatController extends ChangeNotifier {
   @override
   void dispose() {
     debugPrint('[RandomChatController] ▶ dispose() CALLED');
-    matchRepository.disconnect();
+    // TODO: 나중에 ChatRepository disconnect 추가
     super.dispose();
   }
 }
