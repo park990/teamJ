@@ -38,21 +38,6 @@ class ChatDto {
       profileImgUrl: json['profileImgUrl'] as String?,
     );
   }
-
-  /// ==========================
-  /// UI 표시용 헬퍼 메서드
-  /// ==========================
-
-  /// 내가 보낸 메시지인지 확인
-  bool isMine(int myUserIdx) {
-    return userIdx == myUserIdx;
-  }
-
-  /// 텍스트 메시지인지 확인
-  bool get isText => type == 'TEXT';
-
-  /// 이미지 메시지인지 확인
-  bool get isImage => type == 'IMAGE';
 }
 
 class Chat {
