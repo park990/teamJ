@@ -83,15 +83,24 @@ class RandomMatchController extends ChangeNotifier {
           } else if (matchData.isMatched) {
             final roomIdx = matchData.roomIdx.toString();
 
-            // ✅ 핵심: 매칭 완료 시 randomChatRoomIdxProvider에 roomIdx 설정
+            // ✅ 1. randomChatRoomIdxProvider에 roomIdx 설정
             ref.read(randomChatRoomIdxProvider.notifier).state = roomIdx;
             debugPrint('[RandomMatchController] ✅ roomIdx 설정: $roomIdx');
 
+            // ✅ 2. 매칭 구독 해제 (더 이상 매칭 응답 받을 필요 없음)
+            _unsubscribeFromMatch();
+
+            // ✅ 3. 상태 변경 (matched)
             _setState(
               state.copyWith(
                 status: RandomChatStatus.matched,
                 roomIdx: roomIdx,
               ),
+            );
+
+            // ✅ 4. 채팅 구독은 RandomChatScreen에서 자동으로 시작됨
+            debugPrint(
+              '[RandomMatchController] ✅ 매칭 완료 → 채팅 구독은 RandomChatScreen에서 시작',
             );
           } else if (matchData.isCancelled) {
             _setState(state.copyWith(status: RandomChatStatus.idle));
@@ -105,6 +114,16 @@ class RandomMatchController extends ChangeNotifier {
       debugPrintStack(stackTrace: s);
       _isInitialized = false; // 재시도 가능하도록
       rethrow; // startMatching()에서 처리하도록
+    }
+  }
+
+  /// ==========================
+  /// 매칭 구독 해제 (매칭 완료 시 자동 호출)
+  /// ==========================
+  void _unsubscribeFromMatch() {
+    if (_userIdx != null) {
+      debugPrint('[RandomMatchController] 🔌 매칭 구독 해제 - userIdx: $_userIdx');
+      matchRepository.unsubscribeFromMatchUpdates(_userIdx!);
     }
   }
 

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/chat_dto.dart';
+import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
-class RandomChatScreen extends StatefulWidget {
+class RandomChatScreen extends ConsumerStatefulWidget {
   const RandomChatScreen({super.key});
 
   @override
-  State<RandomChatScreen> createState() => _RandomChatScreenState();
+  ConsumerState<RandomChatScreen> createState() => _RandomChatScreenState();
 }
 
-class _RandomChatScreenState extends State<RandomChatScreen> {
+class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   XFile? file;
   final TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -18,24 +20,87 @@ class _RandomChatScreenState extends State<RandomChatScreen> {
   void initState() {
     super.initState();
 
+    // ✅ 채팅 구독 시작 (매칭 완료 후 자동 호출)
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeChatSubscription();
       _scrollToBottom();
     });
   }
 
+  /// 채팅 구독 초기화
+  Future<void> _initializeChatSubscription() async {
+    final chatController = ref.read(randomChatControllerProvider);
+
+    try {
+      debugPrint('[RandomChatScreen] 🔌 채팅 구독 시작...');
+      await chatController.connectAndSubscribe();
+      debugPrint('[RandomChatScreen] ✅ 채팅 구독 완료');
+    } catch (e, s) {
+      debugPrint('[RandomChatScreen] ❌ 채팅 구독 실패: $e');
+      debugPrintStack(stackTrace: s);
+
+      // 에러 발생 시 사용자에게 알림
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('채팅 연결에 실패했습니다: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Chat opponent = CHATS.where((element) => element.isOpponent).first;
-    Chat me = CHATS.where((element) => !element.isOpponent).first;
+    // ✅ 실시간 메시지 리스트 가져오기
+    final chatController = ref.watch(randomChatControllerProvider);
+    final messages = chatController.messages;
+    final roomIdx = chatController.roomIdx ?? '알 수 없음';
+
+    // TODO: 나중에 상대방 정보 표시 (임시로 roomIdx 표시)
 
     return Scaffold(
-      // body: Center(
-      //   child: Text('이곳은 랜덤채팅을 위한 공간임 잘꾸며봐라 여기서 제일 중요한 것은 나중에 채팅LLM이 상대방과의 채팅을 Assist를 해주는거 그 기능이 완벽하게 구현이 될 수있어야함'),
-      // ),
+      appBar: AppBar(
+        title: Text('랜덤 채팅 - Room $roomIdx'),
+        actions: [
+          OutlinedButton(
+            onPressed: () {
+              // TODO: 새로운 채팅 시작 로직
+            },
+            child: const Text('새로운 채팅'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          chatComponent(scrollController: scrollController, chats: CHATS),
+          // ✅ 실시간 메시지 리스트
+          Expanded(
+            child: messages.isEmpty
+                ? const Center(child: Text('메시지를 전송해보세요!'))
+                : ListView.builder(
+                    controller: scrollController,
+                    itemCount: messages.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      // TODO: 나중에 ChatUiMapper로 변환
+                      // final uiMessage = ChatUiMapper.toUiModel(message, currentUserIdx);
 
+                      // 임시: userIdx로 구분 (나중에 개선)
+                      final isMe = false; // TODO: authController에서 userIdx 비교
+
+                      return Column(
+                        children: [
+                          // 시간 표시 (임시로 생략)
+                          // 채팅 내용
+                          isMe
+                              ? _buildMyMessage(message)
+                              : _buildOpponentMessage(message),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+
+          // ✅ 메시지 입력창
           chatInputComponent(
             textController: textController,
             sendMessage: _sendMessage,
@@ -44,9 +109,71 @@ class _RandomChatScreenState extends State<RandomChatScreen> {
           ),
         ],
       ),
-      appBar: AppBar(
-        title: Text(opponent.name),
-        actions: [OutlinedButton(onPressed: () {}, child: Text('새로운 채팅'))],
+    );
+  }
+
+  /// 내 메시지 위젯
+  Widget _buildMyMessage(ChatDto message) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: const Color.fromARGB(206, 255, 247, 177),
+            ),
+            child: Text(message.content),
+          ),
+          const SizedBox(width: 10),
+          CircleAvatar(
+            backgroundImage: message.profileImgUrl != null
+                ? NetworkImage(message.profileImgUrl!)
+                : null,
+            child: message.profileImgUrl == null
+                ? Text(message.nickname[0])
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 상대방 메시지 위젯
+  Widget _buildOpponentMessage(ChatDto message) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            backgroundImage: message.profileImgUrl != null
+                ? NetworkImage(message.profileImgUrl!)
+                : null,
+            child: message.profileImgUrl == null
+                ? Text(message.nickname[0])
+                : null,
+          ),
+          const SizedBox(width: 10),
+          Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: const Color(0xFFeedaf2),
+            ),
+            child: Text(message.content),
+          ),
+        ],
       ),
     );
   }
@@ -66,22 +193,32 @@ class _RandomChatScreenState extends State<RandomChatScreen> {
     }
   }
 
-  void _sendMessage() {
-    setState(() {
-      CHATS.add(
-        Chat(
-          room_id: '1',
-          name: 'Jane Doe',
-          message: textController.text,
-          time:
-              DateTime.now().hour.toString() +
-              ':' +
-              DateTime.now().minute.toString(),
-          profileImage: 'https://via.placeholder.com/150',
-        ),
-      );
+  void _sendMessage() async {
+    final content = textController.text.trim();
+    if (content.isEmpty) return;
+
+    final chatController = ref.read(randomChatControllerProvider);
+
+    try {
+      debugPrint('[RandomChatScreen] 📤 메시지 전송: $content');
+      await chatController.sendMessage(content);
       textController.clear();
-    });
+
+      // 메시지 전송 후 스크롤
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    } catch (e, s) {
+      debugPrint('[RandomChatScreen] ❌ 메시지 전송 실패: $e');
+      debugPrintStack(stackTrace: s);
+
+      // 에러 발생 시 사용자에게 알림
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('메시지 전송 실패: $e')));
+      }
+    }
   }
 }
 
@@ -102,11 +239,11 @@ class chatInputComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      color: Color.fromARGB(107, 197, 197, 197), // 스톤 그레이
+      color: const Color.fromARGB(107, 197, 197, 197), // 스톤 그레이
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.add_photo_alternate_outlined),
+            icon: const Icon(Icons.add_photo_alternate_outlined),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -114,20 +251,19 @@ class chatInputComponent extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min, // 내용만큼만 높이
                   children: [
                     ListTile(
-                      leading: Icon(Icons.photo_library),
-                      title: Text('갤러리에서 선택'),
+                      leading: const Icon(Icons.photo_library),
+                      title: const Text('갤러리에서 선택'),
                       onTap: () {
                         Navigator.pop(context); // 시트 닫기
-                        // 갤러리에서 이미지 선택하는 코드
                         pickImage();
                       },
                     ),
                     ListTile(
-                      leading: Icon(Icons.camera_alt),
-                      title: Text('카메라로 촬영'),
+                      leading: const Icon(Icons.camera_alt),
+                      title: const Text('카메라로 촬영'),
                       onTap: () {
                         Navigator.pop(context); // 시트 닫기
-                        // 카메라로 촬영하는 코드
+                        // TODO: 카메라 기능
                       },
                     ),
                   ],
@@ -138,131 +274,17 @@ class chatInputComponent extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: textController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: '메시지를 입력하세요',
               ),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () {
               sendMessage();
-              // setState 후 마지막으로 스크롤
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                scrollToBottom();
-              });
             },
-          ),
-          // Text('메시지 보내기'),
-        ],
-      ),
-    );
-  }
-}
-
-class chatComponent extends StatelessWidget {
-  final ScrollController scrollController;
-  final List<Chat> chats;
-  const chatComponent({
-    super.key,
-    required this.scrollController,
-    required this.chats,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
-        controller: scrollController,
-
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              //-----------------------시간 표시 부분 -------------------------------------------
-              index > 0 && chats[index].time == chats[index - 1].time
-                  ? SizedBox.shrink()
-                  : Align(
-                      alignment: Alignment.center,
-                      child: Text(chats[index].time),
-                    ),
-              //-----------------------채팅 내용 부분 ------------------------------------------- // 시간 표시
-              chats[index].isOpponent
-                  ? chatByOpponent(chat: chats[index])
-                  : chatByMe(chat: chats[index]),
-            ],
-          );
-        },
-        itemCount: chats.length,
-        padding: EdgeInsets.symmetric(horizontal: 5),
-      ),
-    );
-  }
-}
-
-class chatByOpponent extends StatelessWidget {
-  final Chat chat;
-  const chatByOpponent({super.key, required this.chat});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            backgroundImage: NetworkImage(
-              'https://avatars.githubusercontent.com/u/210041838?v=4',
-            ),
-          ),
-          SizedBox(width: 10),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7, // 최대 너비 제한
-            ),
-            padding: EdgeInsets.all(10),
-            margin: EdgeInsets.symmetric(vertical: 5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Color(0xFFeedaf2),
-            ),
-            child: Text('${chat.message}'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class chatByMe extends StatelessWidget {
-  final Chat chat;
-  const chatByMe({super.key, required this.chat});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7, // 최대 너비 제한
-            ),
-            padding: EdgeInsets.all(10),
-            margin: EdgeInsets.symmetric(vertical: 5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Color.fromARGB(206, 255, 247, 177),
-            ),
-            child: Text('${chat.message}'),
-          ),
-          SizedBox(width: 10),
-          CircleAvatar(
-            backgroundImage: NetworkImage(
-              'https://avatars.githubusercontent.com/u/215974764?v=4',
-            ),
           ),
         ],
       ),
