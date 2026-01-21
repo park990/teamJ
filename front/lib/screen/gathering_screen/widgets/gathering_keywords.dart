@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/provider/gathering_keyword_provider.dart';
+import 'package:front/screen/gathering_screen/providers/gathering_keyword_provider.dart';
 
 class GatheringKeywords extends ConsumerWidget {
   const GatheringKeywords({super.key});
