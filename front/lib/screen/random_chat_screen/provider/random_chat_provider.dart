@@ -53,12 +53,11 @@ final randomMatchControllerProvider =
       return controller;
     });
 
-/// 3. RandomChatController Provider (채팅 전용) - 나중에 구현 예정
+/// 3. RandomChatController Provider (채팅 전용)
 final randomChatControllerProvider =
     ChangeNotifierProvider<RandomChatController>((ref) {
-      // TODO: 나중에 ChatRepository 주입 필요
       final controller = RandomChatController(
-        // chatRepository: ref.read(chatRepositoryProvider),  // 나중에 추가
+        chatRepository: ref.read(chatRepositoryProvider),
         ref: ref, // Provider 접근용 (roomIdx 읽기)
       );
 
