@@ -1,14 +1,47 @@
 import 'dart:convert';
 import 'package:front/data/data_source/remote/api_client.dart';
+import 'package:front/dto/gatherings/gathering_create_request_dto.dart';
+import 'package:front/dto/gatherings/gathering_action_response_dto.dart';
 import 'package:front/dto/gatherings/gathering_detail_dto.dart';
 import 'package:front/dto/gatherings/gathering_newList_dto.dart';
 import 'package:front/screen/gathering_screen/model/gathering_keyword_model.dart';
 import 'package:front/dto/gatherings/gathering_hotList_dto.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GatheringRepository {
   final ApiClient apiClient;
   // 생성자
   GatheringRepository(this.apiClient);
+
+  //******** 모임 생성 ********/
+  Future<GatheringActionResponseDto> createGathering({
+    required GatheringCreateRequestDto dto,
+    XFile? imageFile,
+  }) async {
+    // DTO 객체 → Map<String, dynamic> 변환 (toJson 메서드 사용)
+    final dtoMap = dto.toJson();
+
+    // Map → JSON String 변환 (HTTP 전송을 위해)
+    final fields = {
+      'data': jsonEncode(dtoMap),
+    };
+
+    // 이미지 리스트 준비
+    final images = imageFile != null ? [imageFile] : <XFile>[];
+
+    // Multipart 요청
+    final response = await apiClient.postMultipart(
+      '/api/gathering/create',
+      fields: fields,
+      images: images,
+    );
+
+    // 응답 파싱
+    return _parseSingleResponse<GatheringActionResponseDto> (
+      response,
+      (json) => GatheringActionResponseDto.fromJson(json)
+    );
+  }
 
   //******** 모임 참가 요청 ********/
   Future<void> joinGathering(int roomIdx) async {
