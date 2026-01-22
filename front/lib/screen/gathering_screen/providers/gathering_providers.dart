@@ -22,7 +22,13 @@ final gatheringRepositoryProvider = Provider<GatheringRepository>((ref) {
 });
 
 //*** 모임 생성 Provider ***/
-// 모임 생성 상태 관리를 위한 Provider
+// 모임 생성 상태 관리를 위한 Provider 등록
+// Provider 등록
+final gatheringCreateProvider =
+    NotifierProvider<GatheringCreateNotifier, GatheringCreateState>(() {
+  return GatheringCreateNotifier();
+});
+
 class GatheringCreateNotifier extends Notifier<GatheringCreateState> {
   // 초기 상태 반환(필수)
   @override

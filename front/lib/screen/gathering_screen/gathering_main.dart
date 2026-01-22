@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/screen/gathering_screen/providers/gathering_providers.dart';
+import 'package:front/screen/gathering_screen/widgets/gathering_create_screen.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_keywords.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_section_header.dart';
@@ -48,6 +49,24 @@ class _GatheringMainState extends ConsumerState<GatheringMain>
     double screenPaddingBottom = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      // TODO: 모임 생성 버튼 - 모임 생성 화면으로 이동
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // TODO: Navigator.push로 모임 생성 화면으로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              // TODO: 모임 생성 화면 위젯으로 교체
+              builder: (context) => GatheringCreateScreen(),
+            ),
+          );
+        },
+        icon: Icon(Icons.add),
+        label: Text(
+          "모임 만들기"
+        ),
+        backgroundColor: wazzupButton,
+      ),
       backgroundColor: wazzupBackGround, // 배경
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
