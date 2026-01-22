@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/data/repository/gathering_repository.dart';
-import 'package:front/provider/gathering_providers.dart';
+import 'package:front/screen/gathering_screen/providers/gathering_providers.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_horizontal_card.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_keywords.dart';
 import 'package:front/screen/gathering_screen/widgets/gathering_section_header.dart';
