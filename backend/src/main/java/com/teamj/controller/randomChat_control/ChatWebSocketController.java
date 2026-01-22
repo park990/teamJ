@@ -55,7 +55,7 @@ public class ChatWebSocketController {
      */
     @MessageMapping("/chat/{roomIdx}/send")
     public void sendMessage(
-        @DestinationVariable Long roomIdx,
+        @DestinationVariable("roomIdx") Long roomIdx,
         @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
         @Payload Map<String, String> request
     ) {
