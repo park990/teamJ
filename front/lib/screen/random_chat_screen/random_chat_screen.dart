@@ -17,9 +17,15 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   final TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
 
+  // ✅ Controller를 필드로 저장 (dispose에서 사용하기 위해)
+  late final chatController;
+
   @override
   void initState() {
     super.initState();
+
+    // Controller 초기화 (필드로 저장)
+    chatController = ref.read(randomChatControllerProvider);
 
     // ✅ 채팅 구독 시작 (매칭 완료 후 자동 호출)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -30,8 +36,6 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
 
   /// 채팅 구독 초기화
   Future<void> _initializeChatSubscription() async {
-    final chatController = ref.read(randomChatControllerProvider);
-
     try {
       debugPrint('[RandomChatScreen] 🔌 채팅 구독 시작...');
       await chatController.connectAndSubscribe();
@@ -211,8 +215,7 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   void dispose() {
     debugPrint('[RandomChatScreen] ▶ dispose() CALLED');
 
-    // ✅ 채팅 구독 해제
-    final chatController = ref.read(randomChatControllerProvider);
+    // ✅ 채팅 구독 해제 (필드로 저장된 controller 사용)
     chatController.unsubscribeFromChat();
 
     // TextField 컨트롤러 해제
@@ -225,8 +228,6 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   void _sendMessage() async {
     final content = textController.text.trim();
     if (content.isEmpty) return;
-
-    final chatController = ref.read(randomChatControllerProvider);
 
     try {
       debugPrint('[RandomChatScreen] 📤 메시지 전송: $content');
