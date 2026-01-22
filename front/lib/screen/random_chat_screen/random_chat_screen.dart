@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/dto/chat_dto.dart';
+import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
 import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -24,6 +25,16 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeChatSubscription();
       _scrollToBottom();
+    });
+
+    // ✅ 메시지 추가 시 자동 스크롤
+    ref.listen(randomChatControllerProvider, (previous, next) {
+      // 메시지 개수가 증가했을 때만 스크롤
+      if (previous != null && next.messages.length > previous.messages.length) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
+      }
     });
   }
 
@@ -55,6 +66,10 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
     final messages = chatController.messages;
     final roomIdx = chatController.roomIdx ?? '알 수 없음';
 
+    // ✅ 현재 로그인한 사용자 userIdx 가져오기
+    final authState = ref.watch(authControllerProvider);
+    final myUserIdx = authState.userIdx;
+
     // TODO: 나중에 상대방 정보 표시 (임시로 roomIdx 표시)
 
     return Scaffold(
@@ -81,11 +96,10 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     itemBuilder: (context, index) {
                       final message = messages[index];
-                      // TODO: 나중에 ChatUiMapper로 변환
-                      // final uiMessage = ChatUiMapper.toUiModel(message, currentUserIdx);
 
-                      // 임시: userIdx로 구분 (나중에 개선)
-                      final isMe = false; // TODO: authController에서 userIdx 비교
+                      // ✅ 내 메시지인지 판단 (userIdx 비교)
+                      final isMe =
+                          myUserIdx != null && message.userIdx == myUserIdx;
 
                       return Column(
                         children: [
