@@ -37,13 +37,13 @@ class GatheringCreateNotifier extends Notifier<GatheringCreateState> {
     try {
       // (1) 로딩 시작 - state를 copyWith로 업데이트
       // TODO: isLoading을 true로, errorMessage를 null로 설정
-
+      state = state.copyWith(isLoading: true, errorMessage: null);
       // (2) Repository 가져오기
       // TODO: ref.read()로 gatheringRepositoryProvider 가져오기
-
+      final repository = ref.read(gatheringRepositoryProvider);
       // (3) API 호출
       // TODO: repository.createGathering() 호출
-
+      final result = await repository.createGathering(dto: dto, imageFile: imageFile);
       // (4) 성공 - 결과 저장
       // TODO: isLoading을 false로, result에 결과 저장
     } catch (e) {
