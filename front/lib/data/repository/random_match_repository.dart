@@ -97,8 +97,10 @@ class RandomMatchRepository {
     debugPrint('🔌 [RandomMatchRepo] 매칭 구독 해제 - userIdx: $userIdx');
     try {
       wsClient.unsubscribe('/queue/match/$userIdx');
-      _isSubscribed = false;
-      debugPrint('✅ [RandomMatchRepo] 매칭 구독 해제 완료');
+      _isSubscribed = false; // ✅ 플래그 리셋 (재구독 가능하도록)
+      debugPrint(
+        '✅ [RandomMatchRepo] 매칭 구독 해제 완료 - _isSubscribed: $_isSubscribed',
+      );
     } catch (e) {
       debugPrint('❌ [RandomMatchRepo] 구독 해제 실패: $e');
     }

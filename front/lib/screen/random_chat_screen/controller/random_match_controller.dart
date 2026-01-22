@@ -124,6 +124,9 @@ class RandomMatchController extends ChangeNotifier {
     if (_userIdx != null) {
       debugPrint('[RandomMatchController] 🔌 매칭 구독 해제 - userIdx: $_userIdx');
       matchRepository.unsubscribeFromMatchUpdates(_userIdx!);
+      // ✅ 재매칭을 위해 초기화 상태도 리셋
+      _isInitialized = false;
+      debugPrint('[RandomMatchController] 🔄 _isInitialized 리셋 (재매칭 가능)');
     }
   }
 
