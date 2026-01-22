@@ -207,6 +207,21 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    debugPrint('[RandomChatScreen] ▶ dispose() CALLED');
+
+    // ✅ 채팅 구독 해제
+    final chatController = ref.read(randomChatControllerProvider);
+    chatController.unsubscribeFromChat();
+
+    // TextField 컨트롤러 해제
+    textController.dispose();
+    scrollController.dispose();
+
+    super.dispose();
+  }
+
   void _sendMessage() async {
     final content = textController.text.trim();
     if (content.isEmpty) return;
