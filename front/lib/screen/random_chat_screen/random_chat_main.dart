@@ -73,11 +73,15 @@ class _RandomChatMainState extends ConsumerState<RandomChatMain>
       if (next.state.status == RandomChatStatus.matched) {
         debugPrint('🎉 매칭 성공! 채팅 화면으로 이동 - roomIdx: ${next.state.roomIdx}');
 
-        // 채팅 화면으로 이동 (채팅 구독은 RandomChatScreen의 initState에서 자동 시작)
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RandomChatScreen()),
-        );
+        // ✅ build 완료 후 네비게이션 (build 실행 중이 아닐 때 안전하게 실행)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RandomChatScreen()),
+            );
+          }
+        });
       }
     });
 
