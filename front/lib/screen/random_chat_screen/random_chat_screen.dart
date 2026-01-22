@@ -26,16 +26,6 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
       _initializeChatSubscription();
       _scrollToBottom();
     });
-
-    // ✅ 메시지 추가 시 자동 스크롤
-    ref.listen(randomChatControllerProvider, (previous, next) {
-      // 메시지 개수가 증가했을 때만 스크롤
-      if (previous != null && next.messages.length > previous.messages.length) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
-      }
-    });
   }
 
   /// 채팅 구독 초기화
@@ -69,6 +59,16 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
     // ✅ 현재 로그인한 사용자 userIdx 가져오기
     final authState = ref.watch(authControllerProvider);
     final myUserIdx = authState.userIdx;
+
+    // ✅ 메시지 추가 시 자동 스크롤 (build 안에서 ref.listen 사용)
+    ref.listen(randomChatControllerProvider, (previous, next) {
+      // 메시지 개수가 증가했을 때만 스크롤
+      if (previous != null && next.messages.length > previous.messages.length) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
+      }
+    });
 
     // TODO: 나중에 상대방 정보 표시 (임시로 roomIdx 표시)
 
