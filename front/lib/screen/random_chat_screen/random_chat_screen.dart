@@ -105,9 +105,21 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
                       final isMe =
                           myUserIdx != null && message.userIdx == myUserIdx;
 
+                      // ✅ 이전 메시지와 시간(분 단위)이 다른지 확인
+                      final shouldShowTime =
+                          index == 0 || // 첫 메시지는 무조건 표시
+                          _isDifferentTime(
+                            messages[index - 1].createdAt,
+                            message.createdAt,
+                          );
+
                       return Column(
                         children: [
-                          // 시간 표시 (임시로 생략)
+                          // ✅ 시간이 바뀔 때만 표시
+                          if (shouldShowTime) ...[
+                            _buildTimeStamp(message.createdAt),
+                            const SizedBox(height: 5),
+                          ],
                           // 채팅 내용
                           isMe
                               ? _buildMyMessage(message)
@@ -126,6 +138,33 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
             pickImage: _pickImage,
           ),
         ],
+      ),
+    );
+  }
+
+  /// 두 시간이 다른지 확인 (시/분 단위 비교)
+  /// - 시간(hour) 또는 분(minute)이 다르면 true 반환
+  bool _isDifferentTime(DateTime prev, DateTime current) {
+    return prev.hour != current.hour || prev.minute != current.minute;
+  }
+
+  /// 시간 표시 위젯 (중앙 정렬)
+  /// TODO: 나중에 개선 - 날짜 바뀔 때도 표시 (예: "2026년 1월 23일")
+  Widget _buildTimeStamp(DateTime createdAt) {
+    final formattedTime =
+        '${createdAt.hour}:${createdAt.minute.toString().padLeft(2, '0')}';
+
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          formattedTime,
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
       ),
     );
   }
