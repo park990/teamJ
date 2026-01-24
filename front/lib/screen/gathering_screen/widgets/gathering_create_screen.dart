@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:io';
 
 class GatheringCreateScreen extends ConsumerStatefulWidget{
   const GatheringCreateScreen({
@@ -276,17 +277,68 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                 ),
               ],
             ),
-            // TODO 5에서 여기에 이미지 선택 UI 추가
-            
+            const SizedBox(height: 10),
+            // 이미지 선택 UI
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "모임 이미지",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 사진 선택 감지
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemGrey6,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: CupertinoColors.systemGrey4,
+                        width: 1,
+                      ),
+                    ),
+                    child: _selectedImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(_selectedImage!.path),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              CupertinoIcons.camera,
+                              size: 48,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '이미지 선택',
+                              style: TextStyle(
+                                color: CupertinoColors.systemGrey,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(
               height: 32
             ),
-
-            // 제출 버튼
-            // ElevatedButton(
-            //   onPressed: _submitGathering,
-            //   child: const Text('모임 생성'),
-            // ),
             CupertinoButton.filled(
               onPressed: _submitGathering,
               borderRadius: BorderRadius.circular(12),
