@@ -233,9 +233,48 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   );
                 }).toList(),
             ),
+            SizedBox(height: 12),
             // 최대 인원수
-            TextField(
-              controller: _maxController,
+            const SizedBox(height: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "최대 인원수",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        controller: _maxController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          hintText: '0',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '/ 100',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
             // TODO 5에서 여기에 이미지 선택 UI 추가
             
