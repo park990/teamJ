@@ -66,9 +66,19 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
     }
   }
   
-  // TODO: _submitGathering() 메서드 작성
+  // _submitGathering() 메서드 작성
   Future<void> _submitGathering() async {
-    
+    // 폼 검증: 필수 입력값 확인
+
+    // TODO: DTO 생성
+
+    // TODO: Provider를 통해 서버로 전송
+
+    // TODO: 생성 결과 확인
+
+    // TODO: 성공 시: 모임 리스트 새로고침
+
+    // TODO: 메인 화면 복귀(예외처리 필수)
   }
 
   // iOS 스타일 태그 위젯
