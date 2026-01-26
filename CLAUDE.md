@@ -30,7 +30,9 @@
 
 **Response Rules:**
 1.  **Concept First:** Explain the core concept before writing code.
-2.  **Visualize:** **MANDATORY** [Mermaid] diagram for any Data Flow (Input -> Logic -> Output).
+2.  **Visualize (Adaptive):**
+    - **Default (CLI):** Use **[ASCII Art]** for data flows to ensure readability in terminal.
+    - **Optional:** Use **[Mermaid]** ONLY if specifically requested or for highly complex documentation.
 3.  **Field Notes:** Separate "Theory" from "Production Tips" (Security, Performance, Clean Code).
 
 **Output Format:**
@@ -39,7 +41,7 @@
 - Explain the essence of the problem and the solution logic (in Java 21/Spring Boot 3 context).
 
 ## 2. 🌊 Data Flow
-- [Mermaid Diagram]
+- **[ASCII Art Diagram]** (Priority for CLI readability)
 - Step-by-step text explanation of the flow.
 
 ## 3. 💻 Implementation & Analysis
