@@ -15,6 +15,14 @@ class GatheringCreateScreen extends ConsumerStatefulWidget{
 }
 
 class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
+
+  // 태그 검증 에러메시지를 위한 변수
+  String? _roomNameError; // 모임 이름 에러
+  String? _roomDescError; // 모임 설명 에러
+  String? _roomTypeError; // 모임 타입 에러
+  String? _regionError; // 지역에러
+  String? _maxPeopleError; // 최대인원 에러
+
   final _roomNameController = TextEditingController();
   final _roomDescController = TextEditingController();
   final _maxController = TextEditingController();
@@ -69,6 +77,71 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
   // _submitGathering() 메서드 작성
   Future<void> _submitGathering() async {
     // 폼 검증: 필수 입력값 확인
+
+    // 모든 검증을 hasCustomErrors로 통일
+    bool hasCustomErrors = false;
+
+    setState(() {
+      // 모임 이름 검증
+      if(_roomNameController.text.trim().isEmpty) {
+        _roomNameError = "모임 이름을 입력해주세요";
+        hasCustomErrors = true;
+      } else if(_roomNameController.text.length > 30) {
+        _roomNameError = "모임 이름은 30자 이내로 입력해주세요";
+        hasCustomErrors = true;
+      } else {
+        _roomNameError = null;
+      }
+
+      // 모임 설명 검증
+      final desc = _roomDescController.text.trim();
+      if(desc.isNotEmpty && desc.length < 10) {
+        _roomDescError = "모임 설명은 10자 이상 작성해주세요";
+        hasCustomErrors = true;
+      } else {
+        _roomDescError = null;
+      }
+
+      // 모임 타입 체크
+      if(_selectedRoomType == null) {
+        setState(() {
+          _roomTypeError = "모임 타입을 선택해주세요";
+        });
+        hasCustomErrors = true; // 에러 발생 표시
+      } else {
+        _roomTypeError = null; //선택되어 있으면 에러 초기화
+      }
+      // 지역 체크
+      if(_selectedRegion == null) {
+          _regionError = "지역을 선택해주세요";
+        hasCustomErrors = true;
+      } else {
+        _regionError = null;
+      }
+      // 최대 인원 체크
+      if(_maxController.text.trim().isEmpty) {
+        _maxPeopleError = "최대 인원을 입력하세요";
+        hasCustomErrors = true;
+      } else {
+        final maxPeople = int.tryParse(_maxController.text);
+        if(maxPeople == null) {
+          _maxPeopleError = "숫자만 입력 가능합니다.";
+          hasCustomErrors = true;
+        } else if(maxPeople < 2) {
+          _maxPeopleError = "최소 2명 이상이어야 합니다.";
+          hasCustomErrors = true;
+        } else {
+          _maxPeopleError = null;
+        }
+      }
+    });
+
+    // 검증 통과
+    print('검증 통과! 서버 전송 준비 완료');
+    print('모임 이름: ${_roomNameController.text.trim()}');
+    print('모임 타입: ${_selectedRoomType}');
+    print('지역: ${_selectedRegion}');
+    print('최대 인원: ${_maxController.text}');
 
     // TODO: DTO 생성
 
@@ -140,17 +213,30 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                 SizedBox(
                   height: 5
                 ),
-                TextField(
+                TextFormField(
                   focusNode: _nameFocusNode,
                   controller: _roomNameController,
                   decoration: InputDecoration(
-                    // 포커싱 일 경우에만 텍스트 보여주기
+                    // 포커싱일 경우에만 텍스트 보여주기
                     hintText: _nameFocusNode.hasFocus
                       ? '예: 한강 러닝 크루'
                       : null,
                     border: const OutlineInputBorder(),
                   ),
                 ),
+                if(_roomNameError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8, left: 12,
+                    ),
+                    child: Text(
+                      _roomNameError!,
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(
@@ -180,10 +266,27 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                         return _buildTagChip(
                           label: type,
                           isSelected: _selectedRoomType == type,
-                          onTap: () => setState(() => _selectedRoomType = type),
+                          onTap: () => setState(() {
+                            _selectedRoomType = type;
+                            _roomTypeError = null; // 선택하면 에러 초기화
+                          }),
                         );
                   }).toList(),
                 ),
+                // 에러메시지
+                if (_roomTypeError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8, left: 12
+                    ),
+                    child: Text(
+                      _roomTypeError!,
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(
@@ -214,10 +317,23 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                  contentPadding: EdgeInsets.all(16),
+                    contentPadding: EdgeInsets.all(16),
                   ),
-                  // 상태 연결
                 ),
+                // 모임 내용 관련 에러메시지
+                if(_roomDescError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8, left: 12,
+                    ),
+                    child: Text(
+                      _roomDescError!,
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(height: 24),
@@ -240,9 +356,25 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   return _buildTagChip(
                     label: region,
                     isSelected: _selectedRegion == region,
-                    onTap: () => setState(() => _selectedRegion = region),
+                    onTap: () => setState(() {
+                      _selectedRegion = region;
+                      _regionError = null;
+                    }),
                   );
                 }).toList(),
+            ),
+            if(_regionError != null)
+            Padding(
+              padding: EdgeInsets.only(
+                top: 8, left: 12
+              ),
+              child: Text(
+                _regionError!,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
             ),
             SizedBox(height: 12),
             // 최대 인원수
@@ -261,8 +393,8 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                 Row(
                   children: [
                     SizedBox(
-                      width: 80,
-                      child: TextField(
+                      width: 100,
+                      child: TextFormField(
                         controller: _maxController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
@@ -272,7 +404,33 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          // 에러 메시지가 여러 줄로 표시되도록 설정
+                          errorMaxLines: 2,
                         ),
+                        // 숫자 형식 + 범위 검증
+                        validator: (value) {
+                          print('최대 인원 validator 실행됨');
+                          if (value == null || value.trim().isEmpty) {
+                            return "최대 인원을 입력하세요";
+                          }
+      
+                          // 문자열 -> 숫자 변환
+                          final maxPeople = int.tryParse(value);
+      
+                          if(maxPeople == null) {
+                            return "숫자만 입력 가능합니다";
+                          }
+      
+                          if(maxPeople < 2) {
+                            return "최소 2명 이상이어야 합니다.";
+                          }
+      
+                          if(maxPeople > 100) {
+                            return "최대 100 이하이어야 합니다.";
+                          }
+      
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -285,6 +443,17 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                     ),
                   ],
                 ),
+                if(_maxPeopleError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: 12),
+                    child: Text(
+                      _maxPeopleError!,
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 10),
@@ -300,7 +469,6 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 // 사진 선택 감지
                 GestureDetector(
                   onTap: _pickImage,
