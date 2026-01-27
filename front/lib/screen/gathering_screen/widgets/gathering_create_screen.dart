@@ -407,30 +407,7 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                           // 에러 메시지가 여러 줄로 표시되도록 설정
                           errorMaxLines: 2,
                         ),
-                        // 숫자 형식 + 범위 검증
-                        validator: (value) {
-                          print('최대 인원 validator 실행됨');
-                          if (value == null || value.trim().isEmpty) {
-                            return "최대 인원을 입력하세요";
-                          }
-      
-                          // 문자열 -> 숫자 변환
-                          final maxPeople = int.tryParse(value);
-      
-                          if(maxPeople == null) {
-                            return "숫자만 입력 가능합니다";
-                          }
-      
-                          if(maxPeople < 2) {
-                            return "최소 2명 이상이어야 합니다.";
-                          }
-      
-                          if(maxPeople > 100) {
-                            return "최대 100 이하이어야 합니다.";
-                          }
-      
-                          return null;
-                        },
+
                       ),
                     ),
                     const SizedBox(width: 8),
