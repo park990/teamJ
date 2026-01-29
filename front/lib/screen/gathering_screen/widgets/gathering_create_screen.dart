@@ -214,6 +214,15 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   height: 5
                 ),
                 TextFormField(
+                  onChanged: (value) {
+                    setState(() {
+                      if(value.trim().isEmpty) {
+                        _roomNameError = "모임 이름을 입력해주세요";
+                      } else {
+                        return null;
+                      }
+                    });
+                  },
                   focusNode: _nameFocusNode,
                   controller: _roomNameController,
                   decoration: InputDecoration(
