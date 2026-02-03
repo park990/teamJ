@@ -330,7 +330,7 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   maxLines: 500,
                   decoration: InputDecoration(
                     hintText: _descFocusNode.hasFocus
-                      ? "모임정보를 적어주세요. (예: 인천 두쫀쿠 성지)"
+                      ? "모임 내용을 적어주세요. (예: 인천 두쫀쿠 성지)"
                       : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
