@@ -1,5 +1,3 @@
-# README.md
-
 # TeamJ 🎉
 
 > 모임과 랜덤 채팅을 위한 소셜 네트워킹 애플리케이션
@@ -13,10 +11,10 @@
 
 ### ✨ 주요 기능
 
-- 🎪 **소셜 모임**: 모임 생성, 참가, 관리 기능
-- 💬 **랜덤 1:1 채팅**: WebSocket & Redis 기반 실시간 매칭 시스템
-- 📋 **커뮤니티**: 게시판 및 댓글 기능
-- 🔐 **인증**: OAuth (카카오) & 커스텀 JWT (이중 토큰 시스템)
+-  **소셜 모임**: 모임 생성, 참가, 관리 기능
+-  **랜덤 1:1 채팅**: WebSocket & Redis 기반 실시간 매칭 시스템
+-  **커뮤니티**: 게시판 및 댓글 기능
+-  **인증**: OAuth (카카오) & 커스텀 JWT (이중 토큰 시스템)
 
 ---
 
@@ -35,10 +33,10 @@
 
 다음 도구들이 설치되어 있어야 합니다:
 
-- ☕ **Java 21** (JDK 21)
-- 📱 **Flutter 3.10+**
-- 🗄️ **MySQL** Database
-- 🔴 **Redis** Server
+-  **Java 21** (JDK 21)
+-  **Flutter 3.10+**
+-  **MySQL** Database
+-  **Redis** Server
 
 ---
 
@@ -64,10 +62,10 @@ cd backend
 
 `src/main/resources/application.properties` 파일에 다음 환경 변수를 설정하세요:
 
-- 🗄️ Database credentials (MySQL)
-- 🔴 Redis Host/Port
-- 🔑 JWT Secret Key
-- ☁️ AWS S3 Credentials
+-  Database credentials (MySQL)
+-  Redis Host/Port
+-  JWT Secret Key
+-  AWS S3 Credentials
 
 ---
 
