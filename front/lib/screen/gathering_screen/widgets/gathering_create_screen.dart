@@ -73,7 +73,7 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
       });
     }
   }
-  
+
   // _submitGathering() 메서드 작성
   Future<void> _submitGathering() async {
     // 폼 검증: 필수 입력값 확인
