@@ -219,7 +219,7 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                       if(value.trim().isEmpty) {
                         _roomNameError = "모임 이름을 입력해주세요";
                       } else {
-                        return null;
+                        _roomNameError = null; //에러 초기화
                       }
                     });
                   },
@@ -317,9 +317,9 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   onChanged: (value) {
                     setState(() {
                       if(value.trim().isEmpty) {
-                        _roomNameError = "모임 내용을 입력해주세요";
+                        _roomDescError = "모임 내용을 입력해주세요";
                       } else {
-                        return null;
+                        _roomDescError = null; //에러 초기화
                       }
                     });
                   },
