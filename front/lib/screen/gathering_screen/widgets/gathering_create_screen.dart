@@ -4,12 +4,12 @@ import 'package:front/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
+import 'package:front/dto/gatherings/gathering_create_request_dto.dart';
 
 class GatheringCreateScreen extends ConsumerStatefulWidget{
   const GatheringCreateScreen({
     super.key,
   });
-
   @override
   ConsumerState<GatheringCreateScreen> createState() => _GatheringCreateScreenState();
 }
@@ -150,7 +150,14 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
     print('최대 인원: ${_maxController.text}');
 
     // TODO: DTO 생성
-
+    final dto = GatheringCreateRequestDto(
+      roomName: _roomNameController.text.trim(),
+      roomType: _selectedRoomType!,
+      roomDesc: _roomDescController.text.trim(),
+      meetDate: null, // 날짜 선택 기능은 추후 구현
+      meetPlace: _selectedRegion!,
+      max: int.parse(_maxController.text.trim()),
+    );
     // TODO: Provider를 통해 서버로 전송
 
     // TODO: 생성 결과 확인
