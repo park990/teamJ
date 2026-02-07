@@ -95,7 +95,10 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
 
       // 모임 설명 검증
       final desc = _roomDescController.text.trim();
-      if(desc.isNotEmpty && desc.length < 10) {
+      if(desc.isEmpty) {
+        _roomDescError = "모임 내용을 입력해주세요";
+        hasCustomErrors = true;
+      } else if(desc.length < 10){
         _roomDescError = "모임 설명은 10자 이상 작성해주세요";
         hasCustomErrors = true;
       } else {
@@ -104,9 +107,7 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
 
       // 모임 타입 체크
       if(_selectedRoomType == null) {
-        setState(() {
-          _roomTypeError = "모임 타입을 선택해주세요";
-        });
+        _roomTypeError = "모임 타입을 선택해주세요";
         hasCustomErrors = true; // 에러 발생 표시
       } else {
         _roomTypeError = null; //선택되어 있으면 에러 초기화
@@ -134,7 +135,12 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
           _maxPeopleError = null;
         }
       }
-    });
+    }); //setState 끝
+
+    // 검증 실패 시 early return 추가
+    if(hasCustomErrors) {
+      return; // 에러가 있으면 여기서 종료
+    }
 
     // 검증 통과
     print('검증 통과! 서버 전송 준비 완료');
@@ -218,8 +224,10 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                     setState(() {
                       if(value.trim().isEmpty) {
                         _roomNameError = "모임 이름을 입력해주세요";
+                      } else if(value.trim().length > 30) {
+                        _roomNameError = "모임 이름은 30자 이내로 입력해주세요";
                       } else {
-                        return null;
+                        _roomNameError = null; //에러 초기화
                       }
                     });
                   },
@@ -317,9 +325,11 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                   onChanged: (value) {
                     setState(() {
                       if(value.trim().isEmpty) {
-                        _roomNameError = "모임 내용을 입력해주세요";
+                        _roomDescError = "모임 내용을 입력해주세요";
+                      } else if(value.trim().length < 10){
+                        _roomDescError = "모임 내용은 10자 이상 작성해주세요";
                       } else {
-                        return null;
+                        _roomDescError = null; //에러 초기화
                       }
                     });
                   },
@@ -416,6 +426,22 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
                         controller: _maxController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
+                        onChanged: (value) {
+                          setState(() {
+                            if(value.trim().isEmpty) {
+                              _maxPeopleError = "최대 인원을 입력하세요";
+                            } else {
+                              final maxPeople = int.tryParse(value);
+                              if(maxPeople == null) {
+                                _maxPeopleError = "숫자만 입력 가능합니다.";
+                              } else if(maxPeople < 2) {
+                                _maxPeopleError = "최소 2명 이상이어야 합니다.";
+                              } else {
+                                _maxPeopleError = null;
+                              }
+                            }
+                          });
+                        },
                         decoration: InputDecoration(
                           hintText: '0',
                           border: OutlineInputBorder(
