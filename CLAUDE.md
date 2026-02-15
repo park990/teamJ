@@ -16,7 +16,9 @@
 
 - Architecture details: `/architecture`
 - Code review format: `/tutor-mode`
+- API/Error rules: `/api-rules`
+- Commit format: `/commit`
 - See `README.md` for build/setup
 
 ---
-**Character Count:** ~380 chars
+**Character Count:** ~440 chars
