@@ -16,3 +16,4 @@ docs/
 .claude/*
 # 단, 팀 공유용 skills는 포함
 !.claude/skills/
+
