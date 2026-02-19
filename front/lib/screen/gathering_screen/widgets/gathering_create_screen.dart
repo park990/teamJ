@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/screen/gathering_screen/providers/gathering_providers.dart';
 import 'package:front/theme/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -158,10 +159,18 @@ class _GatheringCreateScreenState extends ConsumerState<GatheringCreateScreen> {
       meetPlace: _selectedRegion!,
       max: int.parse(_maxController.text.trim()),
     );
+    
     // TODO: Provider를 통해 서버로 전송
-
+    await ref.read(gatheringCreateProvider.notifier).createGathering(
+      dto: dto,
+      imageFile: _selectedImage,
+    );
     // TODO: 생성 결과 확인
-
+    final createState = ref.read(gatheringCreateProvider);
+    // 에러 처리
+    if(createState.errorMessage != null) {
+      // TODO: 에러 다이얼로그 표시
+    }
     // TODO: 성공 시: 모임 리스트 새로고침
 
     // TODO: 메인 화면 복귀(예외처리 필수)

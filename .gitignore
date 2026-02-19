@@ -13,4 +13,7 @@ redis/data/
 docs/
 
 # Claude Code (AI) 내부 캐시 및 설정 폴더
-.claude/
+.claude/*
+# 단, 팀 공유용 skills는 포함
+!.claude/skills/
+
