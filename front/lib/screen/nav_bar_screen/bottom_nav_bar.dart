@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/const/tabs.dart';
 import 'package:front/theme/app_colors.dart';
 
-final bottomNavIndexProvider = StateProvider(<int>(ref)=>0);
+final bottomNavIndexProvider = StateProvider(<int>(ref) => 0);
+
 class BottomNavBar extends ConsumerStatefulWidget {
   const BottomNavBar({super.key});
 
@@ -11,15 +12,17 @@ class BottomNavBar extends ConsumerStatefulWidget {
   ConsumerState<BottomNavBar> createState() => _BottomNavBarState();
 }
 
-class _BottomNavBarState extends ConsumerState<BottomNavBar> with TickerProviderStateMixin {
+class _BottomNavBarState extends ConsumerState<BottomNavBar>
+    with TickerProviderStateMixin {
   late final TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController=TabController(length: TABS.length, vsync: this);
+    tabController = TabController(length: TABS.length, vsync: this);
     tabController.addListener(_onTabChanger);
   }
+
   @override
   void dispose() {
     tabController.removeListener(_onTabChanger);
@@ -29,27 +32,35 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // ✅ Provider 변경 감시 (외부에서 탭 전환 요청 시)
+    ref.listen(bottomNavIndexProvider, (previous, next) {
+      if (tabController.index != next) {
+        tabController.animateTo(next);
+      }
+    });
 
+    return Scaffold(
       // 센터 화면
       body: _Center(tabController: tabController),
 
       // 바텀 네비 화면
-      bottomNavigationBar: _BottomNavItems(tabController: tabController)
+      bottomNavigationBar: _BottomNavItems(tabController: tabController),
     );
   }
 
   // 함수
-  void _onTabChanger(){
-    if(!tabController.indexIsChanging){
+  void _onTabChanger() {
+    if (!tabController.indexIsChanging) {
       // 여기서 !를 넣어준 이유는 indexchanging 이 끝났을(false) 때 탭이 바뀌는 비동기적 처리임
       // 안넣어주면 탭이 먼저 바뀌고 비동기가 처리가 된다.
+      // ✅ Provider도 함께 업데이트 (양방향 동기화)
+      ref.read(bottomNavIndexProvider.notifier).state = tabController.index;
       setState(() {});
     }
   }
 }
 
-// Center 화면 
+// Center 화면
 class _Center extends StatelessWidget {
   final TabController tabController;
   const _Center({super.key, required this.tabController});
@@ -59,12 +70,7 @@ class _Center extends StatelessWidget {
     return TabBarView(
       controller: tabController,
       physics: NeverScrollableScrollPhysics(),
-      children: TABS
-          .map((e) => Center(
-            child: e.screen
-            ),
-          )
-          .toList(),
+      children: TABS.map((e) => Center(child: e.screen)).toList(),
     );
   }
 }
@@ -72,10 +78,7 @@ class _Center extends StatelessWidget {
 // 바텀 NAV 화면
 class _BottomNavItems extends StatelessWidget {
   final TabController tabController;
-  const _BottomNavItems({
-    super.key,
-    required this.tabController,
-  });
+  const _BottomNavItems({super.key, required this.tabController});
 
   @override
   Widget build(BuildContext context) {
@@ -87,22 +90,17 @@ class _BottomNavItems extends StatelessWidget {
       selectedLabelStyle: wazzupFont,
       backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
-      
 
       // 탭 컨트롤러의 index를 currentIndex로 적용
       currentIndex: tabController.index,
-      
+
       // 탭을 눌렀을 때 tabcontroller에게 클릭한 index 부여
       onTap: (index) {
         tabController.animateTo(index);
       },
       items: TABS
           .map(
-            (e) => BottomNavigationBarItem(
-              icon: Icon(e.icon),
-              label: e.label,
-
-            ),
+            (e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label),
           )
           .toList(),
     );
