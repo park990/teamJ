@@ -15,6 +15,7 @@ class ChatUiMapper {
       imageUrl: dto.imageUrl,
       avatarUrl: dto.profileImgUrl,
       time: formattedTime(dto),
+      createdAt: dto.createdAt,
     );
   }
 

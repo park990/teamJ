@@ -52,6 +52,7 @@ dependencies:
   stomp_dart_client: ^3.0.1  # STOMP 클라이언트
   vibration: ^2.0.1
   jwt_decoder: ^2.0.1
+  uuid: ^4.5.1  # UUID 생성 (Optimistic UI용)
 
 
 dev_dependencies:

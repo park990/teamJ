@@ -4,7 +4,7 @@ import 'package:front/config/init_setting.dart';
 import 'package:front/screen/home_screen.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/screen/random_chat_screen/widget/matching_status_overlay.dart';
+import 'package:front/widgets/matching_status_overlay.dart';
 
 // flutter_smart_dialog 알림창
 void main() async {
