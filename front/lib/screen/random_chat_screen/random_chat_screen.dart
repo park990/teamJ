@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:front/dto/chat_dto.dart';
-import 'package:front/screen/myPage_screen/login/provider/auth_provider.dart';
+import 'package:front/screen/random_chat_screen/models/random_chat_ui_model.dart';
 import 'package:front/screen/random_chat_screen/provider/random_chat_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -60,10 +59,6 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
     final messages = chatController.messages;
     final roomIdx = chatController.roomIdx ?? '알 수 없음';
 
-    // ✅ 현재 로그인한 사용자 userIdx 가져오기
-    final authState = ref.watch(authControllerProvider);
-    final myUserIdx = authState.userIdx;
-
     // ✅ 메시지 추가 시 자동 스크롤 (build 안에서 ref.listen 사용)
     ref.listen(randomChatControllerProvider, (previous, next) {
       // 메시지 개수가 증가했을 때만 스크롤
@@ -101,10 +96,6 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
                     itemBuilder: (context, index) {
                       final message = messages[index];
 
-                      // ✅ 내 메시지인지 판단 (userIdx 비교)
-                      final isMe =
-                          myUserIdx != null && message.userIdx == myUserIdx;
-
                       // ✅ 이전 메시지와 시간(분 단위)이 다른지 확인
                       final shouldShowTime =
                           index == 0 || // 첫 메시지는 무조건 표시
@@ -121,7 +112,7 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
                             const SizedBox(height: 5),
                           ],
                           // 채팅 내용
-                          isMe
+                          message.isMe
                               ? _buildMyMessage(message)
                               : _buildOpponentMessage(message),
                         ],
@@ -170,12 +161,37 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   }
 
   /// 내 메시지 위젯
-  Widget _buildMyMessage(ChatDto message) {
+  Widget _buildMyMessage(ChatUiModel message) {
     return Align(
       alignment: Alignment.centerRight,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // ✅ 메시지 상태 표시 (pending, failed)
+          if (message.status == MessageStatus.pending)
+            const Padding(
+              padding: EdgeInsets.only(right: 5),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else if (message.status == MessageStatus.failed)
+            GestureDetector(
+              onTap: () async {
+                // 재시도
+                await chatController.retryMessage(message);
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 5),
+                child: Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 20,
+                ),
+              ),
+            ),
           Container(
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.7,
@@ -184,16 +200,18 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
             margin: const EdgeInsets.symmetric(vertical: 5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              color: const Color.fromARGB(206, 255, 247, 177),
+              color: message.status == MessageStatus.failed
+                  ? Colors.red.shade100 // 실패 시 빨간색
+                  : const Color.fromARGB(206, 255, 247, 177),
             ),
-            child: Text(message.content),
+            child: Text(message.message ?? ''),
           ),
           const SizedBox(width: 10),
           CircleAvatar(
-            backgroundImage: message.profileImgUrl != null
-                ? NetworkImage(message.profileImgUrl!)
+            backgroundImage: message.avatarUrl != null
+                ? NetworkImage(message.avatarUrl!)
                 : null,
-            child: message.profileImgUrl == null
+            child: message.avatarUrl == null
                 ? Text(message.nickname[0])
                 : null,
           ),
@@ -203,17 +221,17 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
   }
 
   /// 상대방 메시지 위젯
-  Widget _buildOpponentMessage(ChatDto message) {
+  Widget _buildOpponentMessage(ChatUiModel message) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
-            backgroundImage: message.profileImgUrl != null
-                ? NetworkImage(message.profileImgUrl!)
+            backgroundImage: message.avatarUrl != null
+                ? NetworkImage(message.avatarUrl!)
                 : null,
-            child: message.profileImgUrl == null
+            child: message.avatarUrl == null
                 ? Text(message.nickname[0])
                 : null,
           ),
@@ -228,7 +246,7 @@ class _RandomChatScreenState extends ConsumerState<RandomChatScreen> {
               borderRadius: BorderRadius.circular(15),
               color: const Color(0xFFeedaf2),
             ),
-            child: Text(message.content),
+            child: Text(message.message ?? ''),
           ),
         ],
       ),
